@@ -115,3 +115,17 @@ export async function fetchProductDetail(slug: string): Promise<any | null> {
     }
 }
 
+export async function fetchRelatedProducts(categorySlug: string, excludeId: string): Promise<any[]> {
+    const { relatedProductsQuery } = await import('./sanity.queries');
+    if (!isSanityConfigured()) return [];
+
+    try {
+        const result = await sanityFetch<any[]>({
+            query: relatedProductsQuery(categorySlug, excludeId),
+            tags: ['product', 'related'],
+        });
+        return result || [];
+    } catch {
+        return [];
+    }
+}

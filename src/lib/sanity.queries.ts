@@ -225,3 +225,14 @@ export const productDetailQuery = (slug: string) => `
   }
 `;
 
+// Fetch related products by category (excluding current product)
+export const relatedProductsQuery = (categorySlug: string, excludeId: string) => `
+  *[_type == "product" && category->slug.current == "${categorySlug}" && _id != "${excludeId}"][0...8] {
+    _id,
+    "title": name,
+    "slug": slug.current,
+    price,
+    "comparePrice": compareAtPrice,
+    "image": images[0].asset->url
+  }
+`;

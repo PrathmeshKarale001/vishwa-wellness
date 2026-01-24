@@ -8,6 +8,8 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { OrganizationSchema } from "@/components/seo/JsonLd";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
+import { ToastProvider } from "@/components/ui/toast";
+
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://vishwawellness.com'),
@@ -51,6 +53,7 @@ export default function RootLayout({
         />
         <AuthProvider>
           <ConditionalLayout>{children}</ConditionalLayout>
+          <ToastProvider />
         </AuthProvider>
       </body>
     </html>

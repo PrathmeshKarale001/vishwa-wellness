@@ -221,7 +221,6 @@ export const productDetailQuery = (slug: string) => `
         benefits,
         description
       }
-      }
     }
   }
 `;

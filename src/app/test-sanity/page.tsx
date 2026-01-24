@@ -10,8 +10,10 @@ export default async function TestSanityPage() {
 
     if (configured) {
         try {
-            products = await fetchProducts();
-            heroSlides = await fetchHeroSlides();
+            const fetchedProducts = await fetchProducts();
+            const fetchedSlides = await fetchHeroSlides();
+            products = fetchedProducts || [];
+            heroSlides = fetchedSlides || [];
         } catch (e: any) {
             error = e.message;
         }

@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronRight, Check, CreditCard, Truck, MapPin, ShieldCheck, Tag, X, Loader2 } from 'lucide-react';
 import { useCartStore } from '@/lib/cartStore';
 import { useAuthStore } from '@/lib/authStore';
 import { getSupabaseClient } from '@/lib/supabase';
+import { useRazorpay } from '@/lib/useRazorpay';
+import type { Address } from '@/types/orders';
 
 type CheckoutStep = 'shipping' | 'payment' | 'review';
 
@@ -60,15 +63,18 @@ const generateOrderNumber = () => {
 };
 
 export default function CheckoutPage() {
+    const router = useRouter();
     const { items, getSubtotal, getShipping, getTotal, getItemCount, clearCart } = useCartStore();
     const { user, profile } = useAuthStore();
+    const { initiatePayment, isLoading: razorpayLoading } = useRazorpay();
     const [mounted, setMounted] = useState(false);
     const [currentStep, setCurrentStep] = useState<CheckoutStep>('shipping');
     const [shippingForm, setShippingForm] = useState<ShippingForm>(initialShippingForm);
-    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi' | 'card'>('cod');
+    const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
     const [isProcessing, setIsProcessing] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderNumber, setOrderNumber] = useState('');
+    const [paymentError, setPaymentError] = useState('');
 
     // Coupon state
     const [couponCode, setCouponCode] = useState('');
@@ -201,63 +207,138 @@ export default function CheckoutPage() {
 
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
+        setPaymentError('');
 
-        const newOrderNumber = generateOrderNumber();
-
-        // Prepare order data
-        const orderData = {
-            user_id: user?.id,
-            order_number: newOrderNumber,
-            status: 'pending',
-            subtotal: subtotal,
-            discount: discount,
-            shipping: shipping,
-            total: total,
-            items: items.map(item => ({
-                product_id: item.product.id,
-                product_title: item.product.title,
-                variant_id: item.variant?.id || null,
-                quantity: item.quantity,
-                price: item.variant?.price ?? item.product.price,
-                image: item.product.images[0]?.src || null,
-            })),
-            shipping_address: {
-                full_name: `${shippingForm.firstName} ${shippingForm.lastName}`,
-                email: shippingForm.email,
-                phone: shippingForm.phone,
-                address_line1: shippingForm.address,
-                city: shippingForm.city,
-                state: shippingForm.state,
-                pincode: shippingForm.pincode,
-                country: shippingForm.country,
-            },
-            payment_method: paymentMethod,
-            coupon_code: appliedCoupon?.code || null,
+        // Prepare shipping address
+        const shippingAddress: Address = {
+            firstName: shippingForm.firstName,
+            lastName: shippingForm.lastName,
+            email: shippingForm.email,
+            phone: shippingForm.phone,
+            addressLine1: shippingForm.address,
+            city: shippingForm.city,
+            state: shippingForm.state,
+            postalCode: shippingForm.pincode,
+            country: shippingForm.country,
         };
 
-        // If user is logged in, save to Supabase
-        if (user) {
-            const supabase = getSupabaseClient();
-            const { error } = await supabase.from('orders').insert(orderData);
+        // Prepare order items
+        const orderItems = items.map(item => ({
+            product_id: item.product.id,
+            product_slug: item.product.slug,
+            product_name: item.product.title,
+            product_image: item.product.images[0]?.src || '',
+            quantity: item.quantity,
+            unit_price: item.variant?.price ?? item.product.price,
+        }));
 
-            if (error) {
-                console.error('Order creation error:', error);
+        if (paymentMethod === 'razorpay') {
+            // Process Razorpay payment
+            const result = await initiatePayment({
+                amount: total,
+                name: 'Vishwa Wellness',
+                description: `Order of ${itemCount} item(s)`,
+                prefill: {
+                    name: `${shippingForm.firstName} ${shippingForm.lastName}`,
+                    email: shippingForm.email,
+                    contact: shippingForm.phone,
+                },
+                theme: { color: '#C73C2E' },
+            });
+
+            if (!result.success) {
+                setPaymentError(result.error || 'Payment failed. Please try again.');
                 setIsProcessing(false);
                 return;
             }
 
-            // Update coupon usage if used
-            if (appliedCoupon) {
-                await supabase
-                    .from('coupons')
-                    .update({ used_count: (appliedCoupon as { used_count?: number }).used_count || 0 + 1 })
-                    .eq('id', appliedCoupon.id);
+            // Create order after successful payment
+            try {
+                const orderResponse = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: orderItems,
+                        shipping_address: shippingAddress,
+                        customer_email: shippingForm.email,
+                        customer_phone: shippingForm.phone,
+                        customer_name: `${shippingForm.firstName} ${shippingForm.lastName}`,
+                        subtotal,
+                        shipping_cost: shipping,
+                        discount_amount: discount,
+                        total,
+                        notes: appliedCoupon ? `Coupon: ${appliedCoupon.code}` : undefined,
+                    }),
+                });
+
+                if (!orderResponse.ok) {
+                    throw new Error('Failed to create order');
+                }
+
+                const { order } = await orderResponse.json();
+
+                // Update order with payment info
+                await fetch(`/api/orders/${order.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        payment_status: 'paid',
+                        razorpay_order_id: result.orderId,
+                        razorpay_payment_id: result.paymentId,
+                        razorpay_signature: result.signature,
+                    }),
+                });
+
+                setOrderNumber(order.order_number);
+                setOrderPlaced(true);
+                clearCart();
+            } catch (error) {
+                console.error('Order creation error:', error);
+                setPaymentError('Payment successful but order creation failed. Please contact support.');
+            }
+        } else {
+            // COD order
+            try {
+                const orderResponse = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: orderItems,
+                        shipping_address: shippingAddress,
+                        customer_email: shippingForm.email,
+                        customer_phone: shippingForm.phone,
+                        customer_name: `${shippingForm.firstName} ${shippingForm.lastName}`,
+                        subtotal,
+                        shipping_cost: shipping,
+                        discount_amount: discount,
+                        total,
+                        notes: `COD Order${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
+                    }),
+                });
+
+                if (!orderResponse.ok) {
+                    throw new Error('Failed to create order');
+                }
+
+                const { order } = await orderResponse.json();
+                setOrderNumber(order.order_number);
+                setOrderPlaced(true);
+                clearCart();
+            } catch (error) {
+                console.error('Order creation error:', error);
+                setPaymentError('Failed to place order. Please try again.');
             }
         }
 
-        setOrderNumber(newOrderNumber);
-        setOrderPlaced(true);
-        clearCart();
+        // Update coupon usage if used
+        if (appliedCoupon && orderPlaced) {
+            const supabase = getSupabaseClient();
+            await supabase
+                .from('coupons')
+                .update({ used_count: (appliedCoupon as { used_count?: number }).used_count || 0 + 1 })
+                .eq('id', appliedCoupon.id);
+        }
+
         setIsProcessing(false);
     };
 
@@ -500,9 +581,8 @@ export default function CheckoutPage() {
                                     </h2>
                                     <div className="space-y-4">
                                         {[
-                                            { id: 'cod', label: 'Cash on Delivery', desc: 'Pay when you receive your order' },
-                                            { id: 'upi', label: 'UPI Payment', desc: 'Pay using any UPI app' },
-                                            { id: 'card', label: 'Credit/Debit Card', desc: 'Visa, Mastercard, Rupay' },
+                                            { id: 'razorpay', label: 'Pay Online', desc: 'UPI, Cards, Net Banking, Wallets' },
+                                            { id: 'cod', label: 'Cash on Delivery', desc: 'Pay when you receive your order (+₹50 handling fee)' },
                                         ].map(method => (
                                             <label
                                                 key={method.id}
@@ -516,12 +596,19 @@ export default function CheckoutPage() {
                                                     name="payment"
                                                     value={method.id}
                                                     checked={paymentMethod === method.id}
-                                                    onChange={() => setPaymentMethod(method.id as 'cod' | 'upi' | 'card')}
+                                                    onChange={() => setPaymentMethod(method.id as 'razorpay' | 'cod')}
                                                     className="mt-1"
                                                 />
                                                 <div>
                                                     <p className="font-medium text-[#222]">{method.label}</p>
                                                     <p className="text-sm text-[#777]">{method.desc}</p>
+                                                    {method.id === 'razorpay' && (
+                                                        <div className="flex gap-2 mt-2">
+                                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">UPI</span>
+                                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">Cards</span>
+                                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">Net Banking</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </label>
                                         ))}
@@ -566,10 +653,12 @@ export default function CheckoutPage() {
                                     <div className="mb-6 p-4 bg-[#f9f9f9] border border-[#eee]">
                                         <h3 className="font-medium text-[#222] mb-2">Payment Method:</h3>
                                         <p className="text-[#777] text-sm">
+                                            {paymentMethod === 'razorpay' && 'Pay Online (UPI/Cards/Net Banking)'}
                                             {paymentMethod === 'cod' && 'Cash on Delivery'}
-                                            {paymentMethod === 'upi' && 'UPI Payment'}
-                                            {paymentMethod === 'card' && 'Credit/Debit Card'}
                                         </p>
+                                        {paymentError && (
+                                            <p className="text-red-500 text-sm mt-2">{paymentError}</p>
+                                        )}
                                     </div>
 
                                     {/* Order Items */}
@@ -613,11 +702,11 @@ export default function CheckoutPage() {
                                         </button>
                                         <button
                                             onClick={handlePlaceOrder}
-                                            disabled={isProcessing}
+                                            disabled={isProcessing || razorpayLoading}
                                             className="btn-solid disabled:opacity-50 flex items-center gap-2"
                                         >
-                                            {isProcessing && <Loader2 size={18} className="animate-spin" />}
-                                            {isProcessing ? 'Processing...' : 'Place Order'}
+                                            {(isProcessing || razorpayLoading) && <Loader2 size={18} className="animate-spin" />}
+                                            {isProcessing ? 'Processing...' : paymentMethod === 'razorpay' ? 'Pay Now' : 'Place Order'}
                                         </button>
                                     </div>
                                 </div>

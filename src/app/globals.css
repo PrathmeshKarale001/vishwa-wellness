@@ -1,0 +1,683 @@
+@import "tailwindcss";
+@import "@fontsource/lato/400.css";
+@import "@fontsource/lato/700.css";
+@import "@fontsource/playfair-display/400.css";
+@import "@fontsource/playfair-display/600.css";
+@import "@fontsource/playfair-display/700.css";
+
+/* ========================================
+   VISHWA WELLNESS - MULTIKART-INSPIRED DESIGN SYSTEM
+   ======================================== */
+
+:root {
+  /* Brand Colors (from logo flame gradient) */
+  --color-primary: #C73C2E;
+  --color-primary-dark: #A32D22;
+  --color-secondary: #E87D3E;
+  --color-accent: #F4A034;
+  --color-accent-light: #F7B84D;
+
+  /* Neutral Colors (Multikart style) */
+  --color-dark: #222222;
+  --color-text: #333333;
+  --color-muted: #777777;
+  --color-light-text: #999999;
+  --color-border: #dddada;
+  --color-border-light: #eeeeee;
+  --color-bg-light: #f9f9f9;
+  --color-bg-cream: #f5f2f2;
+  --color-white: #ffffff;
+
+  /* Functional Colors */
+  --color-success: #4caf50;
+  --color-warning: #ffa200;
+  --color-error: #ff4c3b;
+  --color-info: #2196f3;
+
+  /* Legacy Color Variables (for backward compatibility with content pages) */
+  --color-navy: #222222;
+  --color-beige: #f5f2f2;
+  --color-cream: #f9f9f9;
+  --color-terracotta: #C73C2E;
+  --color-ochre: #E87D3E;
+  --color-gold: #F4A034;
+  --color-ash: #777777;
+  --color-charcoal: #333333;
+  --color-forest: #4caf50;
+
+  /* Typography */
+  --font-body: 'Lato', sans-serif;
+  --font-heading: 'Playfair Display', serif;
+  --font-playfair: 'Playfair Display', serif;
+
+  /* Spacing (Multikart uses consistent spacing) */
+  --section-padding: 70px;
+  --section-padding-sm: 40px;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
+  --shadow-hover: 0 5px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   ACCESSIBILITY UTILITIES
+   ======================================== */
+
+/* Focus-visible styles for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip to content link for screen readers */
+.skip-to-content {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--color-primary);
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 9999;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: inherit;
+  line-height: 1.3;
+  margin-bottom: 0.5em;
+}
+
+/* Ensure headings are white in dark containers */
+.text-white h1,
+.text-white h2,
+.text-white h3,
+.text-white h4,
+.text-white h5,
+.text-white h6 {
+  color: #ffffff;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+}
+
+h5 {
+  font-size: 1rem;
+}
+
+h6 {
+  font-size: 0.875rem;
+}
+
+p {
+  margin-bottom: 1em;
+  color: var(--color-muted);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+/* ========================================
+   BUTTON STYLES (Multikart Pattern)
+   ======================================== */
+
+.btn-solid {
+  display: inline-block;
+  padding: 12px 30px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 2px solid var(--color-primary);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-solid:hover {
+  background-color: transparent;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.btn-outline {
+  display: inline-block;
+  padding: 12px 30px;
+  background-color: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 2px solid var(--color-primary);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+.btn-white {
+  display: inline-block;
+  padding: 12px 30px;
+  background-color: var(--color-white);
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 2px solid var(--color-white);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-white:hover {
+  background-color: transparent;
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+/* ========================================
+   SECTION & CONTAINER STYLES
+   ======================================== */
+
+.section-padding {
+  padding-top: var(--section-padding);
+  padding-bottom: var(--section-padding);
+}
+
+.section-padding-sm {
+  padding-top: var(--section-padding-sm);
+  padding-bottom: var(--section-padding-sm);
+}
+
+.section-b-space {
+  padding-bottom: var(--section-padding);
+}
+
+.section-t-space {
+  padding-top: var(--section-padding);
+}
+
+/* ========================================
+   TITLE STYLES (Multikart Pattern)
+   ======================================== */
+
+.title-section {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.title-section h4 {
+  color: var(--color-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+
+.title-section h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-dark);
+  text-transform: capitalize;
+  position: relative;
+  display: inline-block;
+}
+
+.title-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+}
+
+/* ========================================
+   PRODUCT CARD STYLES (Multikart Pattern)
+   ======================================== */
+
+.product-box {
+  position: relative;
+  background: var(--color-white);
+  transition: all var(--transition-normal);
+}
+
+.product-box:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.product-box .img-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-box .img-wrapper img {
+  width: 100%;
+  transition: all var(--transition-slow);
+}
+
+.product-box:hover .img-wrapper .front {
+  opacity: 0;
+}
+
+.product-box:hover .img-wrapper .back {
+  opacity: 1;
+}
+
+.product-box .img-wrapper .back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+/* Product Labels */
+.product-box .label-new {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.product-box .label-sale {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--color-accent);
+  color: var(--color-white);
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+/* Product Hover Icons */
+.product-box .cart-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding: 15px;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: all var(--transition-normal);
+}
+
+.product-box:hover .cart-wrap {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.product-box .cart-wrap button,
+.product-box .cart-wrap a {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  color: var(--color-dark);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.product-box .cart-wrap button:hover,
+.product-box .cart-wrap a:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* Product Details */
+.product-box .product-detail {
+  padding: 20px 15px;
+  text-align: center;
+}
+
+.product-box .product-detail h6 {
+  color: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  margin-bottom: 5px;
+  text-transform: capitalize;
+}
+
+.product-box .product-detail h4 {
+  color: var(--color-dark);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.product-box .product-detail .price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.product-box .product-detail .price del {
+  color: var(--color-muted);
+  font-weight: 400;
+  margin-right: 8px;
+}
+
+/* Rating Stars */
+.rating {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.rating svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--color-warning);
+}
+
+.rating svg.empty {
+  fill: var(--color-border);
+}
+
+/* ========================================
+   FORM STYLES
+   ======================================== */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select {
+  width: 100%;
+  padding: 12px 15px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-primary);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.text-secondary {
+  color: var(--color-secondary) !important;
+}
+
+.text-accent {
+  color: var(--color-accent) !important;
+}
+
+.text-dark {
+  color: var(--color-dark) !important;
+}
+
+.text-muted {
+  color: var(--color-muted) !important;
+}
+
+.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary) !important;
+}
+
+.bg-light {
+  background-color: var(--color-bg-light) !important;
+}
+
+.bg-cream {
+  background-color: var(--color-bg-cream) !important;
+}
+
+.border-t {
+  border-top: 1px solid var(--color-border);
+}
+
+.border-b {
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Lazy Load Image */
+.blur-up {
+  filter: blur(5px);
+  transition: filter var(--transition-normal);
+}
+
+.blur-up.lazyloaded {
+  filter: blur(0);
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media (max-width: 1024px) {
+  :root {
+    --section-padding: 50px;
+    --section-padding-sm: 30px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --section-padding: 40px;
+    --section-padding-sm: 25px;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .btn-solid,
+  .btn-outline {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* ========================================
+   STUDIO ROUTE - HIDE HEADER/FOOTER
+   ======================================== */
+/* Hide header and footer when Sanity Studio is present */
+body:has(#sanity) header,
+body:has(#sanity) footer,
+body:has([data-studio-route]) header,
+body:has([data-studio-route]) footer {
+  display: none !important;
+}
+
+body:has([data-studio-route]) main {
+  display: none !important;
+}

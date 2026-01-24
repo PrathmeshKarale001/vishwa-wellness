@@ -50,7 +50,7 @@ export default function ProductCard({
     };
 
     const discountedPrice = product.discount
-        ? product.price - (product.price * product.discount / 100)
+        ? Math.round(product.price - (product.price * product.discount / 100))
         : product.price;
 
     const renderStars = (rating: number = 0) => {
@@ -183,11 +183,11 @@ export default function ProductCard({
                 <div className="price">
                     {product.discount ? (
                         <>
-                            <del>₹{product.price.toLocaleString()}</del>
-                            <span>₹{discountedPrice.toLocaleString()}</span>
+                            <del>₹{Math.round(product.price).toLocaleString('en-IN')}</del>
+                            <span>₹{discountedPrice.toLocaleString('en-IN')}</span>
                         </>
                     ) : (
-                        <span>₹{product.price.toLocaleString()}</span>
+                        <span>₹{Math.round(product.price).toLocaleString('en-IN')}</span>
                     )}
                 </div>
 

@@ -10,3 +10,4 @@ export { ProductTrustBadges, CompactTrustBadges, PaymentBadges, SupportBadge } f
 export { CheckoutProgress, SimpleStepIndicator } from './checkout-progress';
 export { StickyAddToCart } from './sticky-add-to-cart';
 export { GlassCard, FeatureCard, StatsCard, AnimatedListItem } from './glass-card';
+export { GlobalSearch, useGlobalSearch } from './global-search';

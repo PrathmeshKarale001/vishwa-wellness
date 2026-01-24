@@ -97,16 +97,70 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
     return (
         <>
             {/* ========== HERO SLIDER ========== */}
-            <section className="relative h-[600px] lg:h-[700px] overflow-hidden bg-white">
+            <section className="relative h-[100svh] max-h-[550px] lg:h-[550px] overflow-hidden">
                 {activeHeroSlides.map((slide, index) => (
                     <div
                         key={slide.id || index}
                         className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                             }`}
                     >
-                        <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+                        {/* Mobile: Full-screen image with overlay text */}
+                        <div className="lg:hidden relative h-full">
+                            {/* Background Image */}
+                            <Image
+                                src={slide.image?.url || slide.image || '/hero-placeholder.jpg'}
+                                alt={slide.title}
+                                fill
+                                className={`object-cover transition-transform duration-[2000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-110'}`}
+                                priority={index === 0}
+                                quality={85}
+                            />
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+                            {/* Mobile Content - positioned at bottom */}
+                            <div className="absolute bottom-0 left-0 right-0 p-6 pb-20">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={index === currentSlide ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                                    transition={{ duration: 0.8, delay: 0.3 }}
+                                >
+                                    <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold uppercase tracking-widest rounded-full mb-4 border border-white/30">
+                                        ✧ {slide.subtitle}
+                                    </span>
+
+                                    <h1 className="text-3xl sm:text-4xl font-bold !text-white mb-1 leading-tight drop-shadow-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+                                        {slide.title}
+                                    </h1>
+
+                                    {slide.highlight && (
+                                        <h2 className="text-3xl sm:text-4xl font-bold !text-white italic mb-4 leading-tight drop-shadow-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+                                            {slide.highlight}
+                                        </h2>
+                                    )}
+
+                                    <p className="!text-white/90 text-sm sm:text-base mb-6 leading-relaxed max-w-md line-clamp-2">
+                                        {slide.description}
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-3">
+                                        <Link href={slide.cta?.href || slide.ctaLink || '#'} className="btn-solid !px-6 !py-3 text-sm shadow-lg">
+                                            {slide.cta?.text || slide.ctaText || 'Learn More'}
+                                        </Link>
+                                        {(slide.ctaSecondary || slide.ctaSecondaryLink) && (
+                                            <Link href={slide.ctaSecondary?.href || slide.ctaSecondaryLink || '#'} className="!px-6 !py-3 text-sm text-white border border-white/50 rounded hover:bg-white/10 transition-colors">
+                                                {slide.ctaSecondary?.text || slide.ctaSecondaryText || 'View Details'}
+                                            </Link>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </div>
+
+                        {/* Desktop: Side-by-side layout */}
+                        <div className="hidden lg:grid lg:grid-cols-2 h-full">
                             {/* Text Side */}
-                            <div className="flex items-center justify-center lg:justify-end px-6 py-12 lg:py-0 lg:px-16 bg-[#f7f7f7]">
+                            <div className="flex items-center justify-end px-16 bg-[#f7f7f7]">
                                 <div className="max-w-xl w-full">
                                     <motion.div
                                         initial={{ opacity: 0, y: 30 }}
@@ -117,17 +171,17 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                                             ✧ {slide.subtitle}
                                         </span>
 
-                                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-[#222] mb-1 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                                        <h1 className="text-7xl font-bold text-[#222] mb-1 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
                                             {slide.title}
                                         </h1>
 
                                         {slide.highlight && (
-                                            <h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-[var(--color-primary)] italic mb-8 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                                            <h2 className="text-7xl font-bold text-[var(--color-primary)] italic mb-8 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
                                                 {slide.highlight}
                                             </h2>
                                         )}
 
-                                        <p className="text-[#666] text-lg lg:text-xl mb-10 leading-relaxed max-w-lg">
+                                        <p className="text-[#666] text-xl mb-10 leading-relaxed max-w-lg">
                                             {slide.description}
                                         </p>
 
@@ -160,31 +214,31 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                     </div>
                 ))}
 
-                {/* Slide Navigation */}
+                {/* Slide Navigation - desktop only */}
                 <button
                     onClick={prevSlide}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/80 hover:bg-white rounded-full flex items-center justify-center transition-colors shadow-md"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/80 hover:bg-white rounded-full hidden lg:flex items-center justify-center transition-colors shadow-md"
                     aria-label="Previous slide"
                 >
                     <ChevronLeft size={24} />
                 </button>
                 <button
                     onClick={nextSlide}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/80 hover:bg-white rounded-full flex items-center justify-center transition-colors shadow-md"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/80 hover:bg-white rounded-full hidden lg:flex items-center justify-center transition-colors shadow-md"
                     aria-label="Next slide"
                 >
                     <ChevronRight size={24} />
                 </button>
 
-                {/* Slide Dots */}
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+                {/* Slide Dots - bottom center */}
+                <div className="absolute bottom-6 lg:bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-2">
                     {activeHeroSlides.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setCurrentSlide(index)}
-                            className={`w-3 h-3 rounded-full transition-all ${index === currentSlide
-                                ? 'bg-[var(--color-primary)] w-8'
-                                : 'bg-[#ddd] hover:bg-[#bbb]'
+                            className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full transition-all ${index === currentSlide
+                                ? 'bg-white lg:bg-[var(--color-primary)] w-6 lg:w-8'
+                                : 'bg-white/50 lg:bg-[#ddd] hover:bg-white/80 lg:hover:bg-[#bbb]'
                                 }`}
                             aria-label={`Go to slide ${index + 1}`}
                         />
@@ -193,7 +247,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
             </section>
 
             {/* ========== FEATURED PRODUCTS ========== */}
-            <section className="section-padding bg-white">
+            < section className="section-padding bg-white" >
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="text-center mb-12">
                         <span className="text-[var(--color-primary)] text-sm font-bold uppercase tracking-widest">Our Collection</span>
@@ -203,7 +257,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                     </div>
 
                     {featuredProducts.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                             {featuredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
@@ -223,10 +277,10 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                         </Link>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* ========== BHASMA RITUALS ========== */}
-            <section className="section-padding bg-[#f9f9f9]">
+            < section className="section-padding bg-[#f9f9f9]" >
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="text-center mb-12">
                         <span className="text-[var(--color-primary)] text-sm font-bold uppercase tracking-widest">Sacred Practices</span>
@@ -263,7 +317,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                         </Link>
                     </div>
                 </div>
-            </section>
+            </section >
         </>
     );
 }

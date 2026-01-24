@@ -9,6 +9,7 @@ import { AuthProvider } from "@/components/auth/AuthProvider";
 import { OrganizationSchema } from "@/components/seo/JsonLd";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import { ToastProvider } from "@/components/ui/toast";
+import { fetchCategories } from "@/lib/sanity.fetch";
 
 
 export const metadata: Metadata = {
@@ -34,11 +35,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch categories for dynamic header navigation
+  const categories = await fetchCategories();
+
   return (
     <html lang="en">
       <body>
@@ -52,10 +56,11 @@ export default function RootLayout({
           ]}
         />
         <AuthProvider>
-          <ConditionalLayout>{children}</ConditionalLayout>
+          <ConditionalLayout categories={categories}>{children}</ConditionalLayout>
           <ToastProvider />
         </AuthProvider>
       </body>
     </html>
   );
 }
+

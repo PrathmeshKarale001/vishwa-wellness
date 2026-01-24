@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import { useCartStore } from '@/lib/cartStore';
 import { useWishlistStore } from '@/lib/wishlistStore';
+import { ProductTrustBadges } from '@/components/ui/trust-badges';
+import { StickyAddToCart } from '@/components/ui/sticky-add-to-cart';
+import { showToast } from '@/components/ui/toast';
 
 interface Ingredient {
     name: string;
@@ -108,6 +111,9 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
         };
         addItem(cartProduct as any, quantity);
         setAddedToCart(true);
+        showToast.success('Added to cart!', {
+            description: `${quantity}x ${product.title}`
+        });
         setTimeout(() => setAddedToCart(false), 2000);
     };
 
@@ -146,7 +152,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
             }
         } else {
             navigator.clipboard.writeText(url);
-            alert('Link copied!');
+            showToast.success('Link copied to clipboard!');
         }
     };
 
@@ -584,8 +590,30 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
                 </div>
             </div>
 
+            {/* Trust Badges Section */}
+            <div className="mt-8 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
+                <ProductTrustBadges className="max-w-md" />
+            </div>
+
             {/* Bottom padding for mobile sticky bar */}
             <div className="h-24 lg:hidden" />
+
+            {/* Mobile Sticky Add to Cart */}
+            <StickyAddToCart
+                product={{
+                    name: product.title,
+                    price: product.price,
+                    comparePrice: product.comparePrice,
+                    image: images[0]?.url,
+                    inStock: stock > 0,
+                }}
+                quantity={quantity}
+                onQuantityChange={setQuantity}
+                onAddToCart={handleAddToCart}
+                onWishlist={handleWishlist}
+                isInWishlist={isWishlisted}
+                isLoading={addedToCart}
+            />
         </div>
     );
 }

@@ -44,15 +44,22 @@ export async function middleware(request: NextRequest) {
 
     // Protected routes that require authentication
     const protectedPaths = ['/account', '/checkout', '/admin'];
+    const publicAuthPages = ['/account/login', '/account/register', '/account/forgot-password', '/account/reset-password'];
+
     const isProtectedPath = protectedPaths.some((path) =>
         request.nextUrl.pathname.startsWith(path)
     );
 
+    // Exclude public auth pages from protection
+    const isPublicAuthPage = publicAuthPages.some((path) =>
+        request.nextUrl.pathname === path
+    );
+
     // Redirect to login if accessing protected route without authentication
-    if (isProtectedPath && !user) {
-        const redirectUrl = new URL('/auth/callback', request.url);
-        redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname);
-        return NextResponse.redirect(redirectUrl);
+    if (isProtectedPath && !isPublicAuthPage && !user) {
+        const loginUrl = new URL('/account/login', request.url);
+        loginUrl.searchParams.set('next', request.nextUrl.pathname);
+        return NextResponse.redirect(loginUrl);
     }
 
     // Redirect logged-in users away from auth pages (optional)
@@ -78,7 +85,8 @@ export const config = {
          * - public folder
          * - api routes
          * - studio (Sanity Studio)
+         * - auth (OAuth callbacks)
          */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api|studio).*)',
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api|studio|auth).*)',
     ],
 };

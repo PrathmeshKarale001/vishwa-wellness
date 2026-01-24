@@ -5,12 +5,17 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
 import QuickViewWrapper from '@/components/shop/QuickViewWrapper';
+import type { Category } from '@/lib/sanity.types';
+
+interface ConditionalLayoutProps {
+    children: React.ReactNode;
+    categories?: Category[];
+}
 
 export default function ConditionalLayout({
     children,
-}: {
-    children: React.ReactNode;
-}) {
+    categories = [],
+}: ConditionalLayoutProps) {
     const pathname = usePathname();
 
     // Hide Header and Footer on Studio routes
@@ -22,7 +27,7 @@ export default function ConditionalLayout({
 
     return (
         <>
-            <Header />
+            <Header categories={categories} />
             <main>{children}</main>
             <Footer />
             <CartDrawer />

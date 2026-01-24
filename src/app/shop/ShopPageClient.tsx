@@ -46,27 +46,43 @@ export default function ShopPage({ products = [], categories: sanityCategories =
     // Use passed products
     const displayProducts = products;
 
-    // Build dynamic categories from Sanity data or use fallback
+    // Compute category counts dynamically from actual products
+    const getCategoryCount = (slug: string): number => {
+        if (slug === 'all') return displayProducts.length;
+        return displayProducts.filter(p =>
+            p.category?.toLowerCase() === slug.toLowerCase() ||
+            p.ritualType?.toLowerCase() === slug.toLowerCase() ||
+            p.tags?.some(t => t.toLowerCase() === slug.toLowerCase())
+        ).length;
+    };
+
+    // Build dynamic categories from Sanity data or use fallback with live counts
     const displayCategories = sanityCategories.length > 0
         ? [
             { name: 'All Products', slug: 'all', count: displayProducts.length },
             ...sanityCategories.map(cat => ({
                 name: cat.name,
                 slug: cat.slug,
-                count: cat.productCount
+                count: getCategoryCount(cat.slug)
             }))
         ]
-        : categories;
+        : categories.map(cat => ({
+            ...cat,
+            count: getCategoryCount(cat.slug)
+        }));
 
-    // Filter products
+    // Filter products - match by category name, slug, ritualType, or tags
     const filteredProducts = displayProducts.filter((product: Product) => {
         if (selectedCategory !== 'all') {
-            if (!product.tags?.includes(selectedCategory) && product.ritualType !== selectedCategory) {
-                return false;
-            }
+            const categoryMatch =
+                product.category?.toLowerCase() === selectedCategory.toLowerCase() ||
+                product.ritualType?.toLowerCase() === selectedCategory.toLowerCase() ||
+                product.tags?.some(t => t.toLowerCase() === selectedCategory.toLowerCase());
+            if (!categoryMatch) return false;
         }
         if (selectedPrice) {
-            if (product.price < selectedPrice.min || product.price > selectedPrice.max) {
+            const productPrice = Math.round(product.price);
+            if (productPrice < selectedPrice.min || productPrice > selectedPrice.max) {
                 return false;
             }
         }

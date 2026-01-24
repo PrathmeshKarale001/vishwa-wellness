@@ -9,6 +9,7 @@ import { useCartStore } from '@/lib/cartStore';
 import { useAuthStore } from '@/lib/authStore';
 import { getSupabaseClient } from '@/lib/supabase';
 import { useRazorpay } from '@/lib/useRazorpay';
+import { CheckoutProgress, CompactTrustBadges } from '@/components/ui';
 import type { Address } from '@/types/orders';
 
 type CheckoutStep = 'shipping' | 'payment' | 'review';
@@ -420,29 +421,10 @@ export default function CheckoutPage() {
             <section className="section-padding">
                 <div className="max-w-7xl mx-auto px-4">
                     {/* Step Indicator */}
-                    <div className="flex items-center justify-center mb-12">
-                        {steps.map((step, index) => (
-                            <div key={step.id} className="flex items-center">
-                                <div
-                                    className={`flex items-center gap-2 px-4 py-2 rounded ${isStepActive(step.id)
-                                        ? 'bg-[var(--color-primary)] text-white'
-                                        : isStepComplete(step.id)
-                                            ? 'bg-green-100 text-green-600'
-                                            : 'bg-[#f5f5f5] text-[#999]'
-                                        }`}
-                                >
-                                    <step.icon size={18} />
-                                    <span className="font-medium hidden sm:inline">{step.label}</span>
-                                </div>
-                                {index < steps.length - 1 && (
-                                    <div className={`w-8 sm:w-16 h-0.5 ${isStepComplete(steps[index + 1].id) || isStepActive(steps[index + 1].id)
-                                        ? 'bg-[var(--color-primary)]'
-                                        : 'bg-[#ddd]'
-                                        }`} />
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                    <CheckoutProgress
+                        currentStep={getStepIndex(currentStep) + 2}
+                        className="mb-12"
+                    />
 
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* Main Form */}

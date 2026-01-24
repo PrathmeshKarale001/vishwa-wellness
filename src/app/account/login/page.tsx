@@ -9,7 +9,7 @@ import { useAuthStore } from '@/lib/authStore';
 function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { signIn, signInWithGoogle, user, isLoading } = useAuthStore();
+    const { signIn, signInWithGoogle, user, isLoading, isInitialized } = useAuthStore();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -27,10 +27,11 @@ function LoginContent() {
 
     // Redirect if already logged in
     useEffect(() => {
-        if (user && !isLoading) {
-            router.push('/account');
+        if (isInitialized && user && !isLoading) {
+            const next = searchParams.get('next') || '/account';
+            router.push(next);
         }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, isInitialized, router, searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

@@ -3,27 +3,23 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingCart, Heart, User, Menu, X, Phone, Mail, ChevronDown, LogOut, Package, Settings } from 'lucide-react';
+import { Search, ShoppingCart, Heart, User, Menu, X, Phone, Mail, ChevronDown, LogOut, Package, Settings, Command } from 'lucide-react';
 import { useCartStore } from '@/lib/cartStore';
 import { useAuthStore } from '@/lib/authStore';
-import SearchOverlay from '@/components/search/SearchOverlay';
+import { GlobalSearch } from '@/components/ui';
+import type { Category } from '@/lib/sanity.types';
 
-// Navigation items
-const navItems = [
+interface NavItem {
+    name: string;
+    href: string;
+    dropdown?: { name: string; href: string }[];
+}
+
+// Static navigation items (non-shop items)
+const staticNavItems: NavItem[] = [
     { name: 'Home', href: '/' },
     { name: 'Why Ash?', href: '/why-ash' },
     { name: 'Bhasma Rituals', href: '/bhasma-rituals' },
-    {
-        name: 'Shop',
-        href: '/shop',
-        dropdown: [
-            { name: 'All Products', href: '/shop' },
-            { name: 'Snān Collection', href: '/shop?category=snan' },
-            { name: 'Lepam Collection', href: '/shop?category=lepam' },
-            { name: 'Pāna Collection', href: '/shop?category=pana' },
-            { name: 'Home & Aura', href: '/shop?category=home' },
-        ]
-    },
     { name: 'Retreats', href: '/awt-retreats' },
     { name: 'Ash Water', href: '/ash-water' },
     { name: 'DIY Recipes', href: '/diy-recipes' },
@@ -32,7 +28,11 @@ const navItems = [
     { name: 'Contact', href: '/contact' },
 ];
 
-export default function Header() {
+interface HeaderProps {
+    categories?: Category[];
+}
+
+export default function Header({ categories = [] }: HeaderProps) {
     const [isSticky, setIsSticky] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
@@ -43,6 +43,28 @@ export default function Header() {
     const { openCart, getItemCount } = useCartStore();
     const { user, profile, signOut, isInitialized } = useAuthStore();
     const itemCount = mounted ? getItemCount() : 0;
+
+    // Build dynamic shop dropdown from Sanity categories
+    const shopDropdown = [
+        { name: 'All Products', href: '/shop' },
+        ...categories.map(cat => ({
+            name: cat.name,
+            href: `/shop?category=${cat.slug}`,
+        })),
+    ];
+
+    // Build navigation items with dynamic shop dropdown
+    const navItems: NavItem[] = [
+        staticNavItems[0], // Home
+        staticNavItems[1], // Why Ash?
+        staticNavItems[2], // Bhasma Rituals
+        {
+            name: 'Shop',
+            href: '/shop',
+            dropdown: shopDropdown,
+        },
+        ...staticNavItems.slice(3), // Rest of nav items
+    ];
 
     // Prevent hydration mismatch
     useEffect(() => {
@@ -55,6 +77,18 @@ export default function Header() {
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Keyboard shortcut for search (Cmd/Ctrl + K)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setSearchOpen(true);
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
     }, []);
 
     // Close dropdowns when clicking outside
@@ -98,6 +132,14 @@ export default function Header() {
                         </div>
                         <div className="flex items-center gap-6">
                             <span>Free Shipping on orders above ₹999</span>
+                            <span className="text-[#bbb]">|</span>
+                            <button
+                                onClick={() => setSearchOpen(true)}
+                                className="flex items-center gap-1.5 hover:text-[var(--color-primary)] transition-colors"
+                            >
+                                <Command size={10} />
+                                <span>K</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -177,7 +219,7 @@ export default function Header() {
                             <button
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                                 onClick={() => setSearchOpen(true)}
-                                aria-label="Search"
+                                aria-label="Search (⌘K)"
                             >
                                 <Search size={20} />
                             </button>
@@ -406,8 +448,8 @@ export default function Header() {
                 </nav>
             </div>
 
-            {/* Search Overlay */}
-            <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+            {/* Global Search Command Palette */}
+            <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
         </>
     );
 }

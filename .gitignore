@@ -48,3 +48,6 @@ next-env.d.ts
 
 # migration script token (keep private)
 SANITY_API_TOKEN
+
+# Sentry Config File
+.env.sentry-build-plugin

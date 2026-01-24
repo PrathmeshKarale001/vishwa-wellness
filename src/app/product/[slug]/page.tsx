@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { fetchProductDetail, fetchRelatedProducts } from '@/lib/sanity.fetch';
 import ProductDetailClient from '@/components/product/ProductDetailClient';
+import { ProductSchema } from '@/components/seo/JsonLd';
 
 interface ProductPageProps {
     params: Promise<{ slug: string }>;
@@ -42,5 +43,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
         relatedProducts = await fetchRelatedProducts(product.category.slug, product._id);
     }
 
-    return <ProductDetailClient product={product} relatedProducts={relatedProducts} />;
+    // Determine stock availability
+    const availability = (product.stock ?? 100) > 0 ? 'InStock' : 'OutOfStock';
+
+    return (
+        <>
+            {/* Structured data for SEO */}
+            <ProductSchema
+                name={product.title}
+                description={product.benefitHeadline || product.description || ''}
+                image={product.images?.[0]?.url || '/placeholder-product.jpg'}
+                price={product.price}
+                currency="INR"
+                availability={availability}
+                sku={product.sku}
+            />
+
+            <ProductDetailClient product={product} relatedProducts={relatedProducts} />
+        </>
+    );
 }
+

@@ -2,7 +2,18 @@ import { Resend } from 'resend';
 import { OrderConfirmationEmail } from '../../emails/OrderConfirmation';
 import type { Order } from '@/types/orders';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialize Resend to avoid build errors when API key is missing
+let resend: Resend | null = null;
+
+function getResendClient(): Resend | null {
+    if (!process.env.RESEND_API_KEY) {
+        return null;
+    }
+    if (!resend) {
+        resend = new Resend(process.env.RESEND_API_KEY);
+    }
+    return resend;
+}
 
 interface EmailResult {
     success: boolean;
@@ -17,9 +28,11 @@ interface EmailResult {
  */
 export async function sendOrderConfirmationEmail(order: Order): Promise<EmailResult> {
     try {
-        // Validate email configuration
-        if (!process.env.RESEND_API_KEY) {
-            console.error('[email] RESEND_API_KEY not configured');
+        // Get Resend client (will be null if API key not configured)
+        const resendClient = getResendClient();
+
+        if (!resendClient) {
+            console.warn('[email] RESEND_API_KEY not configured - skipping email');
             return {
                 success: false,
                 error: 'Email service not configured',
@@ -35,7 +48,7 @@ export async function sendOrderConfirmationEmail(order: Order): Promise<EmailRes
         const items = order.items || [];
 
         // Send email
-        const { data, error } = await resend.emails.send({
+        const { data, error } = await resendClient.emails.send({
             from: process.env.RESEND_FROM_EMAIL || 'Vishwa Wellness <onboarding@resend.dev>',
             to: order.customer_email,
             subject: `Order Confirmation - ${order.order_number}`,

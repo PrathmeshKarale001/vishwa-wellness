@@ -22,7 +22,7 @@ interface AuthState {
     initialize: () => Promise<void>;
     signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
     signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
-    signInWithGoogle: () => Promise<{ error: Error | null }>;
+    signInWithGoogle: (redirectTo?: string) => Promise<{ error: Error | null }>;
     signOut: () => Promise<void>;
     fetchProfile: () => Promise<void>;
     updateProfile: (data: Partial<Profile>) => Promise<{ error: Error | null }>;
@@ -148,13 +148,19 @@ export const useAuthStore = create<AuthState>()(
                 return { error: null };
             },
 
-            signInWithGoogle: async () => {
+            signInWithGoogle: async (redirectTo?: string) => {
                 const supabase = getSupabaseClient();
+
+                // Build callback URL with next parameter if provided
+                const callbackUrl = new URL('/auth/callback', window.location.origin);
+                if (redirectTo) {
+                    callbackUrl.searchParams.set('next', redirectTo);
+                }
 
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: `${window.location.origin}/auth/callback`,
+                        redirectTo: callbackUrl.toString(),
                     },
                 });
 

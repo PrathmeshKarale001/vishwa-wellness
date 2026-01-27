@@ -124,7 +124,7 @@ export default function CartPage() {
                                             >
                                                 {/* Product Info */}
                                                 <div className="md:col-span-6 flex gap-4">
-                                                    <Link href={`/product/${item.product.slug}`} className="flex-shrink-0">
+                                                    <Link href={`/products/${item.product.slug}`} className="flex-shrink-0">
                                                         <div className="w-24 h-24 bg-[#f9f9f9] relative overflow-hidden">
                                                             <Image
                                                                 src={item.product.images[0]?.src || '/placeholder-product.jpg'}
@@ -135,7 +135,7 @@ export default function CartPage() {
                                                         </div>
                                                     </Link>
                                                     <div className="flex-1">
-                                                        <Link href={`/product/${item.product.slug}`}>
+                                                        <Link href={`/products/${item.product.slug}`}>
                                                             <h4 className="font-medium text-[#222] hover:text-[var(--color-primary)] transition-colors">
                                                                 {item.product.title}
                                                             </h4>

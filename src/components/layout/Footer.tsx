@@ -52,34 +52,34 @@ export default function Footer() {
     };
 
     return (
-        <footer className="bg-white text-[#333] border-t border-[#eee]">
+        <footer className="bg-white text-[#111] border-t border-[var(--color-border)]">
             {/* Newsletter Section */}
-            <div className="bg-[#f9f9f9] border-b border-[#eee]">
-                <div className="max-w-7xl mx-auto px-4 py-10">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="text-center md:text-left">
-                            <h3 className="text-2xl font-semibold text-[#222] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
+            <div className="bg-[var(--color-bg-cream)] border-b border-[var(--color-border)]">
+                <div className="max-w-7xl mx-auto px-4 py-16">
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-10">
+                        <div className="text-center lg:text-left">
+                            <h3 className="text-3xl font-bold text-black mb-2" style={{ fontFamily: 'var(--font-heading)' }}>
                                 Join Our Sacred Circle
                             </h3>
-                            <p className="text-[#777] text-sm">
+                            <p className="text-gray-500 text-sm tracking-wide">
                                 Subscribe for rituals, recipes, and exclusive wellness offerings
                             </p>
                         </div>
-                        <form onSubmit={handleSubscribe} className="flex w-full md:w-auto max-w-md border border-[#ddd]">
+                        <form onSubmit={handleSubscribe} className="flex w-full lg:w-auto max-w-md border-b-2 border-black">
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email..."
-                                className="flex-1 px-4 py-3 bg-white text-[#333] text-sm focus:outline-none min-w-[200px]"
+                                placeholder="Email Address"
+                                className="flex-1 px-0 py-4 bg-transparent text-black text-xs font-bold uppercase tracking-widest focus:outline-none min-w-[280px]"
                                 required
                             />
                             <button
                                 type="submit"
-                                className="px-6 py-3 bg-[var(--color-primary)] text-white font-semibold text-sm uppercase tracking-wider hover:bg-[var(--color-primary-dark)] transition-colors flex items-center gap-2"
+                                className="px-6 py-4 text-black font-bold text-[10px] uppercase tracking-[0.3em] hover:text-[var(--color-accent)] transition-colors flex items-center gap-3"
                             >
-                                {subscribed ? 'Subscribed!' : 'Subscribe'}
-                                <Send size={14} />
+                                {subscribed ? 'Subscribed' : 'Join'}
+                                <Send size={12} />
                             </button>
                         </form>
                     </div>
@@ -87,48 +87,54 @@ export default function Footer() {
             </div>
 
             {/* Main Footer */}
-            <div className="max-w-7xl mx-auto px-4 py-16">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+            <div className="max-w-7xl mx-auto px-4 py-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16">
                     {/* Brand Info */}
                     <div className="lg:col-span-2">
                         <Link href="/">
                             <Image
                                 src="/logo.png"
                                 alt="Vishwa Wellness"
-                                width={180}
-                                height={50}
-                                className="h-14 w-auto mb-6"
+                                width={160}
+                                height={45}
+                                className="h-10 w-auto mb-8"
                             />
                         </Link>
-                        <p className="text-[#777] text-sm leading-relaxed mb-6">
-                            Vishwa Wellness brings ancient fire rituals and sacred ash practices into modern wellness.
-                            Discover the transformative power of Bhasma through our authentic products and immersive retreat experiences.
+                        <p className="text-gray-500 text-sm leading-relaxed mb-8 max-w-sm">
+                            Vishwa Wellness brings ancient fire rituals and sacred ash practices into modern life.
+                            Discover the transformative power of Bhasma through our authentic products.
                         </p>
-                        <div className="space-y-3 text-sm text-[#777]">
-                            <a href="tel:+919876543210" className="flex items-center gap-3 hover:text-[var(--color-primary)] transition-colors">
-                                <Phone size={16} className="text-[var(--color-primary)]" />
-                                <span>+91 98765 43210</span>
+                        <div className="space-y-4 text-xs font-bold uppercase tracking-widest text-[#111]">
+                            <a href="tel:+917447489101" className="flex items-center gap-4 hover:text-[var(--color-accent)] transition-colors">
+                                <Phone size={14} className="text-[var(--color-accent)]" />
+                                <span>+91 74474 89101</span>
                             </a>
-                            <a href="mailto:hello@vishwawellness.com" className="flex items-center gap-3 hover:text-[var(--color-primary)] transition-colors">
-                                <Mail size={16} className="text-[var(--color-primary)]" />
-                                <span>hello@vishwawellness.com</span>
+                            <a href="mailto:crm@vishwaglobal.com" className="flex items-center gap-4 hover:text-[var(--color-accent)] transition-colors">
+                                <Mail size={14} className="text-[var(--color-accent)]" />
+                                <span>crm@vishwaglobal.com</span>
                             </a>
-                            <p className="flex items-start gap-3">
-                                <MapPin size={16} className="text-[var(--color-primary)] flex-shrink-0 mt-1" />
-                                <span>Vishwa Wellness Center, Shivpuri, Madhya Pradesh, India</span>
+                        </div>
+                        <div className="mt-4 text-xs text-gray-500 leading-relaxed font-medium">
+                            <p className="flex items-start gap-4 mb-2">
+                                <MapPin size={14} className="text-[var(--color-accent)] flex-shrink-0 mt-0.5" />
+                                <span>Shivpuri, Akkalkot Station Road,<br />Akkalkot 413216</span>
+                            </p>
+                            <p className="flex items-start gap-4">
+                                <span className="text-[var(--color-accent)] font-bold text-[10px] flex-shrink-0 uppercase tracking-wider w-[14px] text-center">🕒</span>
+                                <span>Mon - Sat: 10:00 AM - 7:00 PM IST</span>
                             </p>
                         </div>
                     </div>
 
                     {/* Shop Links */}
                     <div>
-                        <h4 className="text-[#222] font-semibold text-base mb-6 uppercase tracking-wider">Shop</h4>
-                        <ul className="space-y-3">
+                        <h4 className="text-black font-bold text-[10px] mb-8 uppercase tracking-[0.2em]">Shop</h4>
+                        <ul className="space-y-4">
                             {footerLinks.shop.map((link) => (
                                 <li key={link.name}>
                                     <Link
                                         href={link.href}
-                                        className="text-[#777] text-sm hover:text-[var(--color-primary)] transition-colors"
+                                        className="text-gray-500 text-xs font-bold uppercase tracking-widest hover:text-black transition-colors"
                                     >
                                         {link.name}
                                     </Link>
@@ -139,13 +145,13 @@ export default function Footer() {
 
                     {/* Explore Links */}
                     <div>
-                        <h4 className="text-[#222] font-semibold text-base mb-6 uppercase tracking-wider">Explore</h4>
-                        <ul className="space-y-3">
+                        <h4 className="text-black font-bold text-[10px] mb-8 uppercase tracking-[0.2em]">Explore</h4>
+                        <ul className="space-y-4">
                             {footerLinks.explore.map((link) => (
                                 <li key={link.name}>
                                     <Link
                                         href={link.href}
-                                        className="text-[#777] text-sm hover:text-[var(--color-primary)] transition-colors"
+                                        className="text-gray-500 text-xs font-bold uppercase tracking-widest hover:text-black transition-colors"
                                     >
                                         {link.name}
                                     </Link>
@@ -156,13 +162,13 @@ export default function Footer() {
 
                     {/* Support Links */}
                     <div>
-                        <h4 className="text-[#222] font-semibold text-base mb-6 uppercase tracking-wider">Support</h4>
-                        <ul className="space-y-3">
+                        <h4 className="text-black font-bold text-[10px] mb-8 uppercase tracking-[0.2em]">Support</h4>
+                        <ul className="space-y-4">
                             {footerLinks.support.map((link) => (
                                 <li key={link.name}>
                                     <Link
                                         href={link.href}
-                                        className="text-[#777] text-sm hover:text-[var(--color-primary)] transition-colors"
+                                        className="text-gray-500 text-xs font-bold uppercase tracking-widest hover:text-black transition-colors"
                                     >
                                         {link.name}
                                     </Link>
@@ -174,23 +180,22 @@ export default function Footer() {
             </div>
 
             {/* Bottom Bar */}
-            <div className="bg-[#f9f9f9] border-t border-[#eee]">
-                <div className="max-w-7xl mx-auto px-4 py-6">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <p className="text-[#777] text-sm text-center md:text-left">
-                            © {new Date().getFullYear()} Vishwa Wellness. All rights reserved.
-                            <span className="hidden md:inline"> | Healing Begins in the Ash.</span>
+            <div className="bg-white border-t border-[var(--color-border)]">
+                <div className="max-w-7xl mx-auto px-4 py-8">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest text-center md:text-left">
+                            © {new Date().getFullYear()} Vishwa Wellness. Healing Begins in the Ash.
                         </p>
 
                         {/* Social Links */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                             {socialLinks.map((social) => (
                                 <a
                                     key={social.name}
                                     href={social.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-10 h-10 rounded-full border border-[#ddd] flex items-center justify-center text-[#777] hover:bg-[var(--color-primary)] hover:border-[var(--color-primary)] hover:text-white transition-all"
+                                    className="text-gray-400 hover:text-black transition-colors"
                                     aria-label={social.name}
                                 >
                                     <social.icon size={18} />
@@ -198,15 +203,11 @@ export default function Footer() {
                             ))}
                         </div>
 
-                        {/* Payment Icons Placeholder */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-[#999] text-xs">We Accept:</span>
-                            <div className="flex items-center gap-1 text-[#777] text-xs font-medium">
-                                <span className="px-2 py-1 bg-white border border-[#eee] rounded shadow-sm">Visa</span>
-                                <span className="px-2 py-1 bg-white border border-[#eee] rounded shadow-sm">MC</span>
-                                <span className="px-2 py-1 bg-white border border-[#eee] rounded shadow-sm">UPI</span>
-                                <span className="px-2 py-1 bg-white border border-[#eee] rounded shadow-sm">COD</span>
-                            </div>
+                        {/* Payment Indicators */}
+                        <div className="flex items-center gap-4 opacity-30 grayscale">
+                            <span className="text-[10px] font-bold uppercase tracking-widest">VISA</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest">MC</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest">UPI</span>
                         </div>
                     </div>
                 </div>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Section, SectionHeading, SacredDivider } from "@/components/ui/Section";
+import { Hero } from "@/components/ui/Hero";
 
 const scienceBenefits = [
     {
@@ -58,41 +59,13 @@ const traditions = [
 export default function WhyAshPage() {
     return (
         <>
-            {/* Hero Section */}
-            <section className="relative min-h-[75vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
-                {/* Background layers */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-beige)] to-[var(--color-cream)]" />
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/whyash.jpg"
-                        alt="Why Ash Background"
-                        className="w-full h-full object-cover opacity-20"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-cream)] via-transparent to-[var(--color-beige)]/50" />
-                </div>
-                <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-[var(--color-gold)]/10 rounded-full blur-3xl" />
-
-                <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <div className="inline-block px-4 py-1 rounded-full bg-[var(--color-gold)]/10 border border-[var(--color-gold)]/20 mb-8">
-                            <span className="text-[var(--color-gold)] text-xs font-bold uppercase tracking-[0.2em]">The Hero Ingredient</span>
-                        </div>
-
-                        <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl lg:text-7xl font-bold text-[var(--color-navy)] mb-6 leading-[1.1]">
-                            Why Ash?
-                        </h1>
-
-                        <p className="text-lg md:text-xl text-[var(--color-ash)] max-w-2xl mx-auto leading-relaxed">
-                            The oldest medicine on Earth. Revered by every ancient civilization.
-                            Now validated by modern science.
-                        </p>
-                    </motion.div>
-                </div>
-            </section>
+            <Hero
+                badge="The Hero Ingredient"
+                title="Why Ash?"
+                description="The oldest medicine on Earth. Revered by every ancient civilization. Now validated by modern science."
+                bgImage="/whyash.jpg"
+                theme="light"
+            />
 
             {/* Section 1: The Oldest Medicine */}
             <Section background="white">

@@ -19,9 +19,7 @@ export interface Product {
     _id: string;
     _type: 'product';
     title: string; // Aliased from 'name'
-    slug: {
-        current: string;
-    };
+    slug: string;
     description: string;
     benefitHeadline?: string;
     price: number;
@@ -39,6 +37,7 @@ export interface Product {
     }>;
     isNew?: boolean;
     isSale?: boolean; // Aliased from 'isOnSale'
+    isBestSeller?: boolean;
     stock: number; // Aliased from 'inventory'
     rating?: number;
     reviewCount?: number;
@@ -55,6 +54,19 @@ export interface Product {
     dimensions?: string;
     metaTitle?: string;
     metaDescription?: string;
+    sections?: Array<{
+        title: string;
+        layout: 'text' | 'benefits' | 'ingredients' | 'usage' | 'certifications';
+        content?: string;
+        listItems?: string[];
+        ingredients?: Array<{
+            name: string;
+            scientificName?: string;
+            sanskritName?: string;
+            benefits?: string[];
+            description?: string;
+        }>;
+    }>;
 }
 
 export interface Post {
@@ -74,9 +86,7 @@ export interface Retreat {
     _id: string;
     _type: 'retreat';
     title: string;
-    slug: {
-        current: string;
-    };
+    slug: string;
     subtitle: string;
     description: string;
     duration: string;

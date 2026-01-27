@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDown, ChevronUp, Grid3X3, List, SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '@/components/shop/ProductCard';
+import { Hero } from '@/components/ui/Hero';
 import { Product } from '@/types';
 import { Category } from '@/lib/sanity.types';
 
@@ -212,7 +213,7 @@ export default function ShopPage({ products = [], categories: sanityCategories =
             {(selectedCategory !== 'all' || selectedPrice) && (
                 <button
                     onClick={clearFilters}
-                    className="w-full py-2 text-sm text-[var(--color-primary)] border border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors"
+                    className="btn-outline w-full py-2"
                 >
                     Clear All Filters
                 </button>
@@ -223,84 +224,33 @@ export default function ShopPage({ products = [], categories: sanityCategories =
     return (
         <>
             {/* Premium Shop Hero */}
-            <section className="relative min-h-[60vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
-                {/* Background layers */}
-                <div className="absolute inset-0 bg-[var(--color-navy)]" />
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/package-1.jpg"
-                        alt="Shop Background"
-                        className="w-full h-full object-cover opacity-30"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-navy)] via-[var(--color-navy)]/80 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-navy)] via-transparent to-[var(--color-navy)]/70" />
-                </div>
-
-                <div className="relative z-10 max-w-7xl mx-auto px-4 w-full">
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
-                        {/* Left Content */}
-                        <div>
-                            {/* Breadcrumb */}
-                            <div className="flex items-center gap-2 text-sm text-white/60 mb-6">
-                                <Link href="/" className="hover:text-white transition-colors">Home</Link>
-                                <span>/</span>
-                                <span className="text-white">Shop</span>
-                            </div>
-
-                            <div className="inline-block px-4 py-1 rounded-full bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30 mb-6">
-                                <span className="text-[var(--color-accent)] text-xs font-bold uppercase tracking-[0.2em]">Sacred Collection</span>
-                            </div>
-
-                            <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-5xl lg:text-6xl font-bold !text-white mb-6 leading-[1.1] drop-shadow-lg">
-                                Agni-Infused™<br />
-                                <span className="text-[var(--color-accent)]">Products</span>
-                            </h1>
-
-                            <p className="text-lg text-white/80 max-w-lg mb-8 leading-relaxed">
-                                Discover our collection of sacred ash products, each prepared through the ancient Agni-Saṃskāra process to carry the transformative energy of sacred fire.
-                            </p>
-
-                            {/* Quick Stats */}
-                            <div className="flex flex-wrap gap-6">
-                                <div className="text-center">
-                                    <div className="text-3xl font-bold text-white">8+</div>
-                                    <div className="text-xs text-white/60 uppercase tracking-wider">Products</div>
-                                </div>
-                                <div className="w-px bg-white/20" />
-                                <div className="text-center">
-                                    <div className="text-3xl font-bold text-white">3</div>
-                                    <div className="text-xs text-white/60 uppercase tracking-wider">Ritual Types</div>
-                                </div>
-                                <div className="w-px bg-white/20" />
-                                <div className="text-center">
-                                    <div className="text-3xl font-bold text-white">500+</div>
-                                    <div className="text-xs text-white/60 uppercase tracking-wider">Happy Customers</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right: Featured Product Cards Preview (hidden on mobile) */}
-                        <div className="hidden lg:block">
-                            <div className="grid grid-cols-2 gap-8 transform rotate-3">
-                                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 transform -rotate-3 hover:scale-105 transition-transform text-white">
-                                    <div className="aspect-square bg-white/10 rounded-xl mb-3 overflow-hidden">
-                                        <img src="/agnijal.jpg" alt="Agni Jal" className="w-full h-full object-cover" />
-                                    </div>
-                                    <h4 className="font-semibold text-sm">Agni Jal™</h4>
-                                    <p className="text-white/60 text-xs">Sacred Ash Water</p>
-                                </div>
-                                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 transform translate-y-8 -rotate-3 hover:scale-105 transition-transform text-white">
-                                    <div className="aspect-square bg-white/10 rounded-xl mb-3 overflow-hidden">
-                                        <img src="/package-2.jpg" alt="Healing Paste" className="w-full h-full object-cover" />
-                                    </div>
-                                    <h4 className="font-semibold text-sm">Lepam Paste</h4>
-                                    <p className="text-white/60 text-xs">Healing Therapy</p>
-                                </div>
-                            </div>
-                        </div>
+            <Hero
+                theme="dark"
+                badge="Sacred Collection"
+                title="Agni-Infused™"
+                highlight="Products"
+                description="Discover our collection of sacred ash products, each prepared through the ancient Agni-Saṃskāra process to carry the transformative energy of sacred fire."
+                bgImage="/package-1.jpg"
+                minHeight="min-h-[60vh]"
+            >
+                {/* Quick Stats Overlay (Optional but nice to keep) */}
+                <div className="flex flex-wrap gap-6 justify-center mt-8">
+                    <div className="text-center">
+                        <div className="text-3xl font-bold text-white">8+</div>
+                        <div className="text-xs text-white/60 uppercase tracking-wider">Products</div>
+                    </div>
+                    <div className="w-px bg-white/20 hidden sm:block" />
+                    <div className="text-center">
+                        <div className="text-3xl font-bold text-white">3</div>
+                        <div className="text-xs text-white/60 uppercase tracking-wider">Ritual Types</div>
+                    </div>
+                    <div className="w-px bg-white/20 hidden sm:block" />
+                    <div className="text-center">
+                        <div className="text-3xl font-bold text-white">500+</div>
+                        <div className="text-xs text-white/60 uppercase tracking-wider">Happy Customers</div>
                     </div>
                 </div>
-            </section>
+            </Hero>
 
             {/* Shop Content */}
             <section className="section-padding">

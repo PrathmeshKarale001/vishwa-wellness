@@ -16,58 +16,53 @@ import { Section, SectionHeading, SacredDivider } from "@/components/ui/Section"
 import { Card, CardContent } from "@/components/ui/Card";
 import { Hero } from "@/components/ui/Hero";
 
-const values = [
-    {
-        icon: Flame,
-        title: "Sacred Tradition",
-        description: "We honor the fire lineages that have preserved this knowledge for millennia."
-    },
-    {
-        icon: Heart,
-        title: "Authentic Healing",
-        description: "Every product and ritual is designed for genuine transformation, not quick fixes."
-    },
-    {
-        icon: Users,
-        title: "Community",
-        description: "We're building a global family of practitioners dedicated to wellness and awakening."
-    },
-    {
-        icon: Award,
-        title: "Quality Without Compromise",
-        description: "From sourcing to preparation, we never compromise on purity or authenticity."
-    }
+const globalJourney = [
+    { year: "1856 AD", event: "Shree Swami Samarth Arrives In Akkalkot After Completing Intense Meditation." },
+    { year: "1944 AD", event: "Paramsadguru takes the vow to rejuvenate the Vedas; Sapta Shloki revealed." },
+    { year: "1969 AD", event: "First Mahasomayaga at Shivpuri - established as a spiritual center." },
+    { year: "1974 AD", event: "First Agnihotra practitioner initiated by Paramsadguru." },
+    { year: "1978 AD", event: "First International Agnihotra center established in the USA." },
+    { year: "2009 AD", event: "Vishwa Foundation initiated as an umbrella for global upliftment missions." },
+    { year: "2023 AD", event: "Vishwa is Future Ready! Global presence in 40+ countries with 500,000+ practitioners." }
 ];
 
-const timeline = [
-    { year: "1970s", event: "Our founding teacher begins learning fire rituals from Himalayan masters" },
-    { year: "1990s", event: "First public teachings on Bhasma therapy emerge from decades of practice" },
-    { year: "2010", event: "AWT (Agni Wellness Therapy) protocol formalized after thousands of successful cases" },
-    { year: "2020", event: "Vishwa Wellness founded to bring these teachings to the modern world" },
-    { year: "Today", event: "Serving thousands of practitioners across 40+ countries" },
+
+
+
+const guidingLight = [
+    {
+        name: "Shree Swami Samarth Maharaj",
+        role: "The Fourth Incarnation of Lord Dattatreya",
+        image: "https://vishwaglobal.com/images/newtheme/Shree-Swami-Samarth-Maharaj.jpg",
+        bio: "Considered the fourth Incarnation of Lord Dattatreya, he graced Akkalkot in 1856, imparting wisdom and guiding disciples toward inner peace and happiness through his profound teachings.",
+        link: "https://vishwaglobal.com/about-us"
+    },
+    {
+        name: "Paramsadguru Shree Gajanan Maharaj",
+        role: "The Visionary of Global Healing",
+        image: "https://vishwaglobal.com/images/newtheme/Paramsadguru.jpg",
+        bio: "As the disciple of Swami Samarth Maharaj, Paramsadguru inspired by the teachings of the lineage, created a global vision and mission to heal humanity and reset the planet.",
+        link: "https://paramsadguru.vishwaglobal.com/"
+    },
+    {
+        name: "Dr. Purushottam",
+        role: "Steward of the Lineage",
+        image: "https://vishwaglobal.com/images/newtheme/Dr-Purushottam-og.jpg",
+        bio: "Paramsadguru’s grandson, Dr. Purushottam has dedicated his life to sharing spiritual knowledge, fostering a global community and enriching the lives of countless seekers worldwide.",
+        link: "https://vishwaglobal.com/doctor-purushottam"
+    },
 ];
 
-const team = [
-    {
-        name: "Dr. Arun Sharma",
-        role: "Founder & Chief Wellness Officer",
-        bio: "50+ years in traditional medicine and fire healing practices."
-    },
-    {
-        name: "Priya Devi",
-        role: "Head of Rituals",
-        bio: "Third-generation fire priestess and ritual design expert."
-    },
-    {
-        name: "Dr. Maya Patel",
-        role: "Scientific Advisor",
-        bio: "PhD in Biochemistry with focus on traditional medicine validation."
-    },
-    {
-        name: "Ravi Kumar",
-        role: "Head of Product Development",
-        bio: "Expert in Ayurvedic formulations and quality standards."
-    },
+
+
+
+const vishwaValues = [
+    { letter: "V", title: "Visionary Leadership", description: "We are blessed to have exemplary leadership with divine vision for not just our community, but for the world at large." },
+    { letter: "I", title: "Inspiration", description: "Cultivating a culture that inspires generations by enabling individuals to become guided by the Divine." },
+    { letter: "S", title: "Spiritual Wisdom", description: "Embracing the profound philosophy of the Guru Lineage as a guiding light." },
+    { letter: "H", title: "Harmony", description: "Promoting harmony within and across the world by recognizing the oneness of all beings." },
+    { letter: "W", title: "Wellness", description: "Prioritizing the well-being of individuals, physically, emotionally and spiritually." },
+    { letter: "A", title: "Acceptance", description: "Embracing our own unique identity and staying open to new ideas, cultures, and perspectives." }
 ];
 
 export default function AboutPage() {
@@ -77,22 +72,92 @@ export default function AboutPage() {
             <Hero
                 badge="Our Story"
                 title="About Vishwa Wellness"
-                description="Born from 50 years of fire lineage wisdom, bridging ancient healing practices with modern wellness needs."
+                description="Born from a 170+ year old Guru Lineage, we empower individuals to channel their spiritual energy and manifest a new life."
                 bgImage="/firelineage.jpg"
                 theme="light"
             />
 
-            {/* Mission Statement */}
+            {/* Mission & Vision */}
             <Section background="white">
-                <div className="max-w-4xl mx-auto text-center">
-                    <Quote className="w-12 h-12 text-[var(--color-gold)] mx-auto mb-6" />
-                    <blockquote className="font-[family-name:var(--font-playfair)] text-2xl md:text-3xl text-[var(--color-navy)] italic mb-6">
-                        &ldquo;We believe that the ancient wisdom of sacred fire holds the key to
-                        healing our modern disconnection from body, nature, and spirit.&rdquo;
-                    </blockquote>
-                    <p className="text-[var(--color-terracotta)] font-medium">
-                        — The Vishwa Wellness Philosophy
-                    </p>
+                <div className="max-w-4xl mx-auto text-center space-y-12">
+                    <div>
+                        <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--color-navy)] mb-6">Our Vision</h2>
+                        <p className="text-lg text-[var(--color-charcoal)] leading-relaxed">
+                            Vishwa envisions a world of universal oneness and profound inner peace. Our vision is to create a global community where the timeless wisdom of the Vedas guides individuals to channel their spiritual energy to manifest a new life.
+                        </p>
+                    </div>
+                    <div>
+                        <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--color-navy)] mb-6">Our Mission</h2>
+                        <p className="text-lg text-[var(--color-charcoal)] leading-relaxed">
+                            Our mission is to disseminate the profound teachings of the Guru Lineage, empowering individuals to embark on a transformative journey and learn to heal themselves. We are committed to cultivating individuals who are spiritually awakened, environmentally aware, and driven to create social change.
+                        </p>
+                    </div>
+                </div>
+            </Section>
+
+            {/* VISHWA Values */}
+            <Section background="beige">
+                <SectionHeading
+                    title="Our Core Values"
+                    subtitle="Empowering lives through the 5 Fold Path"
+                />
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {vishwaValues.map((value, index) => (
+                        <motion.div
+                            key={value.letter}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            viewport={{ once: true }}
+                        >
+                            <Card className="h-full text-center hover:shadow-lg transition-shadow duration-300">
+                                <CardContent className="p-8">
+                                    <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--color-navy)] text-white flex items-center justify-center text-2xl font-bold font-[family-name:var(--font-playfair)] border-4 border-[var(--color-gold)]">
+                                        {value.letter}
+                                    </div>
+                                    <h3 className="font-[family-name:var(--font-playfair)] text-xl font-semibold mb-3 text-[var(--color-navy)]">
+                                        {value.title}
+                                    </h3>
+                                    <p className="text-sm opacity-80 leading-relaxed text-[var(--color-charcoal)]">{value.description}</p>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </div>
+            </Section>
+
+            {/* Global Journey Timeline */}
+            <Section background="white">
+                <SectionHeading
+                    title="Vishwa: Our Global Journey"
+                    subtitle="Propagating the 170+ year old Guru Lineage"
+                />
+
+                <div className="max-w-4xl mx-auto">
+                    <div className="space-y-0">
+                        {globalJourney.map((item, index) => (
+                            <motion.div
+                                key={item.year}
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                viewport={{ once: true }}
+                                className="flex gap-8 group"
+                            >
+                                <div className="flex flex-col items-center">
+                                    <div className="w-5 h-5 rounded-full bg-[var(--color-navy)] border-4 border-[var(--color-gold)] z-10" />
+                                    {index < globalJourney.length - 1 && (
+                                        <div className="w-0.5 flex-1 bg-gradient-to-b from-[var(--color-gold)] to-transparent -mt-1" />
+                                    )}
+                                </div>
+                                <div className="pb-10 pt-0.5">
+                                    <span className="text-[var(--color-terracotta)] font-bold text-lg tracking-wider">{item.year}</span>
+                                    <p className="mt-2 text-[var(--color-charcoal)] font-medium leading-relaxed group-hover:text-[var(--color-navy)] transition-colors">{item.event}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
                 </div>
             </Section>
 
@@ -109,8 +174,10 @@ export default function AboutPage() {
                             preserved the knowledge of Agni (sacred fire) medicine.
                         </p>
                         <p className="leading-relaxed mb-6 opacity-90">
-                            This is not knowledge found in books — it is transmitted through direct
-                            experience, rigorous practice, and the blessing of those who came before.
+                            The Guru Tradition is a sacred lineage that passes down spiritual wisdom
+                            from master to disciple, fostering a profound connection to higher
+                            consciousness. Rooted in timeless teachings, it serves as a guiding light
+                            for seekers on the path of awakening.
                         </p>
                         <p className="leading-relaxed opacity-90">
                             Today, Vishwa Wellness carries this flame forward, adapting ancient protocols
@@ -129,96 +196,56 @@ export default function AboutPage() {
                 </div>
             </Section>
 
-            {/* Timeline */}
+            {/* Our Guiding Light */}
             <Section background="white">
                 <SectionHeading
-                    title="Our Journey"
-                    subtitle="50 years in the making"
+                    title="Our Guiding Light"
+                    subtitle="Propellers of the Sacred Tradition"
                 />
 
-                <div className="max-w-3xl mx-auto">
-                    <div className="space-y-0">
-                        {timeline.map((item, index) => (
-                            <motion.div
-                                key={item.year}
-                                initial={{ opacity: 0, x: -20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className="flex gap-6"
-                            >
-                                <div className="flex flex-col items-center">
-                                    <div className="w-4 h-4 rounded-full bg-[var(--color-terracotta)]" />
-                                    {index < timeline.length - 1 && (
-                                        <div className="w-0.5 flex-1 bg-[var(--color-beige)]" />
-                                    )}
-                                </div>
-                                <div className="pb-8">
-                                    <span className="text-[var(--color-terracotta)] font-semibold">{item.year}</span>
-                                    <p className="mt-1 opacity-90">{item.event}</p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                <div className="max-w-3xl mx-auto text-center mb-16 -mt-8">
+                    <p className="text-lg text-[var(--color-charcoal)] opacity-80">
+                        The Guru Tradition is a sacred lineage that passes down spiritual wisdom from master to disciple,
+                        fostering a profound connection to higher consciousness. Rooted in timeless teachings, it serves as a guiding light for seekers on the path of awakening.
+                    </p>
                 </div>
-            </Section>
 
-            {/* Values */}
-            <Section background="beige">
-                <SectionHeading
-                    title="Our Values"
-                    subtitle="The principles that guide everything we do"
-                />
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {values.map((value, index) => (
+                <div className="grid md:grid-cols-3 gap-8">
+                    {guidingLight.map((guru, index) => (
                         <motion.div
-                            key={value.title}
-                            initial={{ opacity: 0, y: 20 }}
+                            key={guru.name}
+                            initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            transition={{ delay: index * 0.15 }}
                             viewport={{ once: true }}
                         >
-                            <Card className="h-full text-center">
-                                <CardContent className="p-8">
-                                    <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-br from-[var(--color-terracotta)] to-[var(--color-ochre)] flex items-center justify-center">
-                                        <value.icon className="w-7 h-7 text-white" />
-                                    </div>
-                                    <h3 className="font-[family-name:var(--font-playfair)] text-lg font-semibold mb-2">
-                                        {value.title}
+                            <Card variant="bordered" className="h-full hover:border-[var(--color-gold)] transition-all duration-300 group overflow-hidden bg-white">
+                                <div className="aspect-[4/5] relative overflow-hidden bg-stone-100">
+                                    <Image
+                                        src={guru.image}
+                                        alt={guru.name}
+                                        fill
+                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    {/* Overlay Gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-navy)]/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                                </div>
+                                <CardContent className="text-center p-6 relative">
+                                    <h3 className="font-[family-name:var(--font-playfair)] text-xl font-bold mb-2 text-[var(--color-navy)] leading-tight">
+                                        {guru.name}
                                     </h3>
-                                    <p className="text-sm opacity-80">{value.description}</p>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    ))}
-                </div>
-            </Section>
-
-            {/* Team */}
-            <Section background="white">
-                <SectionHeading
-                    title="Our Team"
-                    subtitle="The guardians of this sacred knowledge"
-                />
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {team.map((member, index) => (
-                        <motion.div
-                            key={member.name}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            viewport={{ once: true }}
-                        >
-                            <Card variant="bordered" className="h-full">
-                                <div className="aspect-square bg-[var(--color-beige)] flex items-center justify-center">
-                                    <Users className="w-16 h-16 text-[var(--color-ash)]" />
-                                </div>
-                                <CardContent>
-                                    <h3 className="font-semibold">{member.name}</h3>
-                                    <p className="text-sm text-[var(--color-terracotta)] mb-2">{member.role}</p>
-                                    <p className="text-xs opacity-80">{member.bio}</p>
+                                    <div className="h-px w-10 bg-[var(--color-gold)] mx-auto mb-4" />
+                                    <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-terracotta)] mb-4">
+                                        {guru.role}
+                                    </p>
+                                    <p className="text-sm opacity-80 mb-6 leading-relaxed line-clamp-4">
+                                        {guru.bio}
+                                    </p>
+                                    <a href={guru.link} target="_blank" rel="noopener noreferrer">
+                                        <Button variant="outline" size="sm" className="hover:bg-[var(--color-gold)] hover:text-white hover:border-[var(--color-gold)] rounded-full px-8">
+                                            Know More
+                                        </Button>
+                                    </a>
                                 </CardContent>
                             </Card>
                         </motion.div>

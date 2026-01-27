@@ -8,7 +8,11 @@ export async function getUserRole(): Promise<UserRole | null> {
     const supabase = getSupabaseClient();
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    if (!user) {
+        return null;
+    }
+
+
 
     const { data, error } = await supabase
         .from('user_roles')
@@ -16,7 +20,14 @@ export async function getUserRole(): Promise<UserRole | null> {
         .eq('user_id', user.id)
         .single();
 
-    if (error || !data) return 'customer';
+    if (error) {
+        return 'customer';
+    }
+
+    if (!data) {
+        return 'customer';
+    }
+
     return data.role as UserRole;
 }
 

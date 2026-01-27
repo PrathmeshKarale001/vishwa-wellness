@@ -101,13 +101,13 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                                             key={img.id}
                                             onClick={() => setCurrentImage(idx)}
                                             className={`flex-shrink-0 w-16 h-16 border-2 overflow-hidden transition-colors ${currentImage === idx
-                                                    ? 'border-[var(--color-primary)]'
-                                                    : 'border-[#eee] hover:border-[#ddd]'
+                                                ? 'border-[var(--color-primary)]'
+                                                : 'border-[#eee] hover:border-[#ddd]'
                                                 }`}
                                         >
                                             <Image
-                                                src={img.src}
-                                                alt={img.alt}
+                                                src={img.src || '/placeholder-product.jpg'}
+                                                alt={img.alt || product.title}
                                                 width={64}
                                                 height={64}
                                                 className="object-cover w-full h-full"
@@ -235,8 +235,8 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                                     <button
                                         onClick={handleToggleWishlist}
                                         className={`w-10 h-10 flex items-center justify-center border transition-colors ${inWishlist
-                                                ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
-                                                : 'border-[#ddd] text-[#777] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]'
+                                            ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
+                                            : 'border-[#ddd] text-[#777] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]'
                                             }`}
                                         aria-label={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
                                     >
@@ -246,7 +246,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
 
                                 {/* View Full Details */}
                                 <Link
-                                    href={`/product/${product.slug}`}
+                                    href={`/products/${product.slug}`}
                                     onClick={onClose}
                                     className="text-[var(--color-primary)] text-sm font-medium hover:underline"
                                 >

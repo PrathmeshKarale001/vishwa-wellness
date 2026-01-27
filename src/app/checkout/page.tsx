@@ -1,30 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, Check, CreditCard, Truck, MapPin, ShieldCheck, Tag, X, Loader2 } from 'lucide-react';
+import { ChevronRight, Check, CreditCard, Truck, MapPin } from 'lucide-react';
 import { useCartStore } from '@/lib/cartStore';
 import { useAuthStore } from '@/lib/authStore';
 import { getSupabaseClient } from '@/lib/supabase';
 import { useRazorpay } from '@/lib/useRazorpay';
 import { CheckoutProgress, CompactTrustBadges } from '@/components/ui';
-import type { Address } from '@/types/orders';
+import {
+    CheckoutShippingForm,
+    CheckoutPaymentMethod,
+    CheckoutOrderSummary,
+    type ShippingFormData,
+    type PaymentMethod,
+} from '@/components/checkout';
 
 type CheckoutStep = 'shipping' | 'payment' | 'review';
-
-interface ShippingForm {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    pincode: string;
-    country: string;
-}
 
 interface Coupon {
     id: string;
@@ -34,33 +27,20 @@ interface Coupon {
     discount_value: number;
     min_order_value: number;
     max_discount: number | null;
+    used_count?: number;
 }
 
-const initialShippingForm: ShippingForm = {
+const initialShippingForm: ShippingFormData = {
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     address: '',
+    apartment: '',
     city: '',
     state: '',
     pincode: '',
     country: 'India',
-};
-
-const indianStates = [
-    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-    'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
-    'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-];
-
-// Generate unique order number
-const generateOrderNumber = () => {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `VW-${timestamp}-${random}`;
 };
 
 export default function CheckoutPage() {
@@ -70,8 +50,8 @@ export default function CheckoutPage() {
     const { initiatePayment, isLoading: razorpayLoading } = useRazorpay();
     const [mounted, setMounted] = useState(false);
     const [currentStep, setCurrentStep] = useState<CheckoutStep>('shipping');
-    const [shippingForm, setShippingForm] = useState<ShippingForm>(initialShippingForm);
-    const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
+    const [shippingForm, setShippingForm] = useState<ShippingFormData>(initialShippingForm);
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('online');
     const [isProcessing, setIsProcessing] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderNumber, setOrderNumber] = useState('');
@@ -99,24 +79,12 @@ export default function CheckoutPage() {
         }
     }, [user, profile]);
 
-    if (!mounted) {
-        return (
-            <div className="section-padding">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="animate-pulse">
-                        <div className="h-8 bg-gray-200 rounded w-48 mb-8"></div>
-                        <div className="h-96 bg-gray-200 rounded"></div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const subtotal = getSubtotal();
-    const shipping = getShipping();
+    const subtotal = mounted ? getSubtotal() : 0;
+    const shipping = mounted ? getShipping() : 0;
+    const itemCount = mounted ? getItemCount() : 0;
 
     // Calculate discount
-    const calculateDiscount = () => {
+    const calculateDiscount = useCallback(() => {
         if (!appliedCoupon) return 0;
 
         if (appliedCoupon.discount_type === 'percentage') {
@@ -124,11 +92,10 @@ export default function CheckoutPage() {
             return appliedCoupon.max_discount ? Math.min(discount, appliedCoupon.max_discount) : discount;
         }
         return appliedCoupon.discount_value;
-    };
+    }, [appliedCoupon, subtotal]);
 
     const discount = calculateDiscount();
     const total = subtotal + shipping - discount;
-    const itemCount = getItemCount();
 
     const steps: { id: CheckoutStep; label: string; icon: React.ElementType }[] = [
         { id: 'shipping', label: 'Shipping', icon: MapPin },
@@ -137,18 +104,8 @@ export default function CheckoutPage() {
     ];
 
     const getStepIndex = (step: CheckoutStep) => steps.findIndex(s => s.id === step);
-    const isStepComplete = (step: CheckoutStep) => getStepIndex(step) < getStepIndex(currentStep);
-    const isStepActive = (step: CheckoutStep) => step === currentStep;
 
-    const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setShippingForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    };
-
-    const isShippingValid = () => {
-        return Object.values(shippingForm).every(val => val.trim() !== '');
-    };
-
-    // Apply coupon
+    // Apply coupon handler
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return;
 
@@ -169,14 +126,13 @@ export default function CheckoutPage() {
             return;
         }
 
-        // Check minimum order value
+        // Validate coupon
         if (data.min_order_value && subtotal < data.min_order_value) {
             setCouponError(`Minimum order value is ₹${data.min_order_value}`);
             setCouponLoading(false);
             return;
         }
 
-        // Check validity period
         const now = new Date();
         if (data.valid_from && new Date(data.valid_from) > now) {
             setCouponError('This coupon is not yet active');
@@ -188,8 +144,6 @@ export default function CheckoutPage() {
             setCouponLoading(false);
             return;
         }
-
-        // Check usage limit
         if (data.usage_limit && data.used_count >= data.usage_limit) {
             setCouponError('This coupon has reached its usage limit');
             setCouponLoading(false);
@@ -206,34 +160,48 @@ export default function CheckoutPage() {
         setCouponError('');
     };
 
+    // Place order handler
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
         setPaymentError('');
 
-        // Prepare shipping address
-        const shippingAddress: Address = {
+        // Prepare shipping address - must match AddressSchema in validations.ts
+        const shippingAddress = {
             firstName: shippingForm.firstName,
             lastName: shippingForm.lastName,
-            email: shippingForm.email,
             phone: shippingForm.phone,
-            addressLine1: shippingForm.address,
+            address: shippingForm.address,
+            apartment: shippingForm.apartment,
             city: shippingForm.city,
             state: shippingForm.state,
-            postalCode: shippingForm.pincode,
+            pincode: shippingForm.pincode,
             country: shippingForm.country,
         };
 
         // Prepare order items
         const orderItems = items.map(item => ({
-            product_id: item.product.id,
-            product_slug: item.product.slug,
-            product_name: item.product.title,
-            product_image: item.product.images[0]?.src || '',
+            productId: item.product.id,
+            productSlug: item.product.slug,
+            productTitle: item.product.title,
+            productImage: item.product.images[0]?.src || item.product.images[0]?.url || '',
             quantity: item.quantity,
-            unit_price: item.variant?.price ?? item.product.price,
+            price: item.variant?.price ?? item.product.price,
         }));
 
-        if (paymentMethod === 'razorpay') {
+        const orderPayload = {
+            items: orderItems,
+            shipping_address: shippingAddress,
+            customer_email: shippingForm.email,
+            customer_phone: shippingForm.phone,
+            customer_name: `${shippingForm.firstName} ${shippingForm.lastName}`,
+            subtotal,
+            shipping_cost: shipping,
+            discount: discount,
+            total,
+            notes: appliedCoupon ? `Coupon: ${appliedCoupon.code}` : undefined,
+        };
+
+        if (paymentMethod === 'online') {
             // Process Razorpay payment
             const result = await initiatePayment({
                 amount: total,
@@ -258,22 +226,12 @@ export default function CheckoutPage() {
                 const orderResponse = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        items: orderItems,
-                        shipping_address: shippingAddress,
-                        customer_email: shippingForm.email,
-                        customer_phone: shippingForm.phone,
-                        customer_name: `${shippingForm.firstName} ${shippingForm.lastName}`,
-                        subtotal,
-                        shipping_cost: shipping,
-                        discount_amount: discount,
-                        total,
-                        notes: appliedCoupon ? `Coupon: ${appliedCoupon.code}` : undefined,
-                    }),
+                    body: JSON.stringify(orderPayload),
                 });
 
                 if (!orderResponse.ok) {
-                    throw new Error('Failed to create order');
+                    const errorData = await orderResponse.json();
+                    throw new Error(errorData.message || 'Failed to create order');
                 }
 
                 const { order } = await orderResponse.json();
@@ -298,27 +256,23 @@ export default function CheckoutPage() {
                 setPaymentError('Payment successful but order creation failed. Please contact support.');
             }
         } else {
-            // COD order
+            // COD or UPI order
             try {
                 const orderResponse = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        items: orderItems,
-                        shipping_address: shippingAddress,
-                        customer_email: shippingForm.email,
-                        customer_phone: shippingForm.phone,
-                        customer_name: `${shippingForm.firstName} ${shippingForm.lastName}`,
-                        subtotal,
-                        shipping_cost: shipping,
-                        discount_amount: discount,
-                        total,
-                        notes: `COD Order${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
+                        ...orderPayload,
+                        notes: `${paymentMethod.toUpperCase()} Order${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
                     }),
                 });
 
                 if (!orderResponse.ok) {
-                    throw new Error('Failed to create order');
+                    const errorData = await orderResponse.json();
+                    console.error('Order API error:', errorData);
+                    const errorMessage = errorData.message || errorData.error ||
+                        (errorData.details ? JSON.stringify(errorData.details) : 'Failed to create order');
+                    throw new Error(errorMessage);
                 }
 
                 const { order } = await orderResponse.json();
@@ -327,7 +281,8 @@ export default function CheckoutPage() {
                 clearCart();
             } catch (error) {
                 console.error('Order creation error:', error);
-                setPaymentError('Failed to place order. Please try again.');
+                const errorMsg = error instanceof Error ? error.message : 'Failed to place order. Please try again.';
+                setPaymentError(errorMsg);
             }
         }
 
@@ -336,19 +291,28 @@ export default function CheckoutPage() {
             const supabase = getSupabaseClient();
             await supabase
                 .from('coupons')
-                .update({ used_count: (appliedCoupon as { used_count?: number }).used_count || 0 + 1 })
+                .update({ used_count: (appliedCoupon.used_count || 0) + 1 })
                 .eq('id', appliedCoupon.id);
         }
 
         setIsProcessing(false);
     };
 
-    const getDiscountedPrice = (price: number, discountPercent?: number) => {
-        if (!discountPercent) return price;
-        return price - (price * discountPercent / 100);
-    };
+    // Loading state
+    if (!mounted) {
+        return (
+            <div className="section-padding">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="animate-pulse">
+                        <div className="h-8 bg-gray-200 rounded w-48 mb-8"></div>
+                        <div className="h-96 bg-gray-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-    // If cart is empty and order not placed, redirect
+    // Empty cart state
     if (items.length === 0 && !orderPlaced) {
         return (
             <div className="section-padding">
@@ -428,174 +392,27 @@ export default function CheckoutPage() {
 
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* Main Form */}
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 space-y-6">
                             {/* Shipping Step */}
                             {currentStep === 'shipping' && (
-                                <div className="bg-white border border-[#eee] p-6">
-                                    <h2 className="text-xl font-semibold text-[#222] mb-6 flex items-center gap-2">
-                                        <MapPin size={20} className="text-[var(--color-primary)]" />
-                                        Shipping Address
-                                    </h2>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-[#222] mb-1">First Name *</label>
-                                            <input
-                                                type="text"
-                                                name="firstName"
-                                                value={shippingForm.firstName}
-                                                onChange={handleShippingChange}
-                                                className="w-full px-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-[#222] mb-1">Last Name *</label>
-                                            <input
-                                                type="text"
-                                                name="lastName"
-                                                value={shippingForm.lastName}
-                                                onChange={handleShippingChange}
-                                                className="w-full px-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-[#222] mb-1">Email *</label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={shippingForm.email}
-                                                onChange={handleShippingChange}
-                                                className="w-full px-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-[#222] mb-1">Phone *</label>
-                                            <input
-                                                type="tel"
-                                                name="phone"
-                                                value={shippingForm.phone}
-                                                onChange={handleShippingChange}
-                                                className="w-full px-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
-                                                required
-                                            />
-                                        </div>
-                                        <div className="sm:col-span-2">
-                                            <label className="block text-sm font-medium text-[#222] mb-1">Address *</label>
-                                            <input
-                                                type="text"
-                                                name="address"
-                                                value={shippingForm.address}
-                                                onChange={handleShippingChange}
-                                                className="w-full px-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
-                                                placeholder="House number, Street, Landmark"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-[#222] mb-1">City *</label>
-                                            <input
-                                                type="text"
-                                                name="city"
-                                                value={shippingForm.city}
-                                                onChange={handleShippingChange}
-                                                className="w-full px-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-[#222] mb-1">State *</label>
-                                            <select
-                                                name="state"
-                                                value={shippingForm.state}
-                                                onChange={handleShippingChange}
-                                                className="w-full px-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)] bg-white"
-                                                required
-                                            >
-                                                <option value="">Select State</option>
-                                                {indianStates.map(state => (
-                                                    <option key={state} value={state}>{state}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-[#222] mb-1">Pincode *</label>
-                                            <input
-                                                type="text"
-                                                name="pincode"
-                                                value={shippingForm.pincode}
-                                                onChange={handleShippingChange}
-                                                className="w-full px-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
-                                                maxLength={6}
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-[#222] mb-1">Country</label>
-                                            <input
-                                                type="text"
-                                                name="country"
-                                                value={shippingForm.country}
-                                                className="w-full px-4 py-3 border border-[#ddd] bg-[#f9f9f9]"
-                                                disabled
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="mt-6 flex justify-end">
-                                        <button
-                                            onClick={() => setCurrentStep('payment')}
-                                            disabled={!isShippingValid()}
-                                            className="btn-solid disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Continue to Payment
-                                        </button>
-                                    </div>
-                                </div>
+                                <CheckoutShippingForm
+                                    data={shippingForm}
+                                    onChange={setShippingForm}
+                                    onContinue={() => setCurrentStep('payment')}
+                                    isLoggedIn={!!user}
+                                />
                             )}
 
                             {/* Payment Step */}
                             {currentStep === 'payment' && (
-                                <div className="bg-white border border-[#eee] p-6">
-                                    <h2 className="text-xl font-semibold text-[#222] mb-6 flex items-center gap-2">
-                                        <CreditCard size={20} className="text-[var(--color-primary)]" />
-                                        Payment Method
-                                    </h2>
-                                    <div className="space-y-4">
-                                        {[
-                                            { id: 'razorpay', label: 'Pay Online', desc: 'UPI, Cards, Net Banking, Wallets' },
-                                            { id: 'cod', label: 'Cash on Delivery', desc: 'Pay when you receive your order (+₹50 handling fee)' },
-                                        ].map(method => (
-                                            <label
-                                                key={method.id}
-                                                className={`flex items-start gap-4 p-4 border-2 cursor-pointer transition-colors ${paymentMethod === method.id
-                                                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                                                    : 'border-[#ddd] hover:border-[#bbb]'
-                                                    }`}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="payment"
-                                                    value={method.id}
-                                                    checked={paymentMethod === method.id}
-                                                    onChange={() => setPaymentMethod(method.id as 'razorpay' | 'cod')}
-                                                    className="mt-1"
-                                                />
-                                                <div>
-                                                    <p className="font-medium text-[#222]">{method.label}</p>
-                                                    <p className="text-sm text-[#777]">{method.desc}</p>
-                                                    {method.id === 'razorpay' && (
-                                                        <div className="flex gap-2 mt-2">
-                                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">UPI</span>
-                                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">Cards</span>
-                                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">Net Banking</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </label>
-                                        ))}
-                                    </div>
-                                    <div className="mt-6 flex justify-between">
+                                <div className="space-y-6">
+                                    <CheckoutPaymentMethod
+                                        selected={paymentMethod}
+                                        onChange={setPaymentMethod}
+                                        total={total}
+                                    />
+
+                                    <div className="flex gap-4">
                                         <button
                                             onClick={() => setCurrentStep('shipping')}
                                             className="btn-outline"
@@ -604,9 +421,9 @@ export default function CheckoutPage() {
                                         </button>
                                         <button
                                             onClick={() => setCurrentStep('review')}
-                                            className="btn-solid"
+                                            className="btn-solid flex-1"
                                         >
-                                            Review Order
+                                            Continue to Review
                                         </button>
                                     </div>
                                 </div>
@@ -614,188 +431,120 @@ export default function CheckoutPage() {
 
                             {/* Review Step */}
                             {currentStep === 'review' && (
-                                <div className="bg-white border border-[#eee] p-6">
-                                    <h2 className="text-xl font-semibold text-[#222] mb-6 flex items-center gap-2">
-                                        <Check size={20} className="text-[var(--color-primary)]" />
-                                        Review Your Order
-                                    </h2>
+                                <div className="space-y-6">
+                                    {/* Order Review */}
+                                    <div className="bg-white border border-[#eee] p-6">
+                                        <h2 className="text-xl font-semibold text-[#222] mb-6 flex items-center gap-2">
+                                            <Check size={20} className="text-[var(--color-primary)]" />
+                                            Review Your Order
+                                        </h2>
 
-                                    {/* Shipping Summary */}
-                                    <div className="mb-6 p-4 bg-[#f9f9f9] border border-[#eee]">
-                                        <h3 className="font-medium text-[#222] mb-2">Shipping To:</h3>
-                                        <p className="text-[#777] text-sm">
-                                            {shippingForm.firstName} {shippingForm.lastName}<br />
-                                            {shippingForm.address}<br />
-                                            {shippingForm.city}, {shippingForm.state} {shippingForm.pincode}<br />
-                                            {shippingForm.phone}
-                                        </p>
-                                    </div>
-
-                                    {/* Payment Summary */}
-                                    <div className="mb-6 p-4 bg-[#f9f9f9] border border-[#eee]">
-                                        <h3 className="font-medium text-[#222] mb-2">Payment Method:</h3>
-                                        <p className="text-[#777] text-sm">
-                                            {paymentMethod === 'razorpay' && 'Pay Online (UPI/Cards/Net Banking)'}
-                                            {paymentMethod === 'cod' && 'Cash on Delivery'}
-                                        </p>
-                                        {paymentError && (
-                                            <p className="text-red-500 text-sm mt-2">{paymentError}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Order Items */}
-                                    <div className="mb-6">
-                                        <h3 className="font-medium text-[#222] mb-4">Order Items ({itemCount})</h3>
-                                        <div className="space-y-4">
-                                            {items.map(item => {
-                                                const price = item.variant?.price ?? item.product.price;
-                                                const discountedPrice = getDiscountedPrice(price, item.product.discount);
-                                                return (
-                                                    <div key={`${item.product.id}-${item.variant?.id || 'default'}`} className="flex gap-4">
-                                                        <div className="w-16 h-16 bg-[#f9f9f9] relative flex-shrink-0">
-                                                            <Image
-                                                                src={item.product.images[0]?.src || '/placeholder-product.jpg'}
-                                                                alt={item.product.title}
-                                                                fill
-                                                                className="object-cover"
-                                                            />
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <p className="font-medium text-[#222] text-sm">{item.product.title}</p>
-                                                            <p className="text-[#777] text-sm">Qty: {item.quantity}</p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <p className="font-medium text-[#222]">
-                                                                ₹{(discountedPrice * item.quantity).toLocaleString()}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                        {/* Shipping Summary */}
+                                        <div className="mb-6 pb-6 border-b border-[#eee]">
+                                            <h3 className="font-medium text-[#222] mb-2">Shipping Address</h3>
+                                            <p className="text-[#777] text-sm">
+                                                {shippingForm.firstName} {shippingForm.lastName}<br />
+                                                {shippingForm.address}{shippingForm.apartment ? `, ${shippingForm.apartment}` : ''}<br />
+                                                {shippingForm.city}, {shippingForm.state} {shippingForm.pincode}<br />
+                                                {shippingForm.country}<br />
+                                                Phone: {shippingForm.phone}
+                                            </p>
+                                            <button
+                                                onClick={() => setCurrentStep('shipping')}
+                                                className="text-[var(--color-primary)] text-sm font-medium mt-2 hover:underline"
+                                            >
+                                                Edit
+                                            </button>
                                         </div>
-                                    </div>
 
-                                    <div className="mt-6 flex justify-between">
-                                        <button
-                                            onClick={() => setCurrentStep('payment')}
-                                            className="btn-outline"
-                                        >
-                                            Back
-                                        </button>
+                                        {/* Payment Summary */}
+                                        <div className="mb-6">
+                                            <h3 className="font-medium text-[#222] mb-2">Payment Method</h3>
+                                            <p className="text-[#777] text-sm">
+                                                {paymentMethod === 'online' && 'Razorpay (Cards, UPI, Net Banking)'}
+                                                {paymentMethod === 'cod' && 'Cash on Delivery'}
+                                                {paymentMethod === 'upi' && 'UPI Payment'}
+                                            </p>
+                                            <button
+                                                onClick={() => setCurrentStep('payment')}
+                                                className="text-[var(--color-primary)] text-sm font-medium mt-2 hover:underline"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
+
+                                        {/* Payment Error */}
+                                        {paymentError && (
+                                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+                                                {paymentError}
+                                            </div>
+                                        )}
+
+                                        {/* Place Order Button */}
                                         <button
                                             onClick={handlePlaceOrder}
                                             disabled={isProcessing || razorpayLoading}
-                                            className="btn-solid disabled:opacity-50 flex items-center gap-2"
+                                            className="btn-solid w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {(isProcessing || razorpayLoading) && <Loader2 size={18} className="animate-spin" />}
-                                            {isProcessing ? 'Processing...' : paymentMethod === 'razorpay' ? 'Pay Now' : 'Place Order'}
+                                            {isProcessing || razorpayLoading ? (
+                                                <span className="flex items-center justify-center gap-2">
+                                                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                    </svg>
+                                                    Processing...
+                                                </span>
+                                            ) : (
+                                                `Place Order - ₹${total.toLocaleString()}`
+                                            )}
                                         </button>
+
+                                        <p className="text-xs text-[#777] text-center mt-4">
+                                            By placing this order, you agree to our{' '}
+                                            <Link href="/terms" className="text-[var(--color-primary)] hover:underline">
+                                                Terms of Service
+                                            </Link>{' '}
+                                            and{' '}
+                                            <Link href="/privacy" className="text-[var(--color-primary)] hover:underline">
+                                                Privacy Policy
+                                            </Link>
+                                        </p>
                                     </div>
+
+                                    <button
+                                        onClick={() => setCurrentStep('payment')}
+                                        className="btn-outline w-full"
+                                    >
+                                        Back to Payment
+                                    </button>
                                 </div>
                             )}
                         </div>
 
                         {/* Order Summary Sidebar */}
                         <div className="lg:col-span-1">
-                            <div className="bg-[#f9f9f9] p-6 border border-[#eee] sticky top-24">
-                                <h3 className="font-semibold text-[#222] text-lg mb-6 uppercase tracking-wider">
-                                    Order Summary
-                                </h3>
-
-                                {/* Items Preview */}
-                                <div className="space-y-3 mb-6 pb-4 border-b border-[#ddd]">
-                                    {items.slice(0, 3).map(item => (
-                                        <div key={`${item.product.id}-${item.variant?.id || 'default'}`} className="flex gap-3">
-                                            <div className="w-12 h-12 bg-white relative flex-shrink-0 border border-[#eee]">
-                                                <Image
-                                                    src={item.product.images[0]?.src || '/placeholder-product.jpg'}
-                                                    alt={item.product.title}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-[var(--color-primary)] text-white text-xs flex items-center justify-center rounded-full">
-                                                    {item.quantity}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-[#222] line-clamp-2">{item.product.title}</p>
-                                        </div>
-                                    ))}
-                                    {items.length > 3 && (
-                                        <p className="text-sm text-[#777]">+{items.length - 3} more items</p>
-                                    )}
-                                </div>
-
-                                {/* Coupon Code */}
-                                <div className="mb-6 pb-4 border-b border-[#ddd]">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Tag size={16} className="text-[var(--color-primary)]" />
-                                        <span className="font-medium text-[#222] text-sm">Coupon Code</span>
-                                    </div>
-                                    {appliedCoupon ? (
-                                        <div className="flex items-center justify-between bg-green-50 border border-green-200 p-3">
-                                            <div>
-                                                <p className="font-medium text-green-700 text-sm">{appliedCoupon.code}</p>
-                                                <p className="text-xs text-green-600">{appliedCoupon.description}</p>
-                                            </div>
-                                            <button onClick={handleRemoveCoupon} className="text-red-500 hover:text-red-700">
-                                                <X size={18} />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="text"
-                                                    value={couponCode}
-                                                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                                    placeholder="Enter code"
-                                                    className="flex-1 px-3 py-2 border border-[#ddd] text-sm focus:outline-none focus:border-[var(--color-primary)]"
-                                                />
-                                                <button
-                                                    onClick={handleApplyCoupon}
-                                                    disabled={couponLoading || !couponCode}
-                                                    className="px-4 py-2 bg-[var(--color-primary)] text-white text-sm disabled:opacity-50"
-                                                >
-                                                    {couponLoading ? '...' : 'Apply'}
-                                                </button>
-                                            </div>
-                                            {couponError && (
-                                                <p className="text-red-500 text-xs mt-2">{couponError}</p>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Totals */}
-                                <div className="space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-[#777]">Subtotal</span>
-                                        <span className="text-[#222]">₹{subtotal.toLocaleString()}</span>
-                                    </div>
-                                    {discount > 0 && (
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-green-600">Discount</span>
-                                            <span className="text-green-600">-₹{discount.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-[#777]">Shipping</span>
-                                        <span className="text-[#222]">
-                                            {shipping === 0 ? <span className="text-green-600">Free</span> : `₹${shipping}`}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-lg font-semibold border-t border-[#ddd] pt-3">
-                                        <span>Total</span>
-                                        <span className="text-[var(--color-primary)]">₹{total.toLocaleString()}</span>
-                                    </div>
-                                </div>
+                            <div className="sticky top-24">
+                                <CheckoutOrderSummary
+                                    items={items}
+                                    subtotal={subtotal}
+                                    shipping={shipping}
+                                    discount={discount}
+                                    total={total}
+                                    couponCode={couponCode}
+                                    onCouponChange={setCouponCode}
+                                    onApplyCoupon={handleApplyCoupon}
+                                    onRemoveCoupon={handleRemoveCoupon}
+                                    appliedCoupon={appliedCoupon ? {
+                                        code: appliedCoupon.code,
+                                        description: appliedCoupon.description,
+                                    } : null}
+                                    couponLoading={couponLoading}
+                                    couponError={couponError}
+                                />
 
                                 {/* Trust Badges */}
-                                <div className="mt-6 pt-4 border-t border-[#ddd]">
-                                    <div className="flex items-center gap-2 text-sm text-[#777]">
-                                        <ShieldCheck size={16} className="text-green-600" />
-                                        <span>Secure checkout</span>
-                                    </div>
+                                <div className="mt-6">
+                                    <CompactTrustBadges />
                                 </div>
                             </div>
                         </div>

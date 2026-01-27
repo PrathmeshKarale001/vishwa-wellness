@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { createOrder, getOrders } from '@/lib/orders';
-import type { CreateOrderInput } from '@/types/orders';
+import { CreateOrderSchema, validateRequest } from '@/lib/validations';
+import type { CreateOrderInput, Address } from '@/types/orders';
 
 // GET: Fetch user's orders
 export async function GET() {
@@ -34,31 +35,71 @@ export async function POST(request: Request) {
         const supabase = await createServerSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        const body = await request.json() as CreateOrderInput;
+        const body = await request.json();
 
-        // Validate required fields
-        if (!body.items || body.items.length === 0) {
+        // Validate request body using Zod
+        const validation = validateRequest(CreateOrderSchema, body);
+
+        if (!validation.success) {
             return NextResponse.json(
-                { error: 'Order must have at least one item' },
+                {
+                    error: 'Validation failed',
+                    message: validation.error,
+                    details: validation.details
+                },
                 { status: 400 }
             );
         }
 
-        if (!body.shipping_address) {
-            return NextResponse.json(
-                { error: 'Shipping address is required' },
-                { status: 400 }
-            );
-        }
+        const validatedData = validation.data;
 
-        if (!body.customer_email) {
-            return NextResponse.json(
-                { error: 'Customer email is required' },
-                { status: 400 }
-            );
-        }
+        // Transform validated Zod data to match CreateOrderInput type from types/orders.ts
+        const shippingAddress: Address = {
+            firstName: validatedData.shipping_address.firstName,
+            lastName: validatedData.shipping_address.lastName,
+            addressLine1: validatedData.shipping_address.address,
+            addressLine2: validatedData.shipping_address.apartment,
+            city: validatedData.shipping_address.city,
+            state: validatedData.shipping_address.state,
+            postalCode: validatedData.shipping_address.pincode,
+            country: validatedData.shipping_address.country,
+            phone: validatedData.shipping_address.phone,
+        };
 
-        const order = await createOrder(body, user?.id);
+        const billingAddress: Address | undefined = validatedData.billing_address ? {
+            firstName: validatedData.billing_address.firstName,
+            lastName: validatedData.billing_address.lastName,
+            addressLine1: validatedData.billing_address.address,
+            addressLine2: validatedData.billing_address.apartment,
+            city: validatedData.billing_address.city,
+            state: validatedData.billing_address.state,
+            postalCode: validatedData.billing_address.pincode,
+            country: validatedData.billing_address.country,
+            phone: validatedData.billing_address.phone,
+        } : undefined;
+
+        const orderInput: CreateOrderInput = {
+            items: validatedData.items.map(item => ({
+                product_id: item.productId,
+                product_name: item.productTitle,
+                product_image: item.productImage,
+                quantity: item.quantity,
+                unit_price: item.price,
+            })),
+            customer_email: validatedData.customer_email,
+            customer_name: validatedData.customer_name,
+            customer_phone: validatedData.customer_phone,
+            shipping_address: shippingAddress,
+            billing_address: billingAddress,
+            subtotal: validatedData.subtotal,
+            shipping_cost: validatedData.shipping_cost,
+            tax_amount: validatedData.tax,
+            discount_amount: validatedData.discount,
+            total: validatedData.total,
+            notes: validatedData.notes,
+        };
+
+        const order = await createOrder(orderInput, user?.id);
 
         if (!order) {
             return NextResponse.json(

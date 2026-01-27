@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, Heart, Eye, Star } from 'lucide-react';
 import { Product } from '@/types';
 import { useCartStore } from '@/lib/cartStore';
 import { useWishlistStore } from '@/lib/wishlistStore';
 import { useQuickViewStore } from '@/lib/quickViewStore';
+import { getImageUrl, getImageAlt } from '@/lib/image-utils';
 
 interface ProductCardProps {
     product: Product;
@@ -16,12 +18,13 @@ interface ProductCardProps {
     onQuickView?: (product: Product) => void;
 }
 
-export default function ProductCard({
+function ProductCard({
     product,
     onAddToCart,
     onAddToWishlist,
     onQuickView
 }: ProductCardProps) {
+    const router = useRouter();
     const [isHovered, setIsHovered] = useState(false);
     const [currentImage, setCurrentImage] = useState(0);
     const [mounted, setMounted] = useState(false);
@@ -58,7 +61,7 @@ export default function ProductCard({
             <Star
                 key={i}
                 size={12}
-                className={i < Math.floor(rating) ? 'fill-[#ffa200] text-[#ffa200]' : 'fill-[#ddd] text-[#ddd]'}
+                className={i < Math.floor(rating) ? 'fill-[var(--color-warning)] text-[var(--color-warning)]' : 'fill-[var(--color-border)] text-[var(--color-border)]'}
             />
         ));
     };
@@ -66,14 +69,19 @@ export default function ProductCard({
     return (
         <div
             className="product-box group"
-            onMouseEnter={() => setIsHovered(true)}
+            onMouseEnter={() => {
+                setIsHovered(true);
+                if (product.images.length > 1 && currentImage === 0) {
+                    setCurrentImage(1);
+                }
+            }}
             onMouseLeave={() => {
                 setIsHovered(false);
                 setCurrentImage(0);
             }}
         >
             {/* Image Wrapper */}
-            <div className="img-wrapper relative overflow-hidden bg-[#f9f9f9]">
+            <div className="img-wrapper relative overflow-hidden bg-[var(--color-bg-light)]">
                 {/* Labels */}
                 {product.isNew && (
                     <span className="label-new">New</span>
@@ -83,24 +91,18 @@ export default function ProductCard({
                 )}
 
                 {/* Main Image */}
-                <Link href={`/product/${product.slug}`} className="block aspect-square relative">
-                    <Image
-                        src={product.images[currentImage]?.src || '/placeholder-product.jpg'}
-                        alt={product.images[currentImage]?.alt || product.title}
-                        fill
-                        className={`object-cover transition-opacity duration-300 ${isHovered && product.images.length > 1 ? 'opacity-0' : 'opacity-100'
-                            }`}
-                    />
-                    {/* Hover Image */}
-                    {product.images.length > 1 && (
+                <Link href={`/products/${product.slug}`} className="block aspect-square relative">
+                    {product.images.slice(0, 4).map((img, idx) => (
                         <Image
-                            src={product.images[1].src}
-                            alt={product.images[1].alt || product.title}
+                            key={(img as any)._key || img.id || idx}
+                            src={getImageUrl(img)}
+                            alt={getImageAlt(img, product.title)}
                             fill
-                            className={`object-cover transition-opacity duration-300 absolute inset-0 ${isHovered ? 'opacity-100' : 'opacity-0'
+                            className={`object-cover transition-all duration-700 absolute inset-0 ${currentImage === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                                 }`}
+                            priority={idx === 0}
                         />
-                    )}
+                    ))}
                 </Link>
 
                 {/* Hover Action Icons */}
@@ -136,17 +138,25 @@ export default function ProductCard({
 
                 {/* Image Thumbnails (on hover) */}
                 {product.images.length > 1 && isHovered && (
-                    <div className="absolute bottom-14 left-0 right-0 flex justify-center gap-2 px-4">
+                    <div className="absolute bottom-14 left-0 right-0 flex justify-center gap-2 px-4 z-10 animate-fadeIn">
                         {product.images.slice(0, 4).map((img, idx) => (
                             <button
-                                key={img.id}
-                                className={`w-10 h-10 border-2 overflow-hidden transition-all ${currentImage === idx ? 'border-[var(--color-primary)]' : 'border-white'
+                                key={(img as any)._key || img.id || idx}
+                                className={`w-10 h-10 border-2 overflow-hidden transition-all bg-white shadow-sm ${currentImage === idx ? 'border-[var(--color-primary)]' : 'border-transparent hover:border-gray-200'
                                     }`}
-                                onMouseEnter={() => setCurrentImage(idx)}
+                                onMouseEnter={(e) => {
+                                    e.stopPropagation();
+                                    setCurrentImage(idx);
+                                }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    router.push(`/products/${product.slug}`);
+                                }}
                             >
                                 <Image
-                                    src={img.src}
-                                    alt={img.alt}
+                                    src={getImageUrl(img)}
+                                    alt={getImageAlt(img)}
                                     width={40}
                                     height={40}
                                     className="object-cover w-full h-full"
@@ -157,6 +167,7 @@ export default function ProductCard({
                 )}
             </div>
 
+
             {/* Product Details */}
             <div className="product-detail">
                 {/* Rating */}
@@ -164,37 +175,39 @@ export default function ProductCard({
                     <div className="rating">
                         {renderStars(product.rating)}
                         {product.reviewCount && (
-                            <span className="text-xs text-[#999] ml-1">({product.reviewCount})</span>
+                            <span className="text-[10px] text-[var(--color-light-text)] ml-1">({product.reviewCount})</span>
                         )}
                     </div>
                 )}
 
                 {/* Category */}
-                <h6>{product.category}</h6>
+                <h6 className="!text-[var(--color-primary)] !font-bold !text-[10px] !uppercase !tracking-widest !mb-2">
+                    {product.category}
+                </h6>
 
                 {/* Title */}
-                <Link href={`/product/${product.slug}`}>
-                    <h4 className="hover:text-[var(--color-primary)] transition-colors line-clamp-1">
+                <Link href={`/products/${product.slug}`}>
+                    <h4 className="hover:text-[var(--color-primary)] transition-colors line-clamp-1 !text-sm !font-bold !mb-2">
                         {product.title}
                     </h4>
                 </Link>
 
                 {/* Price */}
-                <div className="price">
+                <div className="price flex items-center justify-center gap-2">
                     {product.discount ? (
                         <>
-                            <del>₹{Math.round(product.price).toLocaleString('en-IN')}</del>
-                            <span>₹{discountedPrice.toLocaleString('en-IN')}</span>
+                            <del className="!text-[var(--color-light-text)] !font-normal !text-xs italic">₹{Math.round(product.price).toLocaleString('en-IN')}</del>
+                            <span className="!text-black !font-bold">₹{discountedPrice.toLocaleString('en-IN')}</span>
                         </>
                     ) : (
-                        <span>₹{Math.round(product.price).toLocaleString('en-IN')}</span>
+                        <span className="!text-black !font-bold">₹{Math.round(product.price).toLocaleString('en-IN')}</span>
                     )}
                 </div>
 
                 {/* Ritual Type Badge */}
                 {product.ritualType && (
-                    <div className="mt-2">
-                        <span className="inline-block px-2 py-1 text-xs bg-[#f5f2f2] text-[#777] uppercase tracking-wide">
+                    <div className="mt-3">
+                        <span className="inline-block px-3 py-1 text-[10px] bg-[var(--color-bg-cream)] text-[var(--color-muted)] uppercase tracking-[0.15em] font-medium rounded-full">
                             {product.ritualType === 'snan' && 'Snān Ritual'}
                             {product.ritualType === 'lepam' && 'Lepam Ritual'}
                             {product.ritualType === 'pana' && 'Pāna Ritual'}
@@ -206,3 +219,15 @@ export default function ProductCard({
         </div>
     );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+// Only re-renders when product data changes
+export default memo(ProductCard, (prevProps, nextProps) => {
+    return (
+        prevProps.product.id === nextProps.product.id &&
+        prevProps.product.price === nextProps.product.price &&
+        prevProps.product.stock === nextProps.product.stock &&
+        prevProps.product.isSale === nextProps.product.isSale &&
+        prevProps.product.isNew === nextProps.product.isNew
+    );
+});

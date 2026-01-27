@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Section, SectionHeading, SacredDivider } from "@/components/ui/Section";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Hero } from "@/components/ui/Hero";
 
 const comparisons = [
     {
@@ -103,40 +104,13 @@ const studies = [
 export default function ScienceMysticismPage() {
     return (
         <>
-            {/* Hero */}
-            <section className="relative min-h-[75vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
-                {/* Background layers */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-beige)] to-[var(--color-cream)]" />
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/whyash.jpg"
-                        alt="Science & Mysticism Background"
-                        className="w-full h-full object-cover opacity-15"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-cream)] via-transparent to-[var(--color-beige)]/50" />
-                </div>
-
-                <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <div className="inline-block px-4 py-1 rounded-full bg-[var(--color-gold)]/10 border border-[var(--color-gold)]/20 mb-8">
-                            <span className="text-[var(--color-gold)] text-xs font-bold uppercase tracking-[0.2em]">Two Paths, One Truth</span>
-                        </div>
-
-                        <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl lg:text-7xl font-bold text-[var(--color-navy)] mb-6 leading-[1.1]">
-                            Science & Mysticism
-                        </h1>
-
-                        <p className="text-lg md:text-xl text-[var(--color-ash)] max-w-2xl mx-auto leading-relaxed">
-                            Ancient sages knew what modern laboratories are now confirming.
-                            Explore the convergence of sacred wisdom and scientific evidence.
-                        </p>
-                    </motion.div>
-                </div>
-            </section>
+            <Hero
+                badge="Two Paths, One Truth"
+                title="Science & Mysticism"
+                description="Ancient sages knew what modern laboratories are now confirming. Explore the convergence of sacred wisdom and scientific evidence."
+                bgImage="/whyash.jpg"
+                theme="light"
+            />
 
             {/* Two-Column Comparison */}
             <Section background="white">

@@ -4,24 +4,39 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronRight, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuthStore } from '@/lib/authStore';
+import { loginFormSchema, type LoginFormData } from '@/lib/validations/contact';
 
 function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { signIn, signInWithGoogle, user, isLoading, isInitialized } = useAuthStore();
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
+    const [serverError, setServerError] = useState('');
+
+    // React Hook Form setup with Zod resolver
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginFormSchema),
+        defaultValues: {
+            email: '',
+            password: '',
+            rememberMe: false,
+        },
+    });
 
     // Check for callback errors
     useEffect(() => {
         const callbackError = searchParams.get('error');
         if (callbackError === 'callback_failed') {
-            setError('Authentication failed. Please try again.');
+            setServerError('Authentication failed. Please try again.');
         }
     }, [searchParams]);
 
@@ -33,27 +48,32 @@ function LoginContent() {
         }
     }, [user, isLoading, isInitialized, router, searchParams]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
+    const onSubmit = async (data: LoginFormData) => {
+        setServerError('');
         setIsSubmitting(true);
 
-        const { error } = await signIn(email, password);
+        const { error } = await signIn(data.email, data.password);
 
         if (error) {
-            setError(error.message || 'Invalid email or password');
+            setServerError(error.message || 'Invalid email or password');
             setIsSubmitting(false);
             return;
         }
 
-        router.push('/account');
+        // Redirect to the intended destination or account page
+        const nextUrl = searchParams.get('next') || '/account';
+        router.push(nextUrl);
     };
 
     const handleGoogleLogin = async () => {
-        setError('');
-        const { error } = await signInWithGoogle();
+        setServerError('');
+        // Get the intended redirect destination from URL params
+        const nextUrl = searchParams.get('next') || '/account';
+        console.log('[LOGIN] Starting Google OAuth, redirectTo:', nextUrl);
+        const { error } = await signInWithGoogle(nextUrl);
         if (error) {
-            setError(error.message || 'Google sign-in failed');
+            console.log('[LOGIN] Google OAuth error:', error);
+            setServerError(error.message || 'Google sign-in failed');
         }
     };
 
@@ -83,10 +103,10 @@ function LoginContent() {
             <section className="section-padding">
                 <div className="max-w-md mx-auto px-4">
                     <div className="bg-white border border-[#eee] p-8">
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {error && (
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            {serverError && (
                                 <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm">
-                                    {error}
+                                    {serverError}
                                 </div>
                             )}
 
@@ -98,13 +118,15 @@ function LoginContent() {
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#999]" size={18} />
                                     <input
                                         type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
+                                        {...register('email')}
+                                        className={`w-full pl-10 pr-4 py-3 border focus:outline-none focus:border-[var(--color-primary)] ${errors.email ? 'border-red-400' : 'border-[#ddd]'
+                                            }`}
                                         placeholder="you@example.com"
-                                        required
                                     />
                                 </div>
+                                {errors.email && (
+                                    <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                                )}
                             </div>
 
                             <div>
@@ -115,11 +137,10 @@ function LoginContent() {
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#999]" size={18} />
                                     <input
                                         type={showPassword ? 'text' : 'password'}
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-10 pr-12 py-3 border border-[#ddd] focus:outline-none focus:border-[var(--color-primary)]"
+                                        {...register('password')}
+                                        className={`w-full pl-10 pr-12 py-3 border focus:outline-none focus:border-[var(--color-primary)] ${errors.password ? 'border-red-400' : 'border-[#ddd]'
+                                            }`}
                                         placeholder="••••••••"
-                                        required
                                     />
                                     <button
                                         type="button"
@@ -129,11 +150,18 @@ function LoginContent() {
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
+                                {errors.password && (
+                                    <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
+                                )}
                             </div>
 
                             <div className="flex items-center justify-between text-sm">
                                 <label className="flex items-center gap-2">
-                                    <input type="checkbox" className="rounded border-[#ddd]" />
+                                    <input
+                                        type="checkbox"
+                                        {...register('rememberMe')}
+                                        className="rounded border-[#ddd]"
+                                    />
                                     <span className="text-[#777]">Remember me</span>
                                 </label>
                                 <Link href="/account/forgot-password" className="text-[var(--color-primary)] hover:underline">

@@ -8,7 +8,7 @@ export async function sanityFetch<T>({
     tags = [],
 }: {
     query: string;
-    params?: Record<string, any>;
+    params?: Record<string, unknown>;
     tags?: string[];
 }): Promise<T> {
     if (!isSanityConfigured()) {
@@ -101,12 +101,12 @@ export async function fetchCategories(): Promise<Category[]> {
     }
 }
 
-export async function fetchProductDetail(slug: string): Promise<any | null> {
+export async function fetchProductDetail(slug: string): Promise<Product | null> {
     const { productDetailQuery } = await import('./sanity.queries');
     if (!isSanityConfigured()) return null;
 
     try {
-        return await sanityFetch<any>({
+        return await sanityFetch<Product>({
             query: productDetailQuery(slug),
             tags: ['product', slug],
         });
@@ -115,16 +115,30 @@ export async function fetchProductDetail(slug: string): Promise<any | null> {
     }
 }
 
-export async function fetchRelatedProducts(categorySlug: string, excludeId: string): Promise<any[]> {
+export async function fetchRelatedProducts(categorySlug: string, excludeId: string): Promise<Product[]> {
     const { relatedProductsQuery } = await import('./sanity.queries');
     if (!isSanityConfigured()) return [];
 
     try {
-        const result = await sanityFetch<any[]>({
+        const result = await sanityFetch<Product[]>({
             query: relatedProductsQuery(categorySlug, excludeId),
             tags: ['product', 'related'],
         });
         return result || [];
+    } catch {
+        return [];
+    }
+}
+
+export async function fetchRituals(): Promise<Retreat[]> {
+    const { ritualsQuery } = await import('./sanity.queries');
+    if (!isSanityConfigured()) return [];
+
+    try {
+        return await sanityFetch<Retreat[]>({
+            query: ritualsQuery,
+            tags: ['ritual'],
+        });
     } catch {
         return [];
     }

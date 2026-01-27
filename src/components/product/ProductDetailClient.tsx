@@ -12,6 +12,8 @@ import { useWishlistStore } from '@/lib/wishlistStore';
 import { ProductTrustBadges } from '@/components/ui/trust-badges';
 import { StickyAddToCart } from '@/components/ui/sticky-add-to-cart';
 import { showToast } from '@/components/ui/toast';
+import Breadcrumbs, { BreadcrumbConfigs } from '@/components/ui/breadcrumbs';
+import ProductReviews from '@/components/product/ProductReviews';
 
 interface Ingredient {
     name: string;
@@ -191,6 +193,17 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
 
     return (
         <div className="min-h-screen bg-[#FAF9F7]">
+            {/* Breadcrumbs */}
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
+                <Breadcrumbs
+                    items={BreadcrumbConfigs.product(
+                        product.title,
+                        product.category?.name,
+                        product.category?.slug
+                    )}
+                />
+            </div>
+
             {/* Main Product Section */}
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 py-8 lg:py-12">
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
@@ -534,7 +547,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
                             {relatedProducts.slice(0, 4).map((item) => (
                                 <Link
                                     key={item._id}
-                                    href={`/product/${item.slug}`}
+                                    href={`/products/${item.slug}`}
                                     className="group"
                                 >
                                     <div className="relative aspect-[4/5] bg-[#f5f3f0] rounded-xl overflow-hidden mb-3">
@@ -564,6 +577,16 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
                     </div>
                 </section>
             )}
+
+            {/* Product Reviews Section */}
+            <section className="bg-white py-16">
+                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
+                    <ProductReviews
+                        productId={product._id}
+                        productName={product.title}
+                    />
+                </div>
+            </section>
 
             {/* Sticky Mobile Bar */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e5e5e5] p-4 lg:hidden z-40">

@@ -33,12 +33,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let productRoutes: MetadataRoute.Sitemap = [];
     try {
         const products = await fetchProducts();
-        productRoutes = products.map((product) => ({
-            url: `${baseUrl}/product/${product.slug.current || product.slug}`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly' as const,
-            priority: 0.7,
-        }));
+        productRoutes = products.map((product) => {
+            // Slug is already normalized to string by sanity.fetch
+            const slugValue = product.slug || '';
+            return {
+                url: `${baseUrl}/products/${slugValue}`,
+                lastModified: new Date(),
+                changeFrequency: 'weekly' as const,
+                priority: 0.7,
+            };
+        });
     } catch (error) {
         console.error('Error fetching products for sitemap:', error);
     }

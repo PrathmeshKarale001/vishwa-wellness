@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ChevronRight, MapPin, Plus, Edit2, Trash2, Check } from 'lucide-react';
 import { useAuthStore } from '@/lib/authStore';
@@ -37,25 +37,26 @@ function AddressesContent() {
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        if (user) {
-            fetchAddresses();
-        }
-    }, [user]);
-
-    const fetchAddresses = async () => {
+    const fetchAddresses = useCallback(async () => {
+        if (!user?.id) return;
         const supabase = getSupabaseClient();
         const { data, error } = await supabase
             .from('addresses')
             .select('*')
-            .eq('user_id', user?.id)
+            .eq('user_id', user.id)
             .order('is_default', { ascending: false });
 
         if (!error && data) {
             setAddresses(data as Address[]);
         }
         setIsLoading(false);
-    };
+    }, [user?.id]);
+
+    useEffect(() => {
+        if (user) {
+            fetchAddresses();
+        }
+    }, [user, fetchAddresses]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;

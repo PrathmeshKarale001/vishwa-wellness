@@ -107,8 +107,10 @@ export default function Header({ categories = [] }: HeaderProps) {
     }, []);
 
     const handleSignOut = async () => {
-        await signOut();
         setUserDropdownOpen(false);
+        await signOut();
+        // Force page refresh to clear all cached state
+        window.location.href = '/';
     };
 
     const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
@@ -121,13 +123,13 @@ export default function Header({ categories = [] }: HeaderProps) {
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="flex justify-between items-center h-10 text-xs text-[#999]">
                         <div className="flex items-center gap-6">
-                            <a href="tel:+919876543210" className="flex items-center gap-2 hover:text-[var(--color-primary)] transition-colors">
+                            <a href="tel:+917447489101" className="flex items-center gap-2 hover:text-[var(--color-primary)] transition-colors">
                                 <Phone size={12} />
-                                <span>+91 98765 43210</span>
+                                <span>+91 74474 89101</span>
                             </a>
-                            <a href="mailto:hello@vishwawellness.com" className="flex items-center gap-2 hover:text-[var(--color-primary)] transition-colors">
+                            <a href="mailto:crm@vishwaglobal.com" className="flex items-center gap-2 hover:text-[var(--color-primary)] transition-colors">
                                 <Mail size={12} />
-                                <span>hello@vishwawellness.com</span>
+                                <span>crm@vishwaglobal.com</span>
                             </a>
                         </div>
                         <div className="flex items-center gap-6">
@@ -417,7 +419,7 @@ export default function Header({ categories = [] }: HeaderProps) {
                                     My Orders
                                 </Link>
                                 <button
-                                    onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}
+                                    onClick={handleSignOut}
                                     className="flex items-center gap-3 px-6 py-3 text-red-500 hover:bg-red-50 transition-colors w-full"
                                 >
                                     <LogOut size={18} />

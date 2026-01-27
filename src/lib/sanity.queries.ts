@@ -236,3 +236,26 @@ export const relatedProductsQuery = (categorySlug: string, excludeId: string) =>
     "image": images[0].asset->url
   }
 `;
+// Fetch all rituals
+export const ritualsQuery = `
+  *[_type == "ritual"] | order(order asc) {
+    _id,
+    name,
+    sanskritName,
+    "slug": slug.current,
+    subtitle,
+    description,
+    "image": image.asset->url,
+    benefits,
+    steps,
+    frequency,
+    temperature,
+    "products": products[]->{
+      _id,
+      "title": name,
+      "slug": slug.current,
+      price,
+      "image": images[0].asset->url
+    }
+  }
+`;

@@ -8,8 +8,32 @@ import { ChevronLeft, ChevronRight, Droplets, Hand, Wine } from 'lucide-react';
 import ProductCard from '@/components/shop/ProductCard';
 import { Product } from '@/types';
 
+// Type definition for hero slides (supports both hardcoded and Sanity CMS formats)
+interface HeroSlide {
+    // ID field - Sanity uses _key, local uses id
+    id?: number | string;
+    _key?: string;
+    // Common fields
+    subtitle?: string;
+    title: string;
+    // Local-only fields (optional for Sanity compatibility)
+    highlight?: string;
+    description?: string;
+    // Image - Sanity provides object, local can be string
+    image: string | { url: string; alt?: string };
+    mobileImage?: { url: string; alt?: string };
+    // Hardcoded CTA format
+    cta?: { text: string; href: string };
+    ctaSecondary?: { text: string; href: string };
+    // Sanity CMS CTA format
+    ctaText?: string;
+    ctaLink?: string;
+    ctaSecondaryText?: string;
+    ctaSecondaryLink?: string;
+}
+
 // Hero Slides
-const heroSlides = [
+const heroSlides: HeroSlide[] = [
     {
         id: 1,
         subtitle: 'Ancient Wisdom • Modern Wellness',
@@ -65,7 +89,14 @@ const rituals = [
 
 interface HomePageClientProps {
     featuredProducts: Product[];
-    heroSlides?: any[];
+    heroSlides?: HeroSlide[];
+}
+
+// Helper to extract image URL from string or object
+function getSlideImageUrl(image: string | { url: string; alt?: string } | undefined): string {
+    if (!image) return '/hero-placeholder.jpg';
+    if (typeof image === 'string') return image;
+    return image.url || '/hero-placeholder.jpg';
 }
 
 export default function HomePageClient({ featuredProducts, heroSlides: sanityHeroSlides }: HomePageClientProps) {
@@ -100,7 +131,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
             <section className="relative h-[100svh] max-h-[550px] lg:h-[550px] overflow-hidden">
                 {activeHeroSlides.map((slide, index) => (
                     <div
-                        key={slide.id || index}
+                        key={slide._key || slide.id || index}
                         className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                             }`}
                     >
@@ -108,7 +139,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                         <div className="lg:hidden relative h-full">
                             {/* Background Image */}
                             <Image
-                                src={slide.image?.url || slide.image || '/hero-placeholder.jpg'}
+                                src={getSlideImageUrl(slide.image)}
                                 alt={slide.title}
                                 fill
                                 className={`object-cover transition-transform duration-[2000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-110'}`}
@@ -129,12 +160,12 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                                         ✧ {slide.subtitle}
                                     </span>
 
-                                    <h1 className="text-3xl sm:text-4xl font-bold !text-white mb-1 leading-tight drop-shadow-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+                                    <h1 className="text-3xl sm:text-4xl font-bold !text-white mb-0 leading-[1.1] drop-shadow-lg" style={{ fontFamily: 'var(--font-heading)' }}>
                                         {slide.title}
                                     </h1>
 
                                     {slide.highlight && (
-                                        <h2 className="text-3xl sm:text-4xl font-bold !text-white italic mb-4 leading-tight drop-shadow-lg" style={{ fontFamily: 'var(--font-heading)' }}>
+                                        <h2 className="text-3xl sm:text-4xl font-bold !text-white italic mt-[-8px] mb-4 leading-[0.8] drop-shadow-lg" style={{ fontFamily: 'var(--font-heading)' }}>
                                             {slide.highlight}
                                         </h2>
                                     )}
@@ -144,11 +175,11 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                                     </p>
 
                                     <div className="flex flex-wrap gap-3">
-                                        <Link href={slide.cta?.href || slide.ctaLink || '#'} className="btn-solid !px-6 !py-3 text-sm shadow-lg">
+                                        <Link href={slide.cta?.href || slide.ctaLink || '#'} className="btn-solid text-sm">
                                             {slide.cta?.text || slide.ctaText || 'Learn More'}
                                         </Link>
                                         {(slide.ctaSecondary || slide.ctaSecondaryLink) && (
-                                            <Link href={slide.ctaSecondary?.href || slide.ctaSecondaryLink || '#'} className="!px-6 !py-3 text-sm text-white border border-white/50 rounded hover:bg-white/10 transition-colors">
+                                            <Link href={slide.ctaSecondary?.href || slide.ctaSecondaryLink || '#'} className="btn-outline !border-white/40 !text-white hover:!bg-white hover:!text-black text-sm">
                                                 {slide.ctaSecondary?.text || slide.ctaSecondaryText || 'View Details'}
                                             </Link>
                                         )}
@@ -171,26 +202,26 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                                             ✧ {slide.subtitle}
                                         </span>
 
-                                        <h1 className="text-7xl font-bold text-[#222] mb-1 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#222] mb-0 leading-[1.1]" style={{ fontFamily: 'var(--font-heading)' }}>
                                             {slide.title}
                                         </h1>
 
                                         {slide.highlight && (
-                                            <h2 className="text-7xl font-bold text-[var(--color-primary)] italic mb-8 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-primary)] italic mt-[-10px] mb-5 leading-[1.0]" style={{ fontFamily: 'var(--font-heading)' }}>
                                                 {slide.highlight}
                                             </h2>
                                         )}
 
-                                        <p className="text-[#666] text-xl mb-10 leading-relaxed max-w-lg">
+                                        <p className="text-[#666] text-lg lg:text-xl mb-8 leading-relaxed max-w-lg">
                                             {slide.description}
                                         </p>
 
                                         <div className="flex flex-wrap gap-5">
-                                            <Link href={slide.cta?.href || slide.ctaLink || '#'} className="btn-solid !px-10 !py-4 shadow-lg shadow-[var(--color-primary)]/10 hover:-translate-y-1 transition-transform">
+                                            <Link href={slide.cta?.href || slide.ctaLink || '#'} className="btn-solid hover:-translate-y-1 transition-transform">
                                                 {slide.cta?.text || slide.ctaText || 'Learn More'}
                                             </Link>
                                             {(slide.ctaSecondary || slide.ctaSecondaryLink) && (
-                                                <Link href={slide.ctaSecondary?.href || slide.ctaSecondaryLink || '#'} className="btn-outline !px-10 !py-4 hover:-translate-y-1 transition-transform bg-white">
+                                                <Link href={slide.ctaSecondary?.href || slide.ctaSecondaryLink || '#'} className="btn-outline hover:-translate-y-1 transition-transform">
                                                     {slide.ctaSecondary?.text || slide.ctaSecondaryText || 'View Details'}
                                                 </Link>
                                             )}
@@ -202,7 +233,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                             {/* Image Side */}
                             <div className="relative h-full overflow-hidden">
                                 <Image
-                                    src={slide.image?.url || slide.image || '/hero-placeholder.jpg'}
+                                    src={getSlideImageUrl(slide.image)}
                                     alt={slide.title}
                                     fill
                                     className={`object-cover transition-transform duration-[2000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-110'}`}

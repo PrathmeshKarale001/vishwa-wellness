@@ -1,63 +1,89 @@
 import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
-    // If "next" is in param, use it as the redirect URL
     let next = searchParams.get('next') ?? '/account';
 
-    // Ensure next is a relative URL for security
+    console.log('[AUTH CALLBACK] Received request with code:', code ? 'present' : 'missing');
+
     if (!next.startsWith('/')) {
         next = '/account';
     }
 
-    // If no code provided, redirect to login without error
     if (!code) {
+        console.log('[AUTH CALLBACK] No code, redirecting to login');
         return NextResponse.redirect(`${origin}/account/login`);
     }
 
-    const cookieStore = await cookies();
+    const forwardedHost = request.headers.get('x-forwarded-host');
+    const isLocalEnv = process.env.NODE_ENV === 'development';
+
+    let redirectUrl: string;
+    if (isLocalEnv) {
+        redirectUrl = `${origin}${next}`;
+    } else if (forwardedHost) {
+        redirectUrl = `https://${forwardedHost}${next}`;
+    } else {
+        redirectUrl = `${origin}${next}`;
+    }
+
+    // Use a promise to wait for cookies to be set
+    let resolveSetAll: () => void;
+    const cookiesSetPromise = new Promise<void>((resolve) => {
+        resolveSetAll = resolve;
+    });
+
+    // Collect cookies
+    const cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[] = [];
+    let setAllCalled = false;
+
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
                 getAll() {
-                    return cookieStore.getAll();
+                    return request.cookies.getAll();
                 },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) => {
-                            cookieStore.set(name, value, options);
-                        });
-                    } catch {
-                        // Ignore errors in Server Component context
-                    }
+                setAll(cookies) {
+                    console.log('[AUTH CALLBACK] setAll called with', cookies.length, 'cookies');
+                    cookies.forEach((cookie) => {
+                        cookiesToSet.push(cookie);
+                    });
+                    setAllCalled = true;
+                    resolveSetAll();
                 },
             },
         }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
-        // Handle forwarded host for production load balancers
-        const forwardedHost = request.headers.get('x-forwarded-host');
-        const isLocalEnv = process.env.NODE_ENV === 'development';
+    console.log('[AUTH CALLBACK] Exchange result:', error ? `error: ${error.message}` : `success, user: ${data?.user?.email}`);
 
-        if (isLocalEnv) {
-            // In development, use origin directly
-            return NextResponse.redirect(`${origin}${next}`);
-        } else if (forwardedHost) {
-            // In production with load balancer
-            return NextResponse.redirect(`https://${forwardedHost}${next}`);
-        } else {
-            return NextResponse.redirect(`${origin}${next}`);
-        }
+    if (error) {
+        console.log('[AUTH CALLBACK] Exchange failed');
+        return NextResponse.redirect(`${origin}/account/login?error=callback_failed`);
     }
 
-    // Code exchange failed
-    return NextResponse.redirect(`${origin}/account/login?error=callback_failed`);
+    // Wait for setAll to be called with a timeout
+    const timeoutPromise = new Promise<void>((resolve) => setTimeout(resolve, 1000));
+
+    console.log('[AUTH CALLBACK] Waiting for cookies...');
+    await Promise.race([cookiesSetPromise, timeoutPromise]);
+
+    console.log('[AUTH CALLBACK] setAllCalled:', setAllCalled, 'cookies:', cookiesToSet.length);
+
+    // Create response with cookies
+    const response = NextResponse.redirect(redirectUrl);
+
+    cookiesToSet.forEach(({ name, value, options }) => {
+        console.log('[AUTH CALLBACK] Setting cookie:', name);
+        response.cookies.set(name, value, options as any);
+    });
+
+    console.log('[AUTH CALLBACK] Redirecting to:', redirectUrl);
+    return response;
 }

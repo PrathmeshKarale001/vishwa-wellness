@@ -3,19 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Mail,
     Phone,
     MapPin,
     MessageCircle,
     Calendar,
-    ArrowRight,
     Send,
     CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Section, SectionHeading, SacredDivider } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
 import { Card, CardContent } from "@/components/ui/Card";
+import { contactFormSchema, type ContactFormData } from "@/lib/validations/contact";
 
 const retreatOptions = [
     { value: "3-day", label: "3-Day Pain & Stress Reset — ₹45,000" },
@@ -27,48 +29,67 @@ const contactMethods = [
     {
         icon: Phone,
         title: "Phone",
-        value: "+91 123 456 7890",
-        description: "Mon-Sat, 9am-6pm IST",
-        href: "tel:+911234567890"
+        value: "+91 74474 89101",
+        description: "Mon-Sat, 10am-7pm IST",
+        href: "tel:+917447489101"
     },
     {
         icon: Mail,
         title: "Email",
-        value: "namaste@vishwawellness.com",
+        value: "crm@vishwaglobal.com",
         description: "We respond within 24 hours",
-        href: "mailto:namaste@vishwawellness.com"
+        href: "mailto:crm@vishwaglobal.com"
     },
     {
         icon: MessageCircle,
         title: "WhatsApp",
-        value: "+91 123 456 7890",
+        value: "+91 74474 89101",
         description: "Instant messaging",
-        href: "https://wa.me/911234567890"
+        href: "https://wa.me/917447489101"
     },
     {
         icon: MapPin,
         title: "Visit",
-        value: "Sacred Valley, Rishikesh",
+        value: "Shivpuri, Akkalkot",
         description: "By appointment only",
         href: "#"
     }
 ];
 
 export default function ContactPage() {
-    const [formState, setFormState] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        interest: "",
-        retreat: "",
-        message: ""
-    });
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Placeholder for form submission
+    // React Hook Form setup with Zod resolver
+    const {
+        register,
+        handleSubmit,
+        watch,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<ContactFormData>({
+        resolver: zodResolver(contactFormSchema),
+        defaultValues: {
+            name: "",
+            email: "",
+            phone: "",
+            interest: "",
+            retreat: "",
+            message: "",
+        },
+    });
+
+    const selectedInterest = watch("interest");
+
+    const onSubmit = async (data: ContactFormData) => {
+        // Simulate form submission
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        console.log("Form submitted:", data);
         setIsSubmitted(true);
+    };
+
+    const handleReset = () => {
+        reset();
+        setIsSubmitted(false);
     };
 
     return (
@@ -153,12 +174,12 @@ export default function ContactPage() {
                                 <p className="text-[var(--color-ash)] mb-6">
                                     Thank you for reaching out. We&apos;ll get back to you within 24 hours.
                                 </p>
-                                <Button onClick={() => setIsSubmitted(false)}>
+                                <Button onClick={handleReset}>
                                     Send Another Message
                                 </Button>
                             </Card>
                         ) : (
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                                 <div className="grid sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-[var(--color-navy)] mb-2">
@@ -166,12 +187,16 @@ export default function ContactPage() {
                                         </label>
                                         <input
                                             type="text"
-                                            required
-                                            value={formState.name}
-                                            onChange={(e) => setFormState({ ...formState, name: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-lg border border-[var(--color-beige)] focus:border-[var(--color-terracotta)] focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white"
+                                            {...register("name")}
+                                            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white ${errors.name
+                                                ? "border-red-400 focus:border-red-400"
+                                                : "border-[var(--color-beige)] focus:border-[var(--color-terracotta)]"
+                                                }`}
                                             placeholder="Enter your name"
                                         />
+                                        {errors.name && (
+                                            <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-[var(--color-navy)] mb-2">
@@ -179,12 +204,16 @@ export default function ContactPage() {
                                         </label>
                                         <input
                                             type="email"
-                                            required
-                                            value={formState.email}
-                                            onChange={(e) => setFormState({ ...formState, email: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-lg border border-[var(--color-beige)] focus:border-[var(--color-terracotta)] focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white"
+                                            {...register("email")}
+                                            className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white ${errors.email
+                                                ? "border-red-400 focus:border-red-400"
+                                                : "border-[var(--color-beige)] focus:border-[var(--color-terracotta)]"
+                                                }`}
                                             placeholder="your@email.com"
                                         />
+                                        {errors.email && (
+                                            <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -194,11 +223,16 @@ export default function ContactPage() {
                                     </label>
                                     <input
                                         type="tel"
-                                        value={formState.phone}
-                                        onChange={(e) => setFormState({ ...formState, phone: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-[var(--color-beige)] focus:border-[var(--color-terracotta)] focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white"
-                                        placeholder="+91 12345 67890"
+                                        {...register("phone")}
+                                        className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white ${errors.phone
+                                            ? "border-red-400 focus:border-red-400"
+                                            : "border-[var(--color-beige)] focus:border-[var(--color-terracotta)]"
+                                            }`}
+                                        placeholder="+91 74474 89101"
                                     />
+                                    {errors.phone && (
+                                        <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -206,9 +240,11 @@ export default function ContactPage() {
                                         I&apos;m interested in...
                                     </label>
                                     <select
-                                        value={formState.interest}
-                                        onChange={(e) => setFormState({ ...formState, interest: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-[var(--color-beige)] focus:border-[var(--color-terracotta)] focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white"
+                                        {...register("interest")}
+                                        className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white ${errors.interest
+                                            ? "border-red-400 focus:border-red-400"
+                                            : "border-[var(--color-beige)] focus:border-[var(--color-terracotta)]"
+                                            }`}
                                     >
                                         <option value="">Select an option</option>
                                         <option value="products">Product Purchase</option>
@@ -217,16 +253,18 @@ export default function ContactPage() {
                                         <option value="wholesale">Wholesale / Business</option>
                                         <option value="other">Other Inquiry</option>
                                     </select>
+                                    {errors.interest && (
+                                        <p className="mt-1 text-sm text-red-500">{errors.interest.message}</p>
+                                    )}
                                 </div>
 
-                                {formState.interest === "retreat" && (
+                                {selectedInterest === "retreat" && (
                                     <div>
                                         <label className="block text-sm font-medium text-[var(--color-navy)] mb-2">
                                             Preferred Retreat
                                         </label>
                                         <select
-                                            value={formState.retreat}
-                                            onChange={(e) => setFormState({ ...formState, retreat: e.target.value })}
+                                            {...register("retreat")}
                                             className="w-full px-4 py-3 rounded-lg border border-[var(--color-beige)] focus:border-[var(--color-terracotta)] focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white"
                                         >
                                             <option value="">Select a retreat</option>
@@ -245,16 +283,21 @@ export default function ContactPage() {
                                     </label>
                                     <textarea
                                         rows={5}
-                                        value={formState.message}
-                                        onChange={(e) => setFormState({ ...formState, message: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-[var(--color-beige)] focus:border-[var(--color-terracotta)] focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white resize-none"
+                                        {...register("message")}
+                                        className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[var(--color-terracotta)]/20 outline-none transition-colors bg-white resize-none ${errors.message
+                                            ? "border-red-400 focus:border-red-400"
+                                            : "border-[var(--color-beige)] focus:border-[var(--color-terracotta)]"
+                                            }`}
                                         placeholder="Tell us about your wellness goals or any questions you have..."
                                     />
+                                    {errors.message && (
+                                        <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>
+                                    )}
                                 </div>
 
-                                <Button type="submit" size="lg" className="w-full sm:w-auto">
+                                <Button type="submit" size="lg" className="w-full sm:w-auto" loading={isSubmitting}>
                                     <Send className="w-4 h-4 mr-2" />
-                                    Send Message
+                                    {isSubmitting ? "Sending..." : "Send Message"}
                                 </Button>
                             </form>
                         )}
@@ -299,7 +342,7 @@ export default function ContactPage() {
                                     Our wellness advisors are available for a free 15-minute
                                     consultation to help you choose the right path.
                                 </p>
-                                <a href="https://wa.me/911234567890" target="_blank" rel="noopener noreferrer">
+                                <a href="https://wa.me/917447489101" target="_blank" rel="noopener noreferrer">
                                     <Button className="w-full bg-white !text-[var(--color-navy)] hover:bg-[var(--color-beige)]">
                                         <MessageCircle className="w-4 h-4 mr-2" />
                                         Chat on WhatsApp
@@ -316,8 +359,8 @@ export default function ContactPage() {
                 <div className="h-80 bg-[var(--color-beige)] flex items-center justify-center">
                     <div className="text-center">
                         <MapPin className="w-12 h-12 text-[var(--color-ash)] mx-auto mb-4" />
-                        <p className="text-[var(--color-charcoal)] font-medium">Map Placeholder</p>
-                        <p className="text-sm text-[var(--color-ash)]">Sacred Valley, Rishikesh, India</p>
+                        <p className="text-[var(--color-charcoal)] font-medium">Head Office</p>
+                        <p className="text-sm text-[var(--color-ash)]">Shivpuri, Akkalkot Station Road, Akkalkot 413216</p>
                     </div>
                 </div>
             </Section>

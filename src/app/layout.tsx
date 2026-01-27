@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "Vishwa Wellness - Healing Begins in the Ash",
   description: "Discover ancient Bhasma rituals, Agni-infused wellness products, and transformative AWT retreats. Experience the sacred science of ash for holistic healing.",
   keywords: "wellness, bhasma, ash therapy, ayurveda, holistic healing, retreats, agni",
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
   openGraph: {
     title: "Vishwa Wellness - Healing Begins in the Ash",
     description: "Ancient wisdom meets modern wellness through sacred ash rituals and Agni-infused products.",
@@ -44,8 +49,8 @@ export default async function RootLayout({
   const categories = await fetchCategories();
 
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <OrganizationSchema
           name="Vishwa Wellness"
           url={process.env.NEXT_PUBLIC_APP_URL || 'https://vishwawellness.com'}
@@ -55,8 +60,14 @@ export default async function RootLayout({
             // Add your social media URLs here
           ]}
         />
+        {/* Skip to main content - Accessibility */}
+        <a href="#main-content" className="skip-to-main">
+          Skip to main content
+        </a>
         <AuthProvider>
-          <ConditionalLayout categories={categories}>{children}</ConditionalLayout>
+          <ConditionalLayout categories={categories}>
+            <main id="main-content">{children}</main>
+          </ConditionalLayout>
           <ToastProvider />
         </AuthProvider>
       </body>

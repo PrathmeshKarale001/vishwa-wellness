@@ -126,7 +126,7 @@ export function PaymentBadges({ className }: { className?: string }) {
 export function SupportBadge({ className }: { className?: string }) {
     return (
         <motion.a
-            href="tel:+919876543210"
+            href="tel:+917447489101"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={cn(
@@ -137,7 +137,7 @@ export function SupportBadge({ className }: { className?: string }) {
             <PhoneCall className="w-5 h-5 text-green-600" />
             <div>
                 <p className="text-sm font-medium">Need help?</p>
-                <p className="text-xs text-stone-500">Call us: +91 98765 43210</p>
+                <p className="text-xs text-stone-500">Call us: +91 74474 89101</p>
             </div>
         </motion.a>
     );

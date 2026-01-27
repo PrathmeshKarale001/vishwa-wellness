@@ -1,9 +1,12 @@
 import { createServerSupabaseClient } from './supabase-server';
+import { createAdminSupabaseClient } from './supabase-admin';
+import { sendOrderConfirmationEmail } from './email';
 import type { Order, OrderItem, CreateOrderInput, OrderStatus, PaymentStatus } from '@/types/orders';
 
-// Create a new order
+// Create a new order (uses admin client to bypass RLS for guest checkout)
 export async function createOrder(input: CreateOrderInput, userId?: string): Promise<Order | null> {
-    const supabase = await createServerSupabaseClient();
+    // Use admin client to bypass RLS - allows guest orders
+    const supabase = await createAdminSupabaseClient();
 
     // Create the order
     const { data: order, error: orderError } = await supabase
@@ -45,9 +48,10 @@ export async function createOrder(input: CreateOrderInput, userId?: string): Pro
         total_price: item.unit_price * item.quantity,
     }));
 
-    const { error: itemsError } = await supabase
+    const { data: items, error: itemsError } = await supabase
         .from('order_items')
-        .insert(orderItems);
+        .insert(orderItems)
+        .select();
 
     if (itemsError) {
         console.error('Error creating order items:', itemsError);
@@ -56,7 +60,26 @@ export async function createOrder(input: CreateOrderInput, userId?: string): Pro
         return null;
     }
 
-    return order as Order;
+    // Attach items to order for email
+    const orderWithItems: Order = {
+        ...order,
+        items: items || [],
+    };
+
+    // Send order confirmation email (don't block on this)
+    sendOrderConfirmationEmail(orderWithItems)
+        .then((result) => {
+            if (result.success) {
+                console.log(`[order] Confirmation email sent for order ${order.order_number}`);
+            } else {
+                console.warn(`[order] Failed to send confirmation email for ${order.order_number}:`, result.error);
+            }
+        })
+        .catch((error) => {
+            console.error(`[order] Unexpected error sending confirmation email:`, error);
+        });
+
+    return orderWithItems;
 }
 
 // Get user's orders
@@ -130,7 +153,7 @@ export async function updateOrderStatus(
 ): Promise<Order | null> {
     const supabase = await createServerSupabaseClient();
 
-    const updateData: any = { status, ...additionalData };
+    const updateData: Record<string, unknown> = { status, ...additionalData };
 
     // Set timestamps based on status
     if (status === 'shipped' && !additionalData?.shipped_at) {
@@ -167,7 +190,7 @@ export async function updatePaymentStatus(
 ): Promise<Order | null> {
     const supabase = await createServerSupabaseClient();
 
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
         payment_status: paymentStatus,
         ...razorpayData
     };

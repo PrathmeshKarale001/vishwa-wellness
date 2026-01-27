@@ -30,17 +30,24 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         async function checkAccess() {
+            console.log('[ADMIN] Checking access, user:', user?.email);
+
             if (!user) {
-                router.push('/auth/login');
+                console.log('[ADMIN] No user, redirecting to login');
+                router.push('/account/login');
                 return;
             }
 
             const role = await getUserRole();
+            console.log('[ADMIN] User role:', role);
+
             if (role !== 'admin' && role !== 'super_admin' && role !== 'staff') {
+                console.log('[ADMIN] Insufficient role, redirecting to account');
                 router.push('/account');
                 return;
             }
 
+            console.log('[ADMIN] Access granted');
             setUserRole(role);
             await fetchData();
             setLoading(false);

@@ -140,9 +140,24 @@ I've successfully implemented all 5 phases of technical improvements for the Vis
 />
 ```
 
-### Pages Refactored
-- ✅ About page (reduced from ~40 lines to 7 lines)
-- 📝 Ready to refactor: Why Ash, Bhasma Rituals, DIY Recipes, Science & Mysticism, Ash Water, Contact, AWT Retreats, Shop
+### Refactored Pages to <Hero> (COMPLETED)
+- ✅ About
+- ✅ Why Ash
+- ✅ Science & Mysticism
+- ✅ Ash Water
+- ✅ DIY Recipes
+- ✅ AWT Retreats
+
+### CMS Integration (MODERNIZED)
+- ✅ **Rituals**: Moved from hardcoded to Sanity `ritual` schema
+- ✅ **Retreats**: Moved from hardcoded to Sanity `retreat` schema
+- ✅ **Hero Slides**: Fully dynamic from Sanity
+- ✅ **Global Search**: Now queries Sanity for Products and Rituals
+
+### Bug Fixes
+- ✅ **ProductCard**: Fixed thumbnail preview bug where hover state was overriding selected thumbnail.
+- ✅ **ProductCard**: Made thumbnails clickable (navigates to product) for better mobile/desktop UX.
+- ✅ **Search**: Added live results with image previews.
 
 ### Key Benefits
 - **90% code reduction** in hero sections

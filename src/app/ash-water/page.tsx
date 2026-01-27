@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Section, SectionHeading, SacredDivider } from "@/components/ui/Section";
 import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/Card";
+import { Hero } from "@/components/ui/Hero";
 
 const ancientBenefits = [
     { icon: Sparkles, title: "Burns Impurities", desc: "Dissolves accumulated toxins (ama) from the body systems" },
@@ -84,43 +85,14 @@ const kitProducts = [
 export default function AshWaterPage() {
     return (
         <>
-            {/* Hero */}
-            <section className="relative min-h-[75vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
-                {/* Background layers */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-beige)] to-[var(--color-cream)]" />
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/agnijal.jpg"
-                        alt="Agni Jal Background"
-                        className="w-full h-full object-cover opacity-20"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-cream)] via-transparent to-[var(--color-beige)]/50" />
-                </div>
-
-                <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <div className="inline-block px-4 py-1 rounded-full bg-[var(--color-terracotta)]/10 border border-[var(--color-terracotta)]/20 mb-8">
-                            <span className="text-[var(--color-terracotta)] text-xs font-bold uppercase tracking-[0.2em]">Internal Purification</span>
-                        </div>
-
-                        <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl lg:text-7xl font-bold text-[var(--color-navy)] mb-4 leading-[1.1]">
-                            Agni Jal™
-                        </h1>
-                        <p className="text-2xl md:text-3xl text-[var(--color-terracotta)] font-[family-name:var(--font-playfair)] mb-6">
-                            Sacred Ash Water
-                        </p>
-
-                        <p className="text-lg md:text-xl text-[var(--color-ash)] max-w-2xl mx-auto leading-relaxed">
-                            Water infused with sacred ash — used since Vedic times for internal purification
-                            and to ignite the digestive fire (Agni).
-                        </p>
-                    </motion.div>
-                </div>
-            </section>
+            <Hero
+                badge="Internal Purification"
+                title="Agni Jal™"
+                highlight="Sacred Ash Water"
+                description="Water infused with sacred ash — used since Vedic times for internal purification and to ignite the digestive fire (Agni)."
+                bgImage="/agnijal.jpg"
+                theme="light"
+            />
 
             {/* What is Agni Jal */}
             <Section background="white">

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { motion, HTMLMotionProps } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             className,
             variant,
             size,
+            asChild = false,
             loading = false,
             leftIcon,
             rightIcon,
@@ -71,6 +73,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         },
         ref
     ) => {
+        // When asChild is true, use Slot from @radix-ui/react-slot
+        // This allows the button to render as a child component (like Link)
+        if (asChild) {
+            return (
+                <Slot
+                    className={cn(buttonVariants({ variant, size, className }))}
+                    ref={ref as React.Ref<HTMLElement>}
+                >
+                    {children}
+                </Slot>
+            );
+        }
+
         return (
             <motion.button
                 whileTap={buttonMotionVariants.tap}

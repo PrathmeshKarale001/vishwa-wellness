@@ -12,9 +12,10 @@ export function sanityProductToFrontend(sanityProduct: SanityProduct): FrontendP
 
     return {
         id: sanityProduct._id,
-        slug: typeof sanityProduct.slug === 'string' ? sanityProduct.slug : sanityProduct.slug.current,
+        slug: sanityProduct.slug,
         title: sanityProduct.title,
         shortDescription: sanityProduct.benefitHeadline || sanityProduct.description?.substring(0, 150) || '',
+        benefitHeadline: sanityProduct.benefitHeadline,
         description: sanityProduct.description || '',
         price: sanityProduct.price,
         comparePrice: sanityProduct.comparePrice,
@@ -28,10 +29,13 @@ export function sanityProductToFrontend(sanityProduct: SanityProduct): FrontendP
         })) || [],
         isNew: sanityProduct.isNew,
         isSale: sanityProduct.isSale,
+        isBestSeller: sanityProduct.isBestSeller,
         stock: sanityProduct.stock,
         rating: sanityProduct.rating,
         reviewCount: sanityProduct.reviewCount,
         ritualType: sanityProduct.ritualType,
+        sku: sanityProduct.sku,
+        sections: sanityProduct.sections,
     };
 }
 

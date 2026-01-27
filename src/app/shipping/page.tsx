@@ -141,10 +141,10 @@ export default function ShippingPage() {
                                     <h3 className="font-semibold text-[#222] mb-1">Need Help?</h3>
                                     <p className="text-[#777] text-sm">
                                         For shipping inquiries, contact us at{' '}
-                                        <a href="mailto:support@vishwawellness.com" className="text-[var(--color-primary)]">
-                                            support@vishwawellness.com
+                                        <a href="mailto:crm@vishwaglobal.com" className="text-[var(--color-primary)]">
+                                            crm@vishwaglobal.com
                                         </a>{' '}
-                                        or call +91 98765 43210
+                                        or call +91 74474 89101
                                     </p>
                                 </div>
                             </div>

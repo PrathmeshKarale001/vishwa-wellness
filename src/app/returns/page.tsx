@@ -159,10 +159,10 @@ export default function ReturnsPage() {
                                     <h3 className="font-semibold text-[#222] mb-1">Need Help with Returns?</h3>
                                     <p className="text-[#777] text-sm">
                                         Contact our support team at{' '}
-                                        <a href="mailto:returns@vishwawellness.com" className="text-[var(--color-primary)]">
-                                            returns@vishwawellness.com
+                                        <a href="mailto:crm@vishwaglobal.com" className="text-[var(--color-primary)]">
+                                            crm@vishwaglobal.com
                                         </a>{' '}
-                                        or call +91 98765 43210
+                                        or call +91 74474 89101
                                     </p>
                                 </div>
                             </div>

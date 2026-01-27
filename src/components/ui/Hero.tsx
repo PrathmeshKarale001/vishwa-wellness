@@ -43,17 +43,17 @@ export function Hero({
     // Theme configurations
     const themeConfig = {
         light: {
-            containerBg: 'bg-[var(--color-cream)]',
+            containerBg: 'bg-warm-gradient',
             textColor: 'text-[var(--color-navy)]',
             overlayGradient: 'bg-gradient-to-t from-[var(--color-cream)] via-transparent to-[var(--color-beige)]/50',
             imageOpacity: 'opacity-15',
             badgeStyle: 'bg-[var(--color-gold)]/10 border-[var(--color-gold)]/20 text-[var(--color-gold)]',
         },
         dark: {
-            containerBg: 'bg-[var(--color-navy)]',
+            containerBg: 'bg-hero-gradient',
             textColor: 'text-white',
-            overlayGradient: 'bg-gradient-to-r from-[var(--color-navy)] via-[var(--color-navy)]/80 to-transparent',
-            imageOpacity: 'opacity-30',
+            overlayGradient: 'bg-gradient-to-r from-black/80 via-black/40 to-transparent',
+            imageOpacity: 'opacity-40',
             badgeStyle: 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/30 text-[var(--color-accent)]',
         },
         split: {
@@ -89,18 +89,18 @@ export function Hero({
                                     </span>
                                 )}
 
-                                <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-1 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-0 leading-[1.1]" style={{ fontFamily: 'var(--font-heading)' }}>
                                     {title}
                                 </h1>
 
                                 {highlight && (
-                                    <h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-[var(--color-primary)] italic mb-8 leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                                    <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-[var(--color-primary)] italic mt-[-12px] mb-5 leading-[1.1]" style={{ fontFamily: 'var(--font-heading)' }}>
                                         {highlight}
                                     </h2>
                                 )}
 
                                 {description && (
-                                    <p className="text-[#666] text-lg lg:text-xl mb-10 leading-relaxed max-w-lg">
+                                    <p className="text-[#666] text-base lg:text-lg mb-8 leading-relaxed max-w-lg">
                                         {description}
                                     </p>
                                 )}
@@ -108,12 +108,12 @@ export function Hero({
                                 {(cta || ctaSecondary) && (
                                     <div className="flex flex-wrap gap-5">
                                         {cta && (
-                                            <Link href={cta.href} className="btn-solid !px-10 !py-4 shadow-lg shadow-[var(--color-primary)]/10 hover:-translate-y-1 transition-transform">
+                                            <Link href={cta.href} className="btn-solid hover:-translate-y-1">
                                                 {cta.text}
                                             </Link>
                                         )}
                                         {ctaSecondary && (
-                                            <Link href={ctaSecondary.href} className="btn-outline !px-10 !py-4 hover:-translate-y-1 transition-transform bg-white">
+                                            <Link href={ctaSecondary.href} className="btn-outline hover:-translate-y-1">
                                                 {ctaSecondary.text}
                                             </Link>
                                         )}
@@ -180,26 +180,26 @@ export function Hero({
                     )}
 
                     <h1 className={cn(
-                        'font-[family-name:var(--font-playfair)] text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-[1.1]',
+                        'font-[family-name:var(--font-playfair)] text-3xl md:text-5xl lg:text-6xl font-bold mb-5 leading-[1.0]',
                         config.textColor
                     )}>
                         {title}
                         {highlight && (
                             <>
                                 <br />
-                                <span className="text-[var(--color-primary)]">{highlight}</span>
+                                <span className="text-[var(--color-primary)] leading-[1.0]">{highlight}</span>
                             </>
                         )}
                     </h1>
 
                     {subtitle && (
-                        <p className={cn('text-2xl md:text-3xl mb-6 font-light', theme === 'dark' ? 'text-white/90' : 'opacity-80')}>
+                        <p className={cn('text-xl md:text-2xl mb-4 font-light', theme === 'dark' ? 'text-white/90' : 'opacity-80')}>
                             {subtitle}
                         </p>
                     )}
 
                     {description && (
-                        <p className={cn('text-lg md:text-xl max-w-3xl mx-auto mb-10 leading-relaxed', theme === 'dark' ? 'text-white/80' : 'opacity-80')}>
+                        <p className={cn('text-base md:text-lg max-w-3xl mx-auto mb-10 leading-relaxed', theme === 'dark' ? 'text-white/80' : 'opacity-80')}>
                             {description}
                         </p>
                     )}
@@ -207,12 +207,12 @@ export function Hero({
                     {(cta || ctaSecondary) && (
                         <div className="flex flex-wrap gap-4 justify-center">
                             {cta && (
-                                <Link href={cta.href} className="btn-solid !px-8 !py-4">
+                                <Link href={cta.href} className="btn-solid">
                                     {cta.text}
                                 </Link>
                             )}
                             {ctaSecondary && (
-                                <Link href={ctaSecondary.href} className="btn-outline !px-8 !py-4">
+                                <Link href={ctaSecondary.href} className="btn-outline">
                                     {ctaSecondary.text}
                                 </Link>
                             )}

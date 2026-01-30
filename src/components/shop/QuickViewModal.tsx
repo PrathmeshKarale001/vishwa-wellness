@@ -145,10 +145,10 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                                 {product.discount ? (
                                     <>
                                         <span className="text-2xl font-bold text-[var(--color-primary)]">
-                                            ₹{discountedPrice.toLocaleString()}
+                                            ₹{Math.round(discountedPrice).toLocaleString()}
                                         </span>
                                         <del className="text-lg text-[#999]">
-                                            ₹{product.price.toLocaleString()}
+                                            ₹{Math.round(product.price).toLocaleString()}
                                         </del>
                                         <span className="px-2 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-sm font-medium">
                                             Save {product.discount}%
@@ -156,7 +156,7 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                                     </>
                                 ) : (
                                     <span className="text-2xl font-bold text-[var(--color-primary)]">
-                                        ₹{product.price.toLocaleString()}
+                                        ₹{Math.round(product.price).toLocaleString()}
                                     </span>
                                 )}
                             </div>

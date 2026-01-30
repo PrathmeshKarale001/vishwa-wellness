@@ -3,6 +3,7 @@
 import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import OptimizedLink from '@/components/ui/optimized-link';
 import { useRouter } from 'next/navigation';
 import { ShoppingCart, Heart, Eye, Star } from 'lucide-react';
 import { Product } from '@/types';
@@ -81,7 +82,7 @@ function ProductCard({
             }}
         >
             {/* Image Wrapper */}
-            <div className="img-wrapper relative overflow-hidden bg-[var(--color-bg-light)]">
+            <div className="img-wrapper relative overflow-hidden bg-[var(--color-bg-light)] image-zoom">
                 {/* Labels */}
                 {product.isNew && (
                     <span className="label-new">New</span>
@@ -91,19 +92,25 @@ function ProductCard({
                 )}
 
                 {/* Main Image */}
-                <Link href={`/products/${product.slug}`} className="block aspect-square relative">
+                <OptimizedLink
+                    href={`/products/${product.slug}`}
+                    className="block aspect-square relative"
+                    prefetchOnHover={true}
+                    prefetchOnVisible={true}
+                    prefetchPriority="high"
+                >
                     {product.images.slice(0, 4).map((img, idx) => (
                         <Image
                             key={(img as any)._key || img.id || idx}
                             src={getImageUrl(img)}
                             alt={getImageAlt(img, product.title)}
                             fill
-                            className={`object-cover transition-all duration-700 absolute inset-0 ${currentImage === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                            className={`object-cover transition-all duration-500 ease-out absolute inset-0 ${currentImage === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                                 }`}
                             priority={idx === 0}
                         />
                     ))}
-                </Link>
+                </OptimizedLink>
 
                 {/* Hover Action Icons */}
                 <div className="cart-wrap">
@@ -111,6 +118,7 @@ function ProductCard({
                         onClick={handleAddToCart}
                         title="Add to Cart"
                         aria-label="Add to Cart"
+                        className="hover-scale"
                     >
                         <ShoppingCart size={16} />
                     </button>
@@ -118,7 +126,7 @@ function ProductCard({
                         onClick={handleToggleWishlist}
                         title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
                         aria-label={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                        className={inWishlist ? '!bg-[var(--color-primary)] !text-white !border-[var(--color-primary)]' : ''}
+                        className={`hover-scale ${inWishlist ? '!bg-[var(--color-primary)] !text-white !border-[var(--color-primary)]' : ''}`}
                     >
                         <Heart size={16} className={inWishlist ? 'fill-current' : ''} />
                     </button>
@@ -131,6 +139,7 @@ function ProductCard({
                         }}
                         title="Quick View"
                         aria-label="Quick View"
+                        className="hover-scale"
                     >
                         <Eye size={16} />
                     </button>

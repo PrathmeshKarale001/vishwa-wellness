@@ -495,7 +495,7 @@ export default function CheckoutPage() {
                                                     Processing...
                                                 </span>
                                             ) : (
-                                                `Place Order - ₹${total.toLocaleString()}`
+                                                `Place Order - ₹${Math.round(total).toLocaleString()}`
                                             )}
                                         </button>
 

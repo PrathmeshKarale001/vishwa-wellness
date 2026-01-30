@@ -37,21 +37,13 @@ export async function middleware(request: NextRequest) {
         }
     );
 
-    // IMPORTANT: Do NOT check getUser() on auth callback path
-    // The cookies haven't been set yet in that context
-    const isAuthCallback = request.nextUrl.pathname.startsWith('/auth/callback');
-    if (isAuthCallback) {
-        return supabaseResponse;
-    }
-
     // Refresh session if exists
     const {
         data: { user },
-        error,
     } = await supabase.auth.getUser();
 
-    // Protected routes that require authentication (checkout allows guest users)
-    const protectedPaths = ['/account', '/admin'];
+    // Protected routes that require authentication
+    const protectedPaths = ['/account', '/checkout', '/admin'];
     const publicAuthPages = ['/account/login', '/account/register', '/account/forgot-password', '/account/reset-password'];
 
     const isProtectedPath = protectedPaths.some((path) =>
@@ -70,11 +62,14 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
-    // Redirect logged-in users away from login/register pages to their intended destination or account
-    if (isPublicAuthPage && user) {
-        const next = request.nextUrl.searchParams.get('next');
-        const redirectUrl = next && next.startsWith('/') ? next : '/account';
-        return NextResponse.redirect(new URL(redirectUrl, request.url));
+    // Redirect logged-in users away from auth pages (optional)
+    const authPaths = ['/auth/login', '/auth/signup'];
+    const isAuthPath = authPaths.some((path) =>
+        request.nextUrl.pathname === path
+    );
+
+    if (isAuthPath && user) {
+        return NextResponse.redirect(new URL('/account', request.url));
     }
 
     return supabaseResponse;
@@ -90,7 +85,8 @@ export const config = {
          * - public folder
          * - api routes
          * - studio (Sanity Studio)
+         * - auth (OAuth callbacks)
          */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api|studio).*)',
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api|studio|auth).*)',
     ],
 };

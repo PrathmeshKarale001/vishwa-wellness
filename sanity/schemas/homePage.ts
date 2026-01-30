@@ -10,7 +10,8 @@ export default defineType({
             title: 'Page Title (Internal Only)',
             type: 'string',
             initialValue: 'Main Homepage',
-            hidden: true
+            hidden: true,
+            validation: (Rule) => Rule.required()
         }),
         // Hero Section
         defineField({

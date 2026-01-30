@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cacheGetOrSet, CacheKeys, CacheTTL } from '@/lib/redis';
 
 interface PincodeData {
     Name: string;
@@ -42,61 +43,65 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Fetch from postpincode.in API
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        // Try to get from cache or fetch
+        const cachedResult = await cacheGetOrSet(
+            CacheKeys.api.pincode(pincode),
+            async () => {
+                // Fetch from postpincode.in API
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-        const response = await fetch(
-            `https://api.postalpincode.in/pincode/${pincode}`,
-            {
-                signal: controller.signal,
-                headers: {
-                    'Accept': 'application/json',
-                },
-            }
+                const response = await fetch(
+                    `https://api.postalpincode.in/pincode/${pincode}`,
+                    {
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                    }
+                );
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`API responded with status: ${response.status}`);
+                }
+
+                const data: PincodeAPIResponse[] = await response.json();
+
+                // Check if data is valid
+                if (!data || data.length === 0) {
+                    throw new Error('Invalid response from PIN code service');
+                }
+
+                const result = data[0];
+
+                // Check if PIN code was found
+                if (result.Status !== 'Success' || !result.PostOffice || result.PostOffice.length === 0) {
+                    throw new Error('Invalid PIN code');
+                }
+
+                // Get the first post office data (usually the main one)
+                const postOffice = result.PostOffice[0];
+
+                // Return structured data to be cached
+                return {
+                    success: true,
+                    data: {
+                        pincode: postOffice.Pincode,
+                        city: postOffice.District,
+                        state: postOffice.State,
+                        district: postOffice.District,
+                        region: postOffice.Region,
+                        country: postOffice.Country,
+                    },
+                };
+            },
+            { ttl: CacheTTL.EXTRA_LONG } // Cache for 24 hours
         );
 
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`API responded with status: ${response.status}`);
-        }
-
-        const data: PincodeAPIResponse[] = await response.json();
-
-        // Check if data is valid
-        if (!data || data.length === 0) {
-            return NextResponse.json(
-                { error: 'Invalid response from PIN code service' },
-                { status: 500 }
-            );
-        }
-
-        const result = data[0];
-
-        // Check if PIN code was found
-        if (result.Status !== 'Success' || !result.PostOffice || result.PostOffice.length === 0) {
-            return NextResponse.json(
-                { error: 'Invalid PIN code. Please check and try again.' },
-                { status: 404 }
-            );
-        }
-
-        // Get the first post office data (usually the main one)
-        const postOffice = result.PostOffice[0];
-
-        // Return structured data
-        return NextResponse.json({
-            success: true,
-            data: {
-                pincode: postOffice.Pincode,
-                city: postOffice.District, // Using District as city
-                state: postOffice.State,
-                district: postOffice.District,
-                region: postOffice.Region,
-                country: postOffice.Country,
-            },
-        });
+        // Return the cached or fresh result
+        return NextResponse.json(cachedResult);
 
     } catch (error) {
         // Handle timeout
@@ -104,6 +109,14 @@ export async function GET(request: NextRequest) {
             return NextResponse.json(
                 { error: 'Request timed out. Please try again.' },
                 { status: 504 }
+            );
+        }
+
+        // Handle invalid PIN code
+        if (error instanceof Error && error.message === 'Invalid PIN code') {
+            return NextResponse.json(
+                { error: 'Invalid PIN code. Please check and try again.' },
+                { status: 404 }
             );
         }
 

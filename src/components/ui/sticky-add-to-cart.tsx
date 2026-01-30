@@ -90,12 +90,12 @@ export function StickyAddToCart({
                                     </p>
                                     <div className="flex items-center gap-2">
                                         <span className="text-lg font-bold text-stone-900">
-                                            ₹{product.price.toLocaleString()}
+                                            ₹{Math.round(product.price).toLocaleString()}
                                         </span>
                                         {product.comparePrice && (
                                             <>
                                                 <span className="text-sm text-stone-400 line-through">
-                                                    ₹{product.comparePrice.toLocaleString()}
+                                                    ₹{Math.round(product.comparePrice).toLocaleString()}
                                                 </span>
                                                 <span className="text-xs font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
                                                     {discount}% OFF

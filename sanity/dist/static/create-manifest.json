@@ -1,19 +1,20 @@
 {
-  "version": 2,
-  "createdAt": "2026-01-23T14:44:31.584Z",
+  "version": 3,
+  "createdAt": "2026-01-30T09:40:02.678Z",
   "workspaces": [
     {
       "name": "default",
       "title": "Vishwa Wellness",
-      "basePath": "/",
+      "basePath": "/studio",
       "projectId": "dsifqj4y",
       "dataset": "production",
-      "icon": "<style data-styled=\"true\" data-styled-version=\"6.3.8\">.jAQGwF{font-family:Inter,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",\"Liberation Sans\",Helvetica,Arial,system-ui,sans-serif;font-weight:500;font-size:13px;transform:translateY(1px);}/*!sc*/\ndata-styled.g106[id=\"sc-irLwvM\"]{content:\"jAQGwF,\"}/*!sc*/\n</style><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" rx=\"2\" fill=\"#01794f\"></rect><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" alignment-baseline=\"middle\" fill=\"hsla(159, 98%, 0%, 1)\" class=\"sc-irLwvM jAQGwF\">VW</text></svg>",
+      "icon": null,
       "mediaLibrary": {
         "enabled": false
       },
-      "schema": "7d7f6aa6.create-schema.json",
-      "tools": "3d72db02.create-tools.json"
+      "schema": "f818781e.create-schema.json",
+      "tools": "d8640c31.create-tools.json"
     }
-  ]
+  ],
+  "studioVersion": "5.6.0"
 }

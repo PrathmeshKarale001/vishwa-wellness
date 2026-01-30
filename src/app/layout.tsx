@@ -10,6 +10,8 @@ import { OrganizationSchema } from "@/components/seo/JsonLd";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import { ToastProvider } from "@/components/ui/toast";
 import { fetchCategories } from "@/lib/sanity.fetch";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import WhatsAppWidget from "@/components/chat/WhatsAppWidget";
 
 
 export const metadata: Metadata = {
@@ -45,12 +47,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch categories for dynamic header navigation
-  const categories = await fetchCategories();
+  // Fetch categories for dynamic header navigation (with fallback for 404s)
+  let categories: any[] = [];
+  try {
+    categories = await fetchCategories();
+  } catch (error) {
+    // Silently fail for non-existent routes - will use empty categories
+    console.log('Categories fetch skipped for this route');
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning className="pb-0 md:pb-0">
         <OrganizationSchema
           name="Vishwa Wellness"
           url={process.env.NEXT_PUBLIC_APP_URL || 'https://vishwawellness.com'}
@@ -66,8 +74,10 @@ export default async function RootLayout({
         </a>
         <AuthProvider>
           <ConditionalLayout categories={categories}>
-            <main id="main-content">{children}</main>
+            <main id="main-content" className="pb-20 md:pb-0">{children}</main>
           </ConditionalLayout>
+          <MobileBottomNav />
+          <WhatsAppWidget />
           <ToastProvider />
         </AuthProvider>
       </body>

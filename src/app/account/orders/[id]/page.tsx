@@ -185,8 +185,8 @@ function OrderDetailContent() {
                                                 <div className="relative">
                                                     <div
                                                         className={`w-8 h-8 rounded-full flex items-center justify-center ${step.completed
-                                                                ? 'bg-green-500 text-white'
-                                                                : 'bg-gray-200 text-gray-400'
+                                                            ? 'bg-green-500 text-white'
+                                                            : 'bg-gray-200 text-gray-400'
                                                             }`}
                                                     >
                                                         {step.completed ? <CheckCircle size={16} /> : (index + 1)}
@@ -240,11 +240,11 @@ function OrderDetailContent() {
                                                     <p className="text-xs text-[#999]">SKU: {item.product_sku}</p>
                                                 )}
                                                 <p className="text-sm text-[#777] mt-1">
-                                                    ₹{item.unit_price.toLocaleString()} × {item.quantity}
+                                                    ₹{Math.round(item.unit_price).toLocaleString()} × {item.quantity}
                                                 </p>
                                             </div>
                                             <p className="font-semibold text-[#222]">
-                                                ₹{item.total_price.toLocaleString()}
+                                                ₹{Math.round(item.total_price).toLocaleString()}
                                             </p>
                                         </div>
                                     ))}
@@ -260,12 +260,12 @@ function OrderDetailContent() {
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-[#777]">Subtotal</span>
-                                        <span>₹{order.subtotal.toLocaleString()}</span>
+                                        <span>₹{Math.round(order.subtotal).toLocaleString()}</span>
                                     </div>
                                     {order.discount_amount > 0 && (
                                         <div className="flex justify-between text-sm text-green-600">
                                             <span>Discount</span>
-                                            <span>-₹{order.discount_amount.toLocaleString()}</span>
+                                            <span>-₹{Math.round(order.discount_amount).toLocaleString()}</span>
                                         </div>
                                     )}
                                     <div className="flex justify-between text-sm">
@@ -275,12 +275,12 @@ function OrderDetailContent() {
                                     {order.tax_amount > 0 && (
                                         <div className="flex justify-between text-sm">
                                             <span className="text-[#777]">Tax</span>
-                                            <span>₹{order.tax_amount.toLocaleString()}</span>
+                                            <span>₹{Math.round(order.tax_amount).toLocaleString()}</span>
                                         </div>
                                     )}
                                     <div className="flex justify-between font-semibold text-lg border-t border-[#eee] pt-3">
                                         <span>Total</span>
-                                        <span className="text-[var(--color-primary)]">₹{order.total.toLocaleString()}</span>
+                                        <span className="text-[var(--color-primary)]">₹{Math.round(order.total).toLocaleString()}</span>
                                     </div>
                                 </div>
                             </div>

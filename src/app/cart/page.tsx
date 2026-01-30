@@ -163,14 +163,14 @@ export default function CartPage() {
                                                     {item.product.discount ? (
                                                         <span>
                                                             <span className="text-[var(--color-primary)] font-medium">
-                                                                ₹{discountedPrice.toLocaleString()}
+                                                                ₹{Math.round(discountedPrice).toLocaleString()}
                                                             </span>
                                                             <del className="text-[#999] text-sm ml-2">
-                                                                ₹{price.toLocaleString()}
+                                                                ₹{Math.round(price).toLocaleString()}
                                                             </del>
                                                         </span>
                                                     ) : (
-                                                        <span className="font-medium">₹{price.toLocaleString()}</span>
+                                                        <span className="font-medium">₹{Math.round(price).toLocaleString()}</span>
                                                     )}
                                                 </div>
 
@@ -216,7 +216,7 @@ export default function CartPage() {
                                                 <div className="md:col-span-2 text-right">
                                                     <span className="md:hidden text-sm text-[#777]">Total: </span>
                                                     <span className="font-semibold text-[#222]">
-                                                        ₹{lineTotal.toLocaleString()}
+                                                        ₹{Math.round(lineTotal).toLocaleString()}
                                                     </span>
                                                 </div>
                                             </div>
@@ -280,12 +280,12 @@ export default function CartPage() {
                                     <div className="space-y-3 border-t border-[#ddd] pt-4">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-[#777]">Subtotal</span>
-                                            <span className="text-[#222]">₹{subtotal.toLocaleString()}</span>
+                                            <span className="text-[#222]">₹{Math.round(subtotal).toLocaleString()}</span>
                                         </div>
                                         {couponApplied && (
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-green-600">Coupon Discount</span>
-                                                <span className="text-green-600">-₹{couponDiscount.toLocaleString()}</span>
+                                                <span className="text-green-600">-₹{Math.round(couponDiscount).toLocaleString()}</span>
                                             </div>
                                         )}
                                         <div className="flex justify-between text-sm">
@@ -300,13 +300,13 @@ export default function CartPage() {
                                         </div>
                                         {shipping > 0 && (
                                             <p className="text-xs text-[#999]">
-                                                Add ₹{(999 - subtotal).toLocaleString()} more for free shipping
+                                                Add ₹{Math.round(999 - subtotal).toLocaleString()} more for free shipping
                                             </p>
                                         )}
                                         <div className="flex justify-between text-lg font-semibold border-t border-[#ddd] pt-3">
                                             <span>Total</span>
                                             <span className="text-[var(--color-primary)]">
-                                                ₹{finalTotal.toLocaleString()}
+                                                ₹{Math.round(finalTotal).toLocaleString()}
                                             </span>
                                         </div>
                                     </div>

@@ -10,11 +10,6 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.sanity.io',
         pathname: '/images/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'vishwaglobal.com',
-        pathname: '/images/**',
-      },
     ],
 
     // Enable modern formats - browser auto-selects best supported format
@@ -42,23 +37,19 @@ const sentryWebpackPluginOptions = {
   // Upload a larger set of source maps for prettier stack traces
   widenClientFileUpload: true,
 
+  // Automatically annotate React components
+  reactComponentAnnotation: {
+    enabled: true,
+  },
+
   // Route browser requests to Sentry through a Next.js rewrite
   tunnelRoute: "/monitoring",
 
   // Hides source maps from generated client bundles
   hideSourceMaps: true,
 
-  // Webpack-specific options (2026 format)
-  webpack: {
-    // Automatically annotate React components
-    reactComponentAnnotation: {
-      enabled: true,
-    },
-    // Tree-shake Sentry logger statements
-    treeshake: {
-      removeDebugLogging: true,
-    },
-  },
+  // Tree-shake Sentry logger statements
+  disableLogger: true,
 };
 
 // Export with Sentry wrapper (conditional based on DSN availability)

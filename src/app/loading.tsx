@@ -1,6 +1,6 @@
 export default function Loading() {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--color-cream)]">
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="max-w-md w-full px-4 text-center">
                 {/* Logo or Brand */}
                 <div className="mb-8 animate-pulse">

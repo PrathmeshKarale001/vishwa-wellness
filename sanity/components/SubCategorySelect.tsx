@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect, useCallback } from 'react'
 import { Select, Stack, Text, Card, Spinner, Flex } from '@sanity/ui'
 import { set, unset, useFormValue, useClient, StringInputProps } from 'sanity'

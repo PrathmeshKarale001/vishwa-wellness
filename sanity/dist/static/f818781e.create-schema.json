@@ -88,107 +88,124 @@
         "type": "text"
       },
       {
-        "description": "Comprehensive product details for e-commerce display",
-        "fields": [
+        "description": "One-liner marketing copy (e.g., \"Supports healthy blood sugar levels naturally\")",
+        "name": "benefitHeadline",
+        "type": "string",
+        "title": "Short Benefit Headline"
+      },
+      {
+        "description": "Add custom tabs like Key Benefits, Company Work, Ingredients, etc. Select a layout for each.",
+        "of": [
           {
-            "description": "One-liner marketing copy (e.g., \"Supports healthy blood sugar levels naturally\")",
-            "name": "shortHeadline",
-            "type": "string",
-            "title": "Short Benefit Headline"
-          },
-          {
-            "description": "List of 6-8 key benefits",
-            "of": [
+            "fields": [
               {
-                "type": "string"
-              }
-            ],
-            "name": "keyBenefits",
-            "type": "array"
-          },
-          {
-            "description": "List of key ingredients with their benefits",
-            "of": [
-              {
-                "fields": [
+                "validation": [
                   {
-                    "name": "name",
-                    "type": "string",
-                    "title": "Ingredient Name"
-                  },
-                  {
-                    "name": "scientificName",
-                    "type": "string",
-                    "title": "Scientific Name (Optional)"
-                  },
-                  {
-                    "name": "sanskritName",
-                    "type": "string",
-                    "title": "Sanskrit Name (Optional)"
-                  },
-                  {
-                    "of": [
+                    "rules": [
                       {
-                        "type": "string"
+                        "flag": "presence",
+                        "constraint": "required"
                       }
                     ],
-                    "name": "benefits",
-                    "type": "array"
-                  },
-                  {
-                    "name": "description",
-                    "type": "text",
-                    "title": "Additional Info (Optional)"
+                    "level": "error"
                   }
                 ],
-                "type": "object"
-              }
-            ],
-            "name": "ingredients",
-            "type": "array",
-            "title": "Key Ingredients"
-          },
-          {
-            "description": "Mechanism of action - how the product works",
-            "of": [
+                "name": "title",
+                "type": "string",
+                "title": "Tab Title"
+              },
               {
-                "type": "string"
-              }
-            ],
-            "name": "howItWorks",
-            "type": "array"
-          },
-          {
-            "description": "Dosage instructions and duration recommendations",
-            "name": "suggestedUse",
-            "type": "text",
-            "title": "Suggested Use / Dosage"
-          },
-          {
-            "description": "Target audience list",
-            "of": [
+                "initialValue": "text",
+                "options": {
+                  "list": [
+                    {
+                      "title": "Standard Text",
+                      "value": "text"
+                    },
+                    {
+                      "title": "Benefits List (Checkmarks)",
+                      "value": "benefits"
+                    },
+                    {
+                      "title": "Ingredients Grid",
+                      "value": "ingredients"
+                    },
+                    {
+                      "title": "Instructions (Boxed)",
+                      "value": "usage"
+                    },
+                    {
+                      "title": "Certifications Grid",
+                      "value": "certifications"
+                    }
+                  ]
+                },
+                "name": "layout",
+                "type": "string",
+                "title": "Layout Style"
+              },
               {
-                "type": "string"
-              }
-            ],
-            "name": "whoCanTakeIt",
-            "type": "array"
-          },
-          {
-            "description": "e.g., Vegan, Herbal, No GMO, No Preservatives, etc.",
-            "of": [
+                "hidden": "conditional",
+                "name": "content",
+                "type": "text",
+                "title": "Text Content"
+              },
               {
-                "type": "string"
+                "of": [
+                  {
+                    "type": "string"
+                  }
+                ],
+                "hidden": "conditional",
+                "name": "listItems",
+                "type": "array"
+              },
+              {
+                "of": [
+                  {
+                    "fields": [
+                      {
+                        "name": "name",
+                        "type": "string"
+                      },
+                      {
+                        "name": "scientificName",
+                        "type": "string"
+                      },
+                      {
+                        "name": "sanskritName",
+                        "type": "string"
+                      },
+                      {
+                        "of": [
+                          {
+                            "type": "string"
+                          }
+                        ],
+                        "name": "benefits",
+                        "type": "array"
+                      },
+                      {
+                        "name": "description",
+                        "type": "text"
+                      }
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "hidden": "conditional",
+                "name": "ingredients",
+                "type": "array"
               }
             ],
-            "name": "cleanLabels",
-            "type": "array",
-            "title": "Certifications / Clean Labels"
+            "type": "object",
+            "name": "infoSection",
+            "title": "Information Section"
           }
         ],
-        "name": "detailedDescription",
-        "type": "object",
-        "title": "Detailed Product Information"
+        "name": "sections",
+        "type": "array",
+        "title": "Product Information Tabs"
       },
       {
         "to": [
@@ -1357,5 +1374,127 @@
     "name": "siteSettings",
     "type": "document",
     "title": "Global Configuration"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "sanskritName",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "name"
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "name": "subtitle",
+        "type": "string"
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "name": "image",
+        "type": "image",
+        "title": "Main Image"
+      },
+      {
+        "of": [
+          {
+            "type": "string"
+          }
+        ],
+        "name": "benefits",
+        "type": "array"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "name": "stepNumber",
+                "type": "number"
+              },
+              {
+                "name": "content",
+                "type": "text"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "steps",
+        "type": "array",
+        "title": "Practice Steps"
+      },
+      {
+        "description": "e.g., Weekly, Daily, etc.",
+        "name": "frequency",
+        "type": "string"
+      },
+      {
+        "description": "e.g., Warm (37-40°C), Room temperature",
+        "name": "temperature",
+        "type": "string"
+      },
+      {
+        "of": [
+          {
+            "to": [
+              {
+                "type": "product"
+              }
+            ],
+            "type": "reference",
+            "title": "Reference to product"
+          }
+        ],
+        "name": "products",
+        "type": "array",
+        "title": "Recommended Products"
+      },
+      {
+        "name": "order",
+        "type": "number",
+        "title": "Display Order"
+      }
+    ],
+    "name": "ritual",
+    "type": "document"
   }
 ]

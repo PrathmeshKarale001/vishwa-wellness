@@ -93,12 +93,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         <div className="border-t border-b border-gray-200 py-4">
                             <div className="flex items-baseline gap-3">
                                 <span className="text-4xl font-bold text-gray-900">
-                                    ₹{product.price.toLocaleString()}
+                                    ₹{Math.round(product.price).toLocaleString()}
                                 </span>
                                 {product.comparePrice && product.comparePrice > product.price && (
                                     <>
                                         <span className="text-2xl text-gray-400 line-through">
-                                            ₹{product.comparePrice.toLocaleString()}
+                                            ₹{Math.round(product.comparePrice).toLocaleString()}
                                         </span>
                                         <span className="text-lg font-semibold text-green-600">
                                             {discount}% OFF

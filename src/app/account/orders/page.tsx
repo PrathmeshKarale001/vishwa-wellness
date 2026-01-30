@@ -128,7 +128,7 @@ function OrdersContent() {
                                                 <div className="h-8 w-px bg-[#ddd] hidden sm:block"></div>
                                                 <div>
                                                     <span className="text-xs text-[#777]">Total</span>
-                                                    <p className="font-semibold text-[var(--color-primary)]">₹{order.total.toLocaleString()}</p>
+                                                    <p className="font-semibold text-[var(--color-primary)]">₹{Math.round(order.total).toLocaleString()}</p>
                                                 </div>
                                             </div>
                                             <div
@@ -165,11 +165,11 @@ function OrdersContent() {
                                                         <div className="flex-1 min-w-0">
                                                             <h4 className="font-medium text-[#222] truncate">{item.product_name}</h4>
                                                             <p className="text-sm text-[#777]">
-                                                                Qty: {item.quantity} × ₹{item.unit_price.toLocaleString()}
+                                                                Qty: {item.quantity} × ₹{Math.round(item.unit_price).toLocaleString()}
                                                             </p>
                                                         </div>
                                                         <p className="font-medium text-[#222]">
-                                                            ₹{item.total_price.toLocaleString()}
+                                                            ₹{Math.round(item.total_price).toLocaleString()}
                                                         </p>
                                                     </div>
                                                 ))}

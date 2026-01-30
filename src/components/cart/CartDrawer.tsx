@@ -157,7 +157,7 @@ export default function CartDrawer() {
 
                                                 <div className="mt-auto">
                                                     <p className="text-xs text-gray-900">
-                                                        {item.quantity} × ₹{discountedPrice.toFixed(2)}
+                                                        {item.quantity} × ₹{Math.round(discountedPrice).toLocaleString()}
                                                     </p>
                                                 </div>
                                             </div>
@@ -175,7 +175,7 @@ export default function CartDrawer() {
                             <div className="flex justify-between items-center mb-6">
                                 <span className="text-sm text-gray-600">Subtotal:</span>
                                 <span className="text-lg font-medium text-gray-900">
-                                    ₹{total.toLocaleString()}.00
+                                    ₹{Math.round(total).toLocaleString()}
                                 </span>
                             </div>
 

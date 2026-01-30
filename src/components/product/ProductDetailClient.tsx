@@ -364,15 +364,15 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
                         {/* Price */}
                         <div className="mt-6 flex items-baseline gap-3">
                             <span className="text-3xl font-semibold text-[#1a1a1a]">
-                                ₹{product.price.toLocaleString()}
+                                ₹{Math.round(product.price).toLocaleString()}
                             </span>
                             {product.comparePrice && (
                                 <>
                                     <span className="text-lg text-[#999] line-through">
-                                        ₹{product.comparePrice.toLocaleString()}
+                                        ₹{Math.round(product.comparePrice).toLocaleString()}
                                     </span>
                                     <span className="text-sm font-medium text-[#c25c5c]">
-                                        Save ₹{(product.comparePrice - product.price).toLocaleString()}
+                                        Save ₹{Math.round(product.comparePrice - product.price).toLocaleString()}
                                     </span>
                                 </>
                             )}
@@ -405,7 +405,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
                                     </button>
                                 </div>
                                 <span className="text-sm text-[#1a1a1a] font-medium">
-                                    ₹{(product.price * quantity).toLocaleString()}
+                                    ₹{Math.round(product.price * quantity).toLocaleString()}
                                 </span>
                             </div>
 
@@ -569,7 +569,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
                                         {item.title}
                                     </h3>
                                     <p className="mt-1 text-sm text-[#666]">
-                                        ₹{item.price.toLocaleString()}
+                                        ₹{Math.round(item.price).toLocaleString()}
                                     </p>
                                 </Link>
                             ))}
@@ -594,7 +594,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
                     <div className="flex-1">
                         <p className="text-xs text-[#888]">Total</p>
                         <p className="text-lg font-semibold text-[#1a1a1a]">
-                            ₹{(product.price * quantity).toLocaleString()}
+                            ₹{Math.round(product.price * quantity).toLocaleString()}
                         </p>
                     </div>
                     <button

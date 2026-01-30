@@ -74,7 +74,7 @@ export default async function RootLayout({
         </a>
         <AuthProvider>
           <ConditionalLayout categories={categories}>
-            <main id="main-content" className="pb-20 md:pb-0">{children}</main>
+            {children}
           </ConditionalLayout>
           <MobileBottomNav />
           <WhatsAppWidget />

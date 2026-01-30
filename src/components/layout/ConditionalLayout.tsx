@@ -28,7 +28,7 @@ export default function ConditionalLayout({
     return (
         <>
             <Header categories={categories} />
-            <main>{children}</main>
+            <main id="main-content" className="pb-20 md:pb-0">{children}</main>
             <Footer />
             <CartDrawer />
             <QuickViewWrapper />

@@ -74,7 +74,7 @@ export default function AboutPage() {
                 title="About Vishwa Wellness"
                 description="Born from a 170+ year old Guru Lineage, we empower individuals to channel their spiritual energy and manifest a new life."
                 bgImage="/firelineage.jpg"
-                theme="light"
+                theme="dark"
             />
 
             {/* Mission & Vision */}

@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.sanity.io',
         pathname: '/images/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'vishwaglobal.com',
+      },
     ],
 
     // Enable modern formats - browser auto-selects best supported format

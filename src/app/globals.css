@@ -28,6 +28,11 @@
   --color-bg-cream: #f5f2f2;
   --color-white: #ffffff;
 
+  /* Text on Dark Backgrounds (for proper contrast) */
+  --color-text-on-dark: #ffffff;
+  --color-text-on-dark-muted: rgba(255, 255, 255, 0.8);
+  --color-accent-on-dark: #F4A034;
+
   /* Functional Colors */
   --color-success: #4caf50;
   --color-warning: #ffa200;

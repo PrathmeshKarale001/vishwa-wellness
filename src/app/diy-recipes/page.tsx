@@ -205,7 +205,7 @@ export default function DIYRecipesPage() {
                 title="DIY Ash Recipes"
                 description="Twelve ancient ash-based remedies you can start tonight. Simple, safe, and profoundly effective."
                 bgImage="/ash-recipe-1.jpg"
-                theme="light"
+                theme="dark"
             />
 
             {/* Category Nav */}

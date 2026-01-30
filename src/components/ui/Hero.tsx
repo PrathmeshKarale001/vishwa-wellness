@@ -181,13 +181,13 @@ export function Hero({
 
                     <h1 className={cn(
                         'font-[family-name:var(--font-playfair)] text-3xl md:text-5xl lg:text-6xl font-bold mb-5 leading-[1.0]',
-                        config.textColor
+                        theme === 'dark' ? '!text-white' : config.textColor
                     )}>
                         {title}
                         {highlight && (
                             <>
                                 <br />
-                                <span className="text-[var(--color-primary)] leading-[1.0]">{highlight}</span>
+                                <span className={theme === 'dark' ? '!text-[#F4A034]' : 'text-[var(--color-primary)]'}>{highlight}</span>
                             </>
                         )}
                     </h1>

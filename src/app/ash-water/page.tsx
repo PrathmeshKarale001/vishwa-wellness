@@ -91,7 +91,7 @@ export default function AshWaterPage() {
                 highlight="Sacred Ash Water"
                 description="Water infused with sacred ash — used since Vedic times for internal purification and to ignite the digestive fire (Agni)."
                 bgImage="/agnijal.jpg"
-                theme="light"
+                theme="dark"
             />
 
             {/* What is Agni Jal */}

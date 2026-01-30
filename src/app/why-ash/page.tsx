@@ -64,7 +64,7 @@ export default function WhyAshPage() {
                 title="Why Ash?"
                 description="The oldest medicine on Earth. Revered by every ancient civilization. Now validated by modern science."
                 bgImage="/whyash.jpg"
-                theme="light"
+                theme="dark"
             />
 
             {/* Section 1: The Oldest Medicine */}

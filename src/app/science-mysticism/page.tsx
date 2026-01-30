@@ -109,7 +109,7 @@ export default function ScienceMysticismPage() {
                 title="Science & Mysticism"
                 description="Ancient sages knew what modern laboratories are now confirming. Explore the convergence of sacred wisdom and scientific evidence."
                 bgImage="/whyash.jpg"
-                theme="light"
+                theme="dark"
             />
 
             {/* Two-Column Comparison */}

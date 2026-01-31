@@ -32,10 +32,12 @@ export async function GET() {
 // POST: Create a new order
 export async function POST(request: Request) {
     try {
-        const supabase = await createServerSupabaseClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        // Start both operations in parallel - eliminates waterfall
+        const supabasePromise = createServerSupabaseClient();
+        const bodyPromise = request.json();
 
-        const body = await request.json();
+        const [supabase, body] = await Promise.all([supabasePromise, bodyPromise]);
+        const { data: { user } } = await supabase.auth.getUser();
 
         // Validate request body using Zod
         const validation = validateRequest(CreateOrderSchema, body);
@@ -106,6 +108,19 @@ export async function POST(request: Request) {
                 { error: 'Failed to create order' },
                 { status: 500 }
             );
+        }
+
+        // Increment coupon usage if a coupon was applied
+        if (validatedData.coupon_code) {
+            try {
+                // Increment the used_count for the coupon
+                await supabase.rpc('increment_coupon_usage', {
+                    coupon_code_param: validatedData.coupon_code.toUpperCase()
+                });
+            } catch (couponError) {
+                // Log but don't fail the order if coupon increment fails
+                console.error('Failed to increment coupon usage:', couponError);
+            }
         }
 
         return NextResponse.json({ order }, { status: 201 });

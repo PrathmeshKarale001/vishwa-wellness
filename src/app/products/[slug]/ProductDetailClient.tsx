@@ -5,10 +5,14 @@ import { Product, Ingredient, InfoSection } from '@/types';
 import ProductImageGallery from '@/components/product/ProductImageGallery';
 import StarRating from '@/components/product/StarRating';
 import ReviewsSection from '@/components/reviews/ReviewsSection';
-import { Heart, Share2, Truck, RotateCcw, ShieldCheck, Minus, Plus, ChevronDown } from 'lucide-react';
+import { Heart, Truck, RotateCcw, ShieldCheck, Minus, Plus, ChevronDown, ShoppingBag, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useCartStore } from '@/lib/cartStore';
 import { useWishlist } from '@/hooks/useWishlist';
+import CouponHighlight from '@/components/product/CouponHighlight';
+import RelatedProducts from '@/components/product/RelatedProducts';
+import RecentlyViewed, { addToRecentlyViewed } from '@/components/product/RecentlyViewed';
+import ShareProduct from '@/components/product/ShareProduct';
 
 interface ProductDetailClientProps {
     product: Product;
@@ -25,7 +29,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
     useEffect(() => {
         syncWithServer();
-    }, [syncWithServer]);
+        // Track recently viewed products
+        addToRecentlyViewed(product);
+    }, [syncWithServer, product]);
 
     const handleAddToCart = () => {
         addItem(product, quantity);
@@ -154,34 +160,48 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                             </div>
                         </div>
 
+                        {/* Coupon Highlight */}
+                        <CouponHighlight />
+
                         {/* Action Buttons */}
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleAddToCart}
-                                disabled={product.stock === 0}
-                                className="flex-1 btn-solid py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Add to Cart
-                            </button>
-                            <button
-                                onClick={() => isWishlisted ? removeFromWishlist(product.id) : addToWishlist(product.id)}
-                                className={`p-4 border-2 rounded-lg transition-all ${isWishlisted
-                                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
-                                    : 'border-gray-300 hover:border-gray-400'
-                                    }`}
-                                aria-label="Add to wishlist"
-                            >
-                                <Heart
-                                    className={`w-6 h-6 transition-colors ${isWishlisted ? 'fill-[var(--color-primary)] text-[var(--color-primary)]' : 'text-gray-600'
+                        <div className="flex flex-col gap-3">
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleAddToCart}
+                                    disabled={product.stock === 0}
+                                    className="flex-1 btn-solid py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    <ShoppingBag className="w-5 h-5" />
+                                    Add to Cart
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleAddToCart();
+                                        window.location.href = '/checkout';
+                                    }}
+                                    disabled={product.stock === 0}
+                                    className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 text-lg font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl"
+                                >
+                                    <Sparkles className="w-5 h-5" />
+                                    Buy Now
+                                </button>
+                            </div>
+                            {/* Secondary Actions */}
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => isWishlisted ? removeFromWishlist(product.id) : addToWishlist(product.id)}
+                                    className={`flex items-center gap-2 px-4 py-2 border-2 rounded-lg transition-all ${isWishlisted
+                                        ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]'
+                                        : 'border-gray-300 hover:border-gray-400 text-gray-600'
                                         }`}
-                                />
-                            </button>
-                            <button
-                                className="p-4 border-2 border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-                                aria-label="Share product"
-                            >
-                                <Share2 className="w-6 h-6 text-gray-600" />
-                            </button>
+                                >
+                                    <Heart
+                                        className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`}
+                                    />
+                                    <span className="text-sm font-medium">{isWishlisted ? 'Saved' : 'Save'}</span>
+                                </button>
+                                <ShareProduct productTitle={product.title} />
+                            </div>
                         </div>
 
                         {/* Trust Badges */}
@@ -302,6 +322,53 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                             )}
                         </div>
                     </div>
+                </div>
+
+                {/* Bottom USP Banner */}
+                <div className="mt-16 bg-gradient-to-r from-[var(--color-primary)]/5 via-[var(--color-secondary)]/5 to-[var(--color-primary)]/5 border-y border-gray-200 py-12">
+                    <div className="max-w-5xl mx-auto px-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {/* Free Shipping */}
+                            <div className="flex flex-col items-center text-center group">
+                                <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+                                    <Truck className="w-8 h-8 text-[var(--color-primary)]" />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">Free Shipping</h3>
+                                <p className="text-sm text-gray-600">On all orders above ₹499</p>
+                            </div>
+
+                            {/* Easy Returns */}
+                            <div className="flex flex-col items-center text-center group">
+                                <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+                                    <RotateCcw className="w-8 h-8 text-[var(--color-primary)]" />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">Easy Returns</h3>
+                                <p className="text-sm text-gray-600">30-day hassle-free returns</p>
+                            </div>
+
+                            {/* 100% Authentic */}
+                            <div className="flex flex-col items-center text-center group">
+                                <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+                                    <ShieldCheck className="w-8 h-8 text-[var(--color-primary)]" />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">100% Authentic</h3>
+                                <p className="text-sm text-gray-600">Certified genuine products</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Related Products */}
+                <div className="max-w-7xl mx-auto px-4">
+                    <RelatedProducts
+                        categorySlug={product.category}
+                        currentProductId={product.id}
+                    />
+                </div>
+
+                {/* Recently Viewed */}
+                <div className="max-w-7xl mx-auto px-4">
+                    <RecentlyViewed currentProductId={product.id} />
                 </div>
             </div>
         </div>

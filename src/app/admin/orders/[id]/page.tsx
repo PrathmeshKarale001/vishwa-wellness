@@ -16,7 +16,7 @@ import { ORDER_STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from '@/types/orders';
 export default function AdminOrderDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const { user } = useAuthStore();
+    const { user, isInitialized } = useAuthStore();
     const [userRole, setUserRole] = useState<UserRole | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -30,6 +30,11 @@ export default function AdminOrderDetailPage() {
 
     useEffect(() => {
         async function init() {
+            // Wait for auth to initialize
+            if (!isInitialized) {
+                return;
+            }
+
             if (!user) {
                 router.push('/auth/login');
                 return;
@@ -47,7 +52,7 @@ export default function AdminOrderDetailPage() {
         }
 
         init();
-    }, [user, router, params.id]);
+    }, [user, isInitialized, router, params.id]);
 
     async function fetchOrder() {
         try {

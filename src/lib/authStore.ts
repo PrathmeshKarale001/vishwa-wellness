@@ -68,20 +68,38 @@ export const useAuthStore = create<AuthState>()(
                         });
                     }
 
-                    // Listen for auth changes
-                    supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
-                        set({
-                            user: session?.user ?? null,
-                            session
-                        });
+                    // Listen for auth changes with error handling
+                    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
+                        try {
+                            set({
+                                user: session?.user ?? null,
+                                session
+                            });
 
-                        if (session?.user) {
-                            await get().fetchProfile();
-                        } else {
-                            set({ profile: null });
+                            if (session?.user) {
+                                await get().fetchProfile();
+                            } else {
+                                set({ profile: null });
+                            }
+                        } catch (error) {
+                            // Ignore signal abortion errors - these happen during navigation
+                            if (error instanceof Error && error.message?.includes('signal is aborted')) {
+                                return;
+                            }
+                            console.error('Auth state change error:', error);
                         }
                     });
+
+                    // Store subscription for potential cleanup (not used in Zustand but good practice)
+                    if (typeof window !== 'undefined') {
+                        (window as unknown as { __authSubscription?: { unsubscribe: () => void } }).__authSubscription = subscription;
+                    }
                 } catch (error) {
+                    // Ignore signal abortion errors
+                    if (error instanceof Error && error.message?.includes('signal is aborted')) {
+                        set({ isLoading: false, isInitialized: true });
+                        return;
+                    }
                     console.error('Auth initialization error:', error);
                     set({ isLoading: false, isInitialized: true });
                 }

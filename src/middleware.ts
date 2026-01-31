@@ -62,6 +62,24 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
+    // For admin routes, verify the user has admin/staff role
+    if (request.nextUrl.pathname.startsWith('/admin') && user) {
+        // Fetch the user's role from user_roles table
+        const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .single();
+
+        const userRole = roleData?.role;
+        const isStaffOrAbove = userRole === 'staff' || userRole === 'admin' || userRole === 'super_admin';
+
+        if (!isStaffOrAbove) {
+            // Redirect non-admin users to account page
+            return NextResponse.redirect(new URL('/account', request.url));
+        }
+    }
+
     // Redirect logged-in users away from auth pages (optional)
     const authPaths = ['/auth/login', '/auth/signup'];
     const isAuthPath = authPaths.some((path) =>

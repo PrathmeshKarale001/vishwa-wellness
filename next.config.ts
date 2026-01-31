@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
+  // Optimize barrel imports - CRITICAL for performance
+  // Reduces lucide-react import from ~1MB to ~2KB per icon
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
+
   images: {
     // Allow images from Sanity CDN
     remotePatterns: [

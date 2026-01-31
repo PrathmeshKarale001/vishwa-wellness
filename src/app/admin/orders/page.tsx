@@ -15,7 +15,7 @@ import { ORDER_STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from '@/types/orders';
 export default function AdminOrdersPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user } = useAuthStore();
+    const { user, isInitialized } = useAuthStore();
     const [userRole, setUserRole] = useState<UserRole | null>(null);
     const [loading, setLoading] = useState(true);
     const [orders, setOrders] = useState<Order[]>([]);
@@ -30,6 +30,10 @@ export default function AdminOrdersPage() {
 
     useEffect(() => {
         async function checkAccess() {
+            if (!isInitialized) {
+                return;
+            }
+
             if (!user) {
                 router.push('/auth/login');
                 return;
@@ -46,7 +50,7 @@ export default function AdminOrdersPage() {
         }
 
         checkAccess();
-    }, [user, router]);
+    }, [user, isInitialized, router]);
 
     useEffect(() => {
         if (userRole) {

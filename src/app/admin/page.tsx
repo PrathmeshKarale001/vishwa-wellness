@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
     Package, DollarSign, Clock, TrendingUp,
     ChevronRight, Users, ShoppingBag, Settings,
-    BarChart3, LogOut, ArrowRight
+    BarChart3, LogOut, ArrowRight, Ticket
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/authStore';
 import { getUserRole } from '@/lib/rbac';
@@ -22,7 +22,7 @@ interface OrderStats {
 
 export default function AdminDashboard() {
     const router = useRouter();
-    const { user, signOut } = useAuthStore();
+    const { user, signOut, isInitialized } = useAuthStore();
     const [userRole, setUserRole] = useState<UserRole | null>(null);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<OrderStats | null>(null);
@@ -30,10 +30,16 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         async function checkAccess() {
+            // Wait for auth store to initialize
+            if (!isInitialized) {
+                console.log('[ADMIN] Waiting for auth to initialize...');
+                return;
+            }
+
             console.log('[ADMIN] Checking access, user:', user?.email);
 
             if (!user) {
-                console.log('[ADMIN] No user, redirecting to login');
+                console.log('[ADMIN] No user after init, redirecting to login');
                 router.push('/account/login');
                 return;
             }
@@ -54,7 +60,7 @@ export default function AdminDashboard() {
         }
 
         checkAccess();
-    }, [user, router]);
+    }, [user, isInitialized, router]);
 
     async function fetchData() {
         try {
@@ -201,6 +207,19 @@ export default function AdminDashboard() {
                                 <div className="flex-1">
                                     <p className="font-medium text-gray-900">Manage Orders</p>
                                     <p className="text-sm text-gray-500">View and update orders</p>
+                                </div>
+                                <ChevronRight className="text-gray-400" size={20} />
+                            </Link>
+                            <Link
+                                href="/admin/coupons"
+                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                            >
+                                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                                    <Ticket className="text-orange-600" size={20} />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-medium text-gray-900">Coupons</p>
+                                    <p className="text-sm text-gray-500">Manage discount codes</p>
                                 </div>
                                 <ChevronRight className="text-gray-400" size={20} />
                             </Link>

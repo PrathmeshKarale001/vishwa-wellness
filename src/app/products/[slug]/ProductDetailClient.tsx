@@ -180,7 +180,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                                         window.location.href = '/checkout';
                                     }}
                                     disabled={product.stock === 0}
-                                    className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 text-lg font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl"
+                                    className="flex-1 btn-outline py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     <Sparkles className="w-5 h-5" />
                                     Buy Now

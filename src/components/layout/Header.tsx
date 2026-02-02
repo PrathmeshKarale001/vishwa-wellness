@@ -133,7 +133,7 @@ export default function Header({ categories = [] }: HeaderProps) {
                             </a>
                         </div>
                         <div className="flex items-center gap-6">
-                            <span>Free Shipping on orders above ₹999</span>
+                            <span>Free Shipping on all orders</span>
                             <span className="text-[#bbb]">|</span>
                             <button
                                 onClick={() => setSearchOpen(true)}
@@ -217,9 +217,9 @@ export default function Header({ categories = [] }: HeaderProps) {
                         </nav>
 
                         {/* Icons */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                             <button
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
                                 onClick={() => setSearchOpen(true)}
                                 aria-label="Search (⌘K)"
                             >
@@ -227,7 +227,7 @@ export default function Header({ categories = [] }: HeaderProps) {
                             </button>
                             <Link
                                 href="/wishlist"
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative hidden sm:flex"
+                                className="w-10 h-10 hidden sm:flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors relative"
                             >
                                 <Heart size={20} />
                             </Link>
@@ -238,7 +238,7 @@ export default function Header({ categories = [] }: HeaderProps) {
                                     // Logged in - show user dropdown
                                     <button
                                         onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                                        className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                        className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
                                     >
                                         {profile?.avatar_url ? (
                                             <img
@@ -256,7 +256,7 @@ export default function Header({ categories = [] }: HeaderProps) {
                                     // Not logged in - show login link
                                     <Link
                                         href="/account/login"
-                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                        className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
                                     >
                                         <User size={20} />
                                     </Link>
@@ -316,12 +316,12 @@ export default function Header({ categories = [] }: HeaderProps) {
 
                             <button
                                 onClick={openCart}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                                className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors relative"
                                 aria-label="Open cart"
                             >
                                 <ShoppingCart size={20} />
                                 {itemCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-[var(--color-primary)] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                                    <span className="absolute top-0 right-0 bg-[var(--color-primary)] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
                                         {itemCount > 99 ? '99+' : itemCount}
                                     </span>
                                 )}

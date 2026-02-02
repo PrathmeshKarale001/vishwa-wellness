@@ -107,10 +107,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         localStorage.removeItem('vishwa-recent-searches');
     };
 
-    const getDiscountedPrice = (price: number, discount?: number) => {
-        if (!discount) return price;
-        return Math.round(price - (price * discount / 100));
-    };
+
 
     // Filter products based on search term
     const filteredProducts = products.filter(p =>
@@ -214,12 +211,12 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                                                         </p>
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <span className="font-bold text-gray-900">
-                                                                ₹{getDiscountedPrice(product.price, product.discount)}
+                                                                ₹{Math.round(product.price).toLocaleString()}
                                                             </span>
-                                                            {product.discount && (
+                                                            {product.comparePrice && (
                                                                 <>
                                                                     <span className="text-sm text-gray-400 line-through">
-                                                                        ₹{product.price}
+                                                                        ₹{Math.round(product.comparePrice).toLocaleString()}
                                                                     </span>
                                                                     <span className="text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
                                                                         {product.discount}% OFF

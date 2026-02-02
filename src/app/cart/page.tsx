@@ -44,10 +44,7 @@ export default function CartPage() {
     const total = getTotal();
     const itemCount = getItemCount();
 
-    const getDiscountedPrice = (price: number, discount?: number) => {
-        if (!discount) return price;
-        return price - (price * discount / 100);
-    };
+
 
     const handleApplyCoupon = (e: React.FormEvent) => {
         e.preventDefault();
@@ -113,9 +110,9 @@ export default function CartPage() {
                                 {/* Cart Items List */}
                                 <div className="divide-y divide-[#eee]">
                                     {items.map((item) => {
+                                        // product.price is already the sale price from Sanity
                                         const price = item.variant?.price ?? item.product.price;
-                                        const discountedPrice = getDiscountedPrice(price, item.product.discount);
-                                        const lineTotal = discountedPrice * item.quantity;
+                                        const lineTotal = price * item.quantity;
 
                                         return (
                                             <div
@@ -160,13 +157,13 @@ export default function CartPage() {
                                                 {/* Price */}
                                                 <div className="md:col-span-2 text-center">
                                                     <span className="md:hidden text-sm text-[#777]">Price: </span>
-                                                    {item.product.discount ? (
+                                                    {item.product.comparePrice ? (
                                                         <span>
                                                             <span className="text-[var(--color-primary)] font-medium">
-                                                                ₹{Math.round(discountedPrice).toLocaleString()}
+                                                                ₹{Math.round(price).toLocaleString()}
                                                             </span>
                                                             <del className="text-[#999] text-sm ml-2">
-                                                                ₹{Math.round(price).toLocaleString()}
+                                                                ₹{Math.round(item.product.comparePrice).toLocaleString()}
                                                             </del>
                                                         </span>
                                                     ) : (

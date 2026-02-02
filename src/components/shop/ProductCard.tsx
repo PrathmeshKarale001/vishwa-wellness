@@ -53,9 +53,9 @@ function ProductCard({
         onAddToWishlist?.(product);
     };
 
-    const discountedPrice = product.discount
-        ? Math.round(product.price - (product.price * product.discount / 100))
-        : product.price;
+    // product.price is already the sale/discounted price from Sanity
+    // comparePrice is the original price (shown as strikethrough)
+    const displayPrice = product.price;
 
     const renderStars = (rating: number = 0) => {
         return Array(5).fill(0).map((_, i) => (
@@ -203,13 +203,13 @@ function ProductCard({
 
                 {/* Price */}
                 <div className="price flex items-center justify-center gap-2">
-                    {product.discount ? (
+                    {product.comparePrice ? (
                         <>
-                            <del className="!text-[var(--color-light-text)] !font-normal !text-xs italic">₹{Math.round(product.price).toLocaleString('en-IN')}</del>
-                            <span className="!text-black !font-bold">₹{discountedPrice.toLocaleString('en-IN')}</span>
+                            <del className="!text-[var(--color-light-text)] !font-normal !text-xs italic">₹{Math.round(product.comparePrice).toLocaleString('en-IN')}</del>
+                            <span className="!text-black !font-bold">₹{Math.round(displayPrice).toLocaleString('en-IN')}</span>
                         </>
                     ) : (
-                        <span className="!text-black !font-bold">₹{Math.round(product.price).toLocaleString('en-IN')}</span>
+                        <span className="!text-black !font-bold">₹{Math.round(displayPrice).toLocaleString('en-IN')}</span>
                     )}
                 </div>
 

@@ -21,6 +21,7 @@ export function sanityProductToFrontend(sanityProduct: SanityProduct): FrontendP
         comparePrice: sanityProduct.comparePrice,
         discount,
         category: sanityProduct.category?.name || '',
+        categorySlug: sanityProduct.category?.slug || '',
         tags: sanityProduct.tags || [],
         images: sanityProduct.images?.map((img) => ({
             id: img._key,

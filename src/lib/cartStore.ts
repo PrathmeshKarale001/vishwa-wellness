@@ -98,17 +98,15 @@ export const useCartStore = create<CartState>()(
 
             getSubtotal: () => {
                 return get().items.reduce((total, item) => {
+                    // product.price is already the sale/discounted price from Sanity
                     const price = item.variant?.price ?? item.product.price;
-                    const discount = item.product.discount ?? 0;
-                    const discountedPrice = price - (price * discount / 100);
-                    return total + discountedPrice * item.quantity;
+                    return total + price * item.quantity;
                 }, 0);
             },
 
             getShipping: () => {
-                const subtotal = get().getSubtotal();
-                // Free shipping above ₹999
-                return subtotal >= 999 ? 0 : 99;
+                // Free shipping on all orders
+                return 0;
             },
 
             getTotal: () => {

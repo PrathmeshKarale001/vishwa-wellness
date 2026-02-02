@@ -73,7 +73,7 @@ interface ProductDetailProps {
 const productFeatures = [
     { icon: Shield, label: '100% Natural', desc: 'Ayurvedic Formula' },
     { icon: Award, label: 'AYUSH Certified', desc: 'Quality Assured' },
-    { icon: Truck, label: 'Free Shipping', desc: 'Orders above ₹999' },
+    { icon: Truck, label: 'Free Shipping', desc: 'On all orders' },
     { icon: RotateCcw, label: 'Easy Returns', desc: '7 Day Policy' },
 ];
 

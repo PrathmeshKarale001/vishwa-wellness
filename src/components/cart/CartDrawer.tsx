@@ -44,10 +44,7 @@ export default function CartDrawer() {
     const total = getTotal();
     const itemCount = getItemCount();
 
-    const getDiscountedPrice = (price: number, discount?: number) => {
-        if (!discount) return price;
-        return price - (price * discount / 100);
-    };
+
 
     return (
         <>
@@ -94,7 +91,6 @@ export default function CartDrawer() {
                             <div className="space-y-4">
                                 {items.map((item) => {
                                     const price = item.variant?.price ?? item.product.price;
-                                    const discountedPrice = getDiscountedPrice(price, item.product.discount);
 
                                     return (
                                         <div
@@ -157,7 +153,7 @@ export default function CartDrawer() {
 
                                                 <div className="mt-auto">
                                                     <p className="text-xs text-gray-900">
-                                                        {item.quantity} × ₹{Math.round(discountedPrice).toLocaleString()}
+                                                        {item.quantity} × ₹{Math.round(price).toLocaleString()}
                                                     </p>
                                                 </div>
                                             </div>

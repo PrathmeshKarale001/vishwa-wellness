@@ -42,6 +42,7 @@ export interface Product {
     comparePrice?: number;
     discount?: number;
     category: string;
+    categorySlug?: string;
     subcategory?: string;
     tags: string[];
     images: ProductImage[];

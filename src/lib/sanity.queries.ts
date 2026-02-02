@@ -150,9 +150,9 @@ export const allPostsQuery = `
   }
 `;
 
-// Fetch all categories with subcategories
+// Fetch all categories with subcategories (only published, not in releases)
 export const allCategoriesQuery = `
-  *[_type == "category"] | order(order asc) {
+  *[_type == "category" && !(_id match "drafts.*") && !(_id match "versions.*")] | order(order asc) {
     _id,
     name,
     "slug": slug.current,

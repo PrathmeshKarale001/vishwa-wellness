@@ -11,15 +11,6 @@ import { Category } from '@/lib/sanity.types';
 
 
 
-const categories = [
-    { name: 'All Products', slug: 'all', count: 8 },
-    { name: 'Snān Collection', slug: 'snan', count: 2 },
-    { name: 'Lepam Collection', slug: 'lepam', count: 2 },
-    { name: 'Pāna Collection', slug: 'pana', count: 1 },
-    { name: 'Home & Aura', slug: 'home', count: 2 },
-    { name: 'Kits & Bundles', slug: 'kit', count: 1 },
-];
-
 const priceRanges = [
     { label: 'Under ₹300', min: 0, max: 300 },
     { label: '₹300 - ₹500', min: 300, max: 500 },
@@ -30,10 +21,11 @@ const priceRanges = [
 interface ShopPageProps {
     products: Product[];
     categories?: Category[];
+    initialCategory?: string;
 }
 
-export default function ShopPage({ products = [], categories: sanityCategories = [] }: ShopPageProps) {
-    const [selectedCategory, setSelectedCategory] = useState('all');
+export default function ShopPage({ products = [], categories: sanityCategories = [], initialCategory = 'all' }: ShopPageProps) {
+    const [selectedCategory, setSelectedCategory] = useState(initialCategory);
     const [selectedPrice, setSelectedPrice] = useState<{ min: number; max: number } | null>(null);
     const [sortBy, setSortBy] = useState('newest');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -41,43 +33,36 @@ export default function ShopPage({ products = [], categories: sanityCategories =
     const [expandedSections, setExpandedSections] = useState({
         categories: true,
         price: true,
-        ritual: true,
     });
 
     // Use passed products
     const displayProducts = products;
 
     // Compute category counts dynamically from actual products
+    // Matches by category slug or tags
     const getCategoryCount = (slug: string): number => {
         if (slug === 'all') return displayProducts.length;
         return displayProducts.filter(p =>
-            p.category?.toLowerCase() === slug.toLowerCase() ||
-            p.ritualType?.toLowerCase() === slug.toLowerCase() ||
+            p.categorySlug?.toLowerCase() === slug.toLowerCase() ||
             p.tags?.some(t => t.toLowerCase() === slug.toLowerCase())
         ).length;
     };
 
-    // Build dynamic categories from Sanity data or use fallback with live counts
-    const displayCategories = sanityCategories.length > 0
-        ? [
-            { name: 'All Products', slug: 'all', count: displayProducts.length },
-            ...sanityCategories.map(cat => ({
-                name: cat.name,
-                slug: cat.slug,
-                count: getCategoryCount(cat.slug)
-            }))
-        ]
-        : categories.map(cat => ({
-            ...cat,
+    // Build dynamic categories from Sanity data - fully dynamic, no hardcoded fallback
+    const displayCategories = [
+        { name: 'All Products', slug: 'all', count: displayProducts.length },
+        ...sanityCategories.map(cat => ({
+            name: cat.name,
+            slug: cat.slug,
             count: getCategoryCount(cat.slug)
-        }));
+        }))
+    ];
 
-    // Filter products - match by category name, slug, ritualType, or tags
+    // Filter products - match by category slug or tags
     const filteredProducts = displayProducts.filter((product: Product) => {
         if (selectedCategory !== 'all') {
             const categoryMatch =
-                product.category?.toLowerCase() === selectedCategory.toLowerCase() ||
-                product.ritualType?.toLowerCase() === selectedCategory.toLowerCase() ||
+                product.categorySlug?.toLowerCase() === selectedCategory.toLowerCase() ||
                 product.tags?.some(t => t.toLowerCase() === selectedCategory.toLowerCase());
             if (!categoryMatch) return false;
         }
@@ -179,33 +164,6 @@ export default function ShopPage({ products = [], categories: sanityCategories =
                             </li>
                         ))}
                     </ul>
-                )}
-            </div>
-
-            {/* Ritual Type */}
-            <div className="pb-6">
-                <button
-                    className="flex items-center justify-between w-full text-left"
-                    onClick={() => toggleSection('ritual')}
-                >
-                    <h4 className="font-semibold text-[#222] uppercase text-sm tracking-wider">Ritual Type</h4>
-                    {expandedSections.ritual ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                </button>
-                {expandedSections.ritual && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        {['Snān', 'Lepam', 'Pāna', 'Home'].map((ritual) => (
-                            <button
-                                key={ritual}
-                                onClick={() => setSelectedCategory(ritual.toLowerCase().replace('ā', 'a'))}
-                                className={`px-3 py-1 border text-sm transition-colors ${selectedCategory === ritual.toLowerCase().replace('ā', 'a')
-                                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white'
-                                    : 'border-[#ddd] text-[#777] hover:border-[var(--color-primary)]'
-                                    }`}
-                            >
-                                {ritual}
-                            </button>
-                        ))}
-                    </div>
                 )}
             </div>
 

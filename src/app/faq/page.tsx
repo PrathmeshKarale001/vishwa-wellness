@@ -31,7 +31,7 @@ const faqCategories = [
         faqs: [
             {
                 question: 'What are your shipping options?',
-                answer: 'We offer standard shipping (5-7 business days) and express shipping (2-3 business days) across India. International shipping is available to select countries with delivery times of 10-15 business days. Free shipping is available on orders above ₹999.'
+                answer: 'We offer free standard shipping (5-7 business days) on all orders across India. Express shipping (2-3 business days) is also available for an additional charge. International shipping is available to select countries with delivery times of 10-15 business days.'
             },
             {
                 question: 'How can I track my order?',

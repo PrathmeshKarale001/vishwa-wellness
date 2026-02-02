@@ -24,9 +24,8 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
 
     const inWishlist = isInWishlist(product.id);
 
-    const discountedPrice = product.discount
-        ? product.price - (product.price * product.discount / 100)
-        : product.price;
+    // product.price is already the sale price from Sanity
+    // comparePrice is the original price (shown as strikethrough)
 
     const handleAddToCart = () => {
         addItem(product, quantity);
@@ -142,17 +141,19 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
 
                             {/* Price */}
                             <div className="flex items-center gap-3 mb-4">
-                                {product.discount ? (
+                                {product.comparePrice ? (
                                     <>
                                         <span className="text-2xl font-bold text-[var(--color-primary)]">
-                                            ₹{Math.round(discountedPrice).toLocaleString()}
+                                            ₹{Math.round(product.price).toLocaleString()}
                                         </span>
                                         <del className="text-lg text-[#999]">
-                                            ₹{Math.round(product.price).toLocaleString()}
+                                            ₹{Math.round(product.comparePrice).toLocaleString()}
                                         </del>
-                                        <span className="px-2 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-sm font-medium">
-                                            Save {product.discount}%
-                                        </span>
+                                        {product.discount && (
+                                            <span className="px-2 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-sm font-medium">
+                                                Save {product.discount}%
+                                            </span>
+                                        )}
                                     </>
                                 ) : (
                                     <span className="text-2xl font-bold text-[var(--color-primary)]">

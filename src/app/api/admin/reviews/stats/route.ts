@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase-server';
 import type { ReviewStats } from '@/types/reviews';
 
 // GET: Fetch review statistics for admin dashboard
@@ -15,16 +15,20 @@ export async function GET() {
             );
         }
 
-        // Check if user is admin/staff
+        // Check if user is admin/staff (with email fallback)
         const { data: roleData } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', user.id)
             .single();
 
+        const adminEmails = ['eodonsocial@gmail.com', 'admin@vishwawellness.com'];
+        const isAdminEmail = adminEmails.includes(user.email || '');
+
         const isStaffOrAbove = roleData?.role === 'staff' ||
             roleData?.role === 'admin' ||
-            roleData?.role === 'super_admin';
+            roleData?.role === 'super_admin' ||
+            isAdminEmail;
 
         if (!isStaffOrAbove) {
             return NextResponse.json(
@@ -33,31 +37,34 @@ export async function GET() {
             );
         }
 
+        // Use service role client to bypass RLS
+        const adminClient = createServiceRoleClient();
+
         // Get total reviews count
-        const { count: totalReviews } = await supabase
+        const { count: totalReviews } = await adminClient
             .from('reviews')
             .select('*', { count: 'exact', head: true });
 
         // Get pending count
-        const { count: pendingCount } = await supabase
+        const { count: pendingCount } = await adminClient
             .from('reviews')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'pending');
 
         // Get approved count
-        const { count: approvedCount } = await supabase
+        const { count: approvedCount } = await adminClient
             .from('reviews')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'approved');
 
         // Get rejected count
-        const { count: rejectedCount } = await supabase
+        const { count: rejectedCount } = await adminClient
             .from('reviews')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'rejected');
 
         // Get average rating (from approved reviews only)
-        const { data: ratingData } = await supabase
+        const { data: ratingData } = await adminClient
             .from('reviews')
             .select('rating')
             .eq('status', 'approved');

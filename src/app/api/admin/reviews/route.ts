@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import type { ReviewStatus, ReviewFilters } from '@/types/reviews';
+import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase-server';
+import type { ReviewStatus } from '@/types/reviews';
 
 // GET: Fetch all reviews with filters (admin only)
 export async function GET(request: Request) {
@@ -15,16 +15,21 @@ export async function GET(request: Request) {
             );
         }
 
-        // Check if user is admin
-        const { data: roleData } = await supabase
+        // Check if user is admin (with email fallback)
+        const { data: roleData, error: roleError } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', user.id)
             .single();
 
+        // Admin emails fallback (when RLS blocks user_roles query)
+        const adminEmails = ['eodonsocial@gmail.com', 'admin@vishwawellness.com'];
+        const isAdminEmail = adminEmails.includes(user.email || '');
+
         const isStaffOrAbove = roleData?.role === 'staff' ||
             roleData?.role === 'admin' ||
-            roleData?.role === 'super_admin';
+            roleData?.role === 'super_admin' ||
+            isAdminEmail;
 
         if (!isStaffOrAbove) {
             return NextResponse.json(
@@ -41,15 +46,12 @@ export async function GET(request: Request) {
         const limit = parseInt(url.searchParams.get('limit') || '20');
         const offset = parseInt(url.searchParams.get('offset') || '0');
 
-        let query = supabase
+        // Use service role client to bypass RLS for admin operations
+        const adminClient = createServiceRoleClient();
+
+        let query = adminClient
             .from('reviews')
-            .select(`
-                *,
-                profiles (
-                    full_name,
-                    avatar_url
-                )
-            `, { count: 'exact' });
+            .select('*', { count: 'exact' });
 
         // Apply filters
         if (status && status !== 'all') {
@@ -111,14 +113,19 @@ export async function PATCH(request: Request) {
             );
         }
 
-        // Check if user is admin
+        // Check if user is admin (with email fallback)
         const { data: roleData } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', user.id)
             .single();
 
-        const isAdmin = roleData?.role === 'admin' || roleData?.role === 'super_admin';
+        const adminEmails = ['eodonsocial@gmail.com', 'admin@vishwawellness.com'];
+        const isAdminEmail = adminEmails.includes(user.email || '');
+
+        const isAdmin = roleData?.role === 'admin' ||
+            roleData?.role === 'super_admin' ||
+            isAdminEmail;
 
         if (!isAdmin) {
             return NextResponse.json(
@@ -160,7 +167,10 @@ export async function PATCH(request: Request) {
             updateData.moderation_notes = moderation_notes;
         }
 
-        const { data, error } = await supabase
+        // Use service role client to bypass RLS
+        const adminClient = createServiceRoleClient();
+
+        const { data, error } = await adminClient
             .from('reviews')
             .update(updateData)
             .in('id', reviewIds)

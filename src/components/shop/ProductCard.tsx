@@ -145,13 +145,13 @@ function ProductCard({
                     </button>
                 </div>
 
-                {/* Image Thumbnails (on hover) */}
+                {/* Image Thumbnails (on hover) - Vertical layout on left */}
                 {product.images.length > 1 && isHovered && (
-                    <div className="absolute bottom-14 left-0 right-0 flex justify-center gap-2 px-4 z-10 animate-fadeIn">
+                    <div className="absolute top-14 left-3 flex flex-col gap-2 z-10 animate-fadeIn">
                         {product.images.slice(0, 4).map((img, idx) => (
                             <button
                                 key={(img as any)._key || img.id || idx}
-                                className={`w-10 h-10 border-2 overflow-hidden transition-all bg-white shadow-sm ${currentImage === idx ? 'border-[var(--color-primary)]' : 'border-transparent hover:border-gray-200'
+                                className={`w-10 h-10 border-2 overflow-hidden transition-all bg-white shadow-sm rounded-sm ${currentImage === idx ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]' : 'border-transparent hover:border-gray-300'
                                     }`}
                                 onMouseEnter={(e) => {
                                     e.stopPropagation();

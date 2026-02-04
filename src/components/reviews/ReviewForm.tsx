@@ -43,17 +43,36 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
                 return;
             }
 
+            // Check if user has purchased this product (verified purchase)
+            const { data: orderItems } = await supabase
+                .from('order_items')
+                .select(`
+                    id,
+                    orders!inner (
+                        user_id,
+                        status
+                    )
+                `)
+                .eq('product_id', productId)
+                .eq('orders.user_id', user.id)
+                .eq('orders.status', 'delivered')
+                .limit(1);
+
+            const isVerifiedPurchase = (orderItems && orderItems.length > 0);
+            const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous';
+
             const { error: submitError } = await supabase
-                .from('product_reviews')
+                .from('reviews')
                 .insert({
                     product_id: productId,
                     user_id: user.id,
-                    user_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous',
-                    user_email: user.email,
+                    user_name: userName,
                     rating,
                     title: title.trim() || null,
-                    review_text: reviewText.trim(),
-                    verified_purchase: false, // TODO: Check if user actually purchased
+                    content: reviewText.trim(),
+                    is_verified: isVerifiedPurchase,
+                    is_approved: isVerifiedPurchase, // Auto-approve verified purchases
+                    status: isVerifiedPurchase ? 'approved' : 'pending'
                 });
 
             if (submitError) throw submitError;
@@ -62,6 +81,14 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
             setRating(0);
             setTitle('');
             setReviewText('');
+
+            // Show appropriate success message
+            if (isVerifiedPurchase) {
+                alert('Thank you! Your review has been published.');
+            } else {
+                alert('Thank you! Your review will be published after moderation.');
+            }
+
             onSuccess?.();
         } catch (err) {
             console.error('Review submission error:', err);
@@ -98,8 +125,8 @@ export default function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
                         >
                             <Star
                                 className={`w-8 h-8 ${star <= (hoverRating || rating)
-                                        ? 'fill-[#FFA500] text-[#FFA500]'
-                                        : 'text-gray-300'
+                                    ? 'fill-[#FFA500] text-[#FFA500]'
+                                    : 'text-gray-300'
                                     }`}
                             />
                         </button>

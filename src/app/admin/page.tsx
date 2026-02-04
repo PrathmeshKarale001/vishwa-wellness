@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
     Package, DollarSign, Clock, TrendingUp,
     ChevronRight, Users, ShoppingBag, Settings,
-    BarChart3, LogOut, ArrowRight, Ticket
+    BarChart3, LogOut, ArrowRight, Ticket, Star
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/authStore';
 import { getUserRole } from '@/lib/rbac';
@@ -220,6 +220,19 @@ export default function AdminDashboard() {
                                 <div className="flex-1">
                                     <p className="font-medium text-gray-900">Coupons</p>
                                     <p className="text-sm text-gray-500">Manage discount codes</p>
+                                </div>
+                                <ChevronRight className="text-gray-400" size={20} />
+                            </Link>
+                            <Link
+                                href="/admin/reviews"
+                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                            >
+                                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
+                                    <Star className="text-yellow-600" size={20} />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-medium text-gray-900">Reviews</p>
+                                    <p className="text-sm text-gray-500">Moderate customer reviews</p>
                                 </div>
                                 <ChevronRight className="text-gray-400" size={20} />
                             </Link>

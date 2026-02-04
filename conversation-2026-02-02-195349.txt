@@ -1,0 +1,13 @@
+
+╭─── Claude Code v2.1.29 ──────────────────────────────────────────────────────╮
+│                                                    │ Tips for getting        │
+│              Welcome back Strategist!              │ started                 │
+│                                                    │ Run /init to create a … │
+│                       ▐▛███▜▌                      │ ─────────────────────── │
+│                      ▝▜█████▛▘                     │ Recent activity         │
+│                        ▘▘ ▝▝                       │ No recent activity      │
+│                                                    │                         │
+│ Opus 4.5 · Claude Pro · eodonmarketing@gmail.com's │                         │
+│  Organization                                      │                         │
+│            ~\Downloads\vishwa-wellness             │                         │
+╰──────────────────────────────────────────────────────────────────────────────╯

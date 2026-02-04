@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { ChevronRight, Check, CreditCard, Truck, MapPin } from 'lucide-react';
 import { useCartStore } from '@/lib/cartStore';
 import { useAuthStore } from '@/lib/authStore';
-import { getSupabaseClient } from '@/lib/supabase';
 import { useRazorpay } from '@/lib/useRazorpay';
 import { CheckoutProgress, CompactTrustBadges } from '@/components/ui';
 import {
@@ -105,53 +104,47 @@ export default function CheckoutPage() {
 
     const getStepIndex = (step: CheckoutStep) => steps.findIndex(s => s.id === step);
 
-    // Apply coupon handler
+    // Apply coupon handler - Uses API instead of direct Supabase query for security
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return;
 
         setCouponLoading(true);
         setCouponError('');
 
-        const supabase = getSupabaseClient();
-        const { data, error } = await supabase
-            .from('coupons')
-            .select('*')
-            .eq('code', couponCode.toUpperCase())
-            .eq('is_active', true)
-            .single();
+        try {
+            const response = await fetch('/api/coupons/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: couponCode.trim(),
+                    subtotal,
+                }),
+            });
 
-        if (error || !data) {
-            setCouponError('Invalid or expired coupon code');
-            setCouponLoading(false);
-            return;
-        }
+            const data = await response.json();
 
-        // Validate coupon
-        if (data.min_order_value && subtotal < data.min_order_value) {
-            setCouponError(`Minimum order value is ₹${data.min_order_value}`);
-            setCouponLoading(false);
-            return;
-        }
+            if (!response.ok || !data.success) {
+                setCouponError(data.error || 'Invalid or expired coupon code');
+                setCouponLoading(false);
+                return;
+            }
 
-        const now = new Date();
-        if (data.valid_from && new Date(data.valid_from) > now) {
-            setCouponError('This coupon is not yet active');
+            // Set the validated coupon from API response
+            setAppliedCoupon({
+                id: data.coupon.id,
+                code: data.coupon.code,
+                description: data.coupon.description,
+                discount_type: data.coupon.discount_type,
+                discount_value: data.coupon.discount_value,
+                min_order_value: 0, // Not needed client-side after validation
+                max_discount: data.coupon.max_discount,
+            });
             setCouponLoading(false);
-            return;
-        }
-        if (data.valid_until && new Date(data.valid_until) < now) {
-            setCouponError('This coupon has expired');
+        } catch (error) {
+            console.error('Coupon validation error:', error);
+            setCouponError('Failed to validate coupon. Please try again.');
             setCouponLoading(false);
-            return;
         }
-        if (data.usage_limit && data.used_count >= data.usage_limit) {
-            setCouponError('This coupon has reached its usage limit');
-            setCouponLoading(false);
-            return;
-        }
-
-        setAppliedCoupon(data as Coupon);
-        setCouponLoading(false);
     };
 
     const handleRemoveCoupon = () => {
@@ -160,7 +153,7 @@ export default function CheckoutPage() {
         setCouponError('');
     };
 
-    // Place order handler
+    // Place order handler - FIXED: Create order FIRST, then process payment
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
         setPaymentError('');
@@ -198,71 +191,110 @@ export default function CheckoutPage() {
             shipping_cost: shipping,
             discount: discount,
             total,
+            coupon_code: appliedCoupon?.code,
             notes: appliedCoupon ? `Coupon: ${appliedCoupon.code}` : undefined,
         };
 
         if (paymentMethod === 'online') {
-            // Process Razorpay payment
-            const result = await initiatePayment({
-                amount: total,
-                name: 'Vishwa Wellness',
-                description: `Order of ${itemCount} item(s)`,
-                prefill: {
-                    name: `${shippingForm.firstName} ${shippingForm.lastName}`,
-                    email: shippingForm.email,
-                    contact: shippingForm.phone,
-                },
-                theme: { color: '#C73C2E' },
-            });
+            // STEP 1: Create order FIRST with pending status
+            let order: { id: string; order_number: string } | null = null;
 
-            if (!result.success) {
-                setPaymentError(result.error || 'Payment failed. Please try again.');
-                setIsProcessing(false);
-                return;
-            }
-
-            // Create order after successful payment
-            try {
-                const orderResponse = await fetch('/api/orders', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderPayload),
-                });
-
-                if (!orderResponse.ok) {
-                    const errorData = await orderResponse.json();
-                    throw new Error(errorData.message || 'Failed to create order');
-                }
-
-                const { order } = await orderResponse.json();
-
-                // Update order with payment info
-                await fetch(`/api/orders/${order.id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        payment_status: 'paid',
-                        razorpay_order_id: result.orderId,
-                        razorpay_payment_id: result.paymentId,
-                        razorpay_signature: result.signature,
-                    }),
-                });
-
-                setOrderNumber(order.order_number);
-                setOrderPlaced(true);
-                clearCart();
-            } catch (error) {
-                console.error('Order creation error:', error);
-                setPaymentError('Payment successful but order creation failed. Please contact support.');
-            }
-        } else {
-            // COD or UPI order
             try {
                 const orderResponse = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ...orderPayload,
+                        payment_method: 'razorpay',
+                    }),
+                });
+
+                if (!orderResponse.ok) {
+                    const errorData = await orderResponse.json();
+                    throw new Error(errorData.message || errorData.error || 'Failed to create order');
+                }
+
+                const data = await orderResponse.json();
+                order = data.order;
+            } catch (error) {
+                console.error('Order creation error:', error);
+                const errorMsg = error instanceof Error ? error.message : 'Failed to create order';
+                setPaymentError(errorMsg);
+                setIsProcessing(false);
+                return;
+            }
+
+            if (!order) {
+                setPaymentError('Failed to create order. Please try again.');
+                setIsProcessing(false);
+                return;
+            }
+
+            // STEP 2: Process Razorpay payment with order ID in notes
+            const result = await initiatePayment({
+                amount: total,
+                name: 'Vishwa Wellness',
+                description: `Order #${order.order_number}`,
+                prefill: {
+                    name: `${shippingForm.firstName} ${shippingForm.lastName}`,
+                    email: shippingForm.email,
+                    contact: shippingForm.phone,
+                },
+                notes: {
+                    order_id: order.id,
+                    order_number: order.order_number,
+                },
+                theme: { color: '#C73C2E' },
+            });
+
+            if (!result.success) {
+                // Payment failed or cancelled - order remains in pending state
+                // The user can retry payment or the order will expire
+                setPaymentError(result.error || 'Payment failed. Please try again.');
+                setIsProcessing(false);
+                return;
+            }
+
+            // STEP 3: Update order with payment info
+            try {
+                const updateResponse = await fetch(`/api/orders/${order.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        payment_status: 'paid',
+                        status: 'confirmed',
+                        razorpay_order_id: result.orderId,
+                        razorpay_payment_id: result.paymentId,
+                        razorpay_signature: result.signature,
+                    }),
+                });
+
+                if (!updateResponse.ok) {
+                    // Payment was captured but update failed
+                    // Webhook will handle this case
+                    console.error('Failed to update order after payment, webhook will handle');
+                }
+
+                setOrderNumber(order.order_number);
+                setOrderPlaced(true);
+                clearCart();
+            } catch (error) {
+                // Payment was captured but update failed - webhook will handle
+                console.error('Order update error:', error);
+                // Still show success since payment went through
+                setOrderNumber(order.order_number);
+                setOrderPlaced(true);
+                clearCart();
+            }
+        } else {
+            // COD or UPI order - same flow (no payment processing needed)
+            try {
+                const orderResponse = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...orderPayload,
+                        payment_method: paymentMethod === 'cod' ? 'cod' : 'upi',
                         notes: `${paymentMethod.toUpperCase()} Order${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
                     }),
                 });
@@ -284,15 +316,6 @@ export default function CheckoutPage() {
                 const errorMsg = error instanceof Error ? error.message : 'Failed to place order. Please try again.';
                 setPaymentError(errorMsg);
             }
-        }
-
-        // Update coupon usage if used
-        if (appliedCoupon && orderPlaced) {
-            const supabase = getSupabaseClient();
-            await supabase
-                .from('coupons')
-                .update({ used_count: (appliedCoupon.used_count || 0) + 1 })
-                .eq('id', appliedCoupon.id);
         }
 
         setIsProcessing(false);

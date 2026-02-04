@@ -47,15 +47,41 @@ export default function ReviewsSection({ productId, initialRating = 0, initialRe
         try {
             const supabase = createClient();
             const { data, error } = await supabase
-                .from('product_reviews')
-                .select('*')
+                .from('reviews')
+                .select(`
+                    id,
+                    product_id,
+                    rating,
+                    title,
+                    content,
+                    is_verified,
+                    created_at,
+                    user_name,
+                    profiles (
+                        full_name,
+                        avatar_url
+                    )
+                `)
                 .eq('product_id', productId)
+                .eq('status', 'approved')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
 
-            setReviews(data || []);
-            calculateStats(data || []);
+            // Map to expected Review format
+            const mappedReviews: Review[] = (data || []).map((r: any) => ({
+                id: r.id,
+                product_id: r.product_id,
+                user_name: r.user_name || r.profiles?.full_name || 'Anonymous',
+                rating: r.rating,
+                title: r.title,
+                review_text: r.content,
+                verified_purchase: r.is_verified,
+                created_at: r.created_at
+            }));
+
+            setReviews(mappedReviews);
+            calculateStats(mappedReviews);
         } catch (err) {
             console.error('Error fetching reviews:', err);
         } finally {
@@ -174,8 +200,8 @@ export default function ReviewsSection({ productId, initialRating = 0, initialRe
                             <button
                                 onClick={() => setFilterRating('all')}
                                 className={`px-3 py-1 text-sm rounded-lg transition-colors ${filterRating === 'all'
-                                        ? 'bg-[var(--color-primary)] text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-[var(--color-primary)] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 All
@@ -185,8 +211,8 @@ export default function ReviewsSection({ productId, initialRating = 0, initialRe
                                     key={star}
                                     onClick={() => setFilterRating(star)}
                                     className={`px-3 py-1 text-sm rounded-lg transition-colors ${filterRating === star
-                                            ? 'bg-[var(--color-primary)] text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        ? 'bg-[var(--color-primary)] text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                         }`}
                                 >
                                     {star}★

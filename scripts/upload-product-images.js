@@ -1,17 +1,15 @@
 /**
- * Bulk Image Upload Script for Vishwa Wellness Products
+ * Sanity Product Image Upload Script
  * 
- * This script automatically:
- * 1. Scans the "Vishwa Wellness Products" folder
- * 2. Matches folder names to existing products in Sanity
- * 3. Uploads all images from each folder to the corresponding product
+ * This script reads product images from local folders and uploads them to Sanity CMS,
+ * replacing existing images with the new 5-image set in the correct order:
+ * 1. Showcase (hero image)
+ * 2. Front
+ * 3. Benefits
+ * 4. Ingredients
+ * 5. Back
  * 
- * Usage: node scripts/upload-product-images.js
- * 
- * Make sure your .env.local has:
- * - NEXT_PUBLIC_SANITY_PROJECT_ID
- * - NEXT_PUBLIC_SANITY_DATASET  
- * - SANITY_API_TOKEN (with write access)
+ * Run: node scripts/upload-product-images.js
  */
 
 require('dotenv').config({ path: '.env.local' });
@@ -19,291 +17,305 @@ const { createClient } = require('@sanity/client');
 const fs = require('fs');
 const path = require('path');
 
-// Configuration
-const IMAGES_FOLDER = path.join(__dirname, '..', 'Vishwa Wellness Products');
-const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-
-// Initialize Sanity client
+// Sanity client configuration
 const client = createClient({
-    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'dsifqj4y',
     dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
     token: process.env.SANITY_API_TOKEN,
-    apiVersion: '2024-01-01',
     useCdn: false,
+    apiVersion: '2024-01-01',
 });
 
-// Mapping of folder names to product identifiers (case-insensitive partial matching)
-const FOLDER_TO_PRODUCT_MAPPING = {
-    'acido wellness': 'acido',
-    'artho wellness': 'artho',
-    'calci wellness': 'calci',
-    'cardio wellness': 'cardio',
-    'hair care tablets': 'hair-care',
-    'hemo wellness': 'hemo',
-    'kids wellness chocolate': 'kids',
-    'livo wellness': 'livo',
-    'memo wellness': 'memo',
-    'men_s wellness vanilla': 'mens',
-    'menso wellness': 'menso',
-    "men's  wellness": 'mens',
-    'mother wellness': 'mother',
-    'reno wellness': 'reno',
-    'revive wellness': 'revive',
-    'shatavari kalpa': 'shatavari',
-    'samya tablets': 'samya',
-    'sleep well tablets': 'sleep-well',
-    'vita wellness': 'vita',
-    'women wellness': 'women',
+// Path to the product images folder
+const IMAGES_FOLDER = path.join(__dirname, '..', 'Vishwa Wellness Products');
+
+// Mapping of folder names to Sanity product slugs
+// Updated with actual slugs from Sanity database
+const FOLDER_TO_PRODUCT_MAP = {
+    'Acido Wellness': 'vishwa-acido-wellness-acidity-relief',
+    'Artho Wellness': 'vishwa-artho-wellness-joint-pain-relief',
+    'Calci Wellness': 'vishwa-calci-wellness-bone-strength',
+    'Cardio Wellness': 'vishwa-cardio-wellness-heart-health',
+    'Hair Care Tablets': 'vishwa-hair-care-tablets-hair-health',
+    'Hemo Wellness': 'vishwa-hemo-wellness-skin-health-glow',
+    // 'Kids Wellness Chocolate': null, // No matching product in Sanity
+    'Livo Wellness': 'vishwa-livo-wellness-liver-detox',
+    'Memo Wellness': 'vishwa-memo-wellness-memory-focus',
+    "Men's  Wellness": 'vishwa-mens-wellness-vitality-stamina',
+    "Men_s Wellness Vanilla": 'vishwa-mens-wellness-vitality-stamina', // Same product, different flavor
+    'Menso Wellness': 'vishwa-menso-wellness-pcod-pcos-support',
+    'Mother Wellness': 'vishwa-mothers-wellness-maternal-support',
+    'Reno Wellness': 'vishwa-reno-wellness-kidney-support',
+    'Revive Wellness': 'vishwa-revive-wellness-stress-relief',
+    // 'SHATAVARI KALPA': null, // No matching product in Sanity
+    // 'Samya Tablets': null, // No matching product in Sanity (might be Dibo Wellness?)
+    'Sleep Well Tablets': 'sleep-well-tablet-sleep-support',
+    'Vita Wellness': 'vishwa-vita-wellness-daily-multivitamin',
+    'Women Wellness': 'vishwa-womens-wellness-feminine-health',
+    "Women's  Wellness kesar pista": 'vishwa-womens-wellness-feminine-health', // Same product, different flavor
 };
 
-async function getProductsFromSanity() {
-    console.log('📦 Fetching products from Sanity...');
 
-    const products = await client.fetch(`
-        *[_type == "product" && !(_id in path("drafts.**"))] {
-            _id,
-            name,
-            "slug": slug.current,
-            "hasImages": defined(images) && count(images) > 0
+// Image type patterns for identifying image purpose (case-insensitive)
+const IMAGE_PATTERNS = {
+    showcase: /showcase/i,
+    front: /front/i,
+    benefits: /benefit/i,
+    ingredients: /ingredient/i,
+    back: /back/i,
+};
+
+/**
+ * Categorizes images in a folder based on filename patterns
+ */
+function categorizeImages(files) {
+    const categorized = {
+        showcase: null,
+        front: null,
+        benefits: null,
+        ingredients: null,
+        back: null,
+        other: [],
+    };
+
+    for (const file of files) {
+        // Skip non-image files
+        if (!/\.(jpg|jpeg|png|webp|gif)$/i.test(file)) {
+            continue;
         }
-    `);
 
-    console.log(`   Found ${products.length} products in Sanity\n`);
-    return products;
-}
+        let matched = false;
+        for (const [type, pattern] of Object.entries(IMAGE_PATTERNS)) {
+            if (pattern.test(file)) {
+                categorized[type] = file;
+                matched = true;
+                break;
+            }
+        }
 
-function findMatchingProduct(folderName, products) {
-    const folderLower = folderName.toLowerCase();
-
-    // Try exact mapping first
-    const mappedKey = FOLDER_TO_PRODUCT_MAPPING[folderLower];
-    if (mappedKey) {
-        const match = products.find(p =>
-            p.slug.toLowerCase().includes(mappedKey) ||
-            p.name.toLowerCase().includes(mappedKey)
-        );
-        if (match) return match;
-    }
-
-    // Try direct slug/name matching
-    for (const product of products) {
-        const slugLower = product.slug.toLowerCase();
-        const nameLower = product.name.toLowerCase();
-
-        // Check if folder name contains key parts of the product
-        const folderParts = folderLower.split(/[\s_-]+/).filter(p => p.length > 2);
-        const matchCount = folderParts.filter(part =>
-            slugLower.includes(part) || nameLower.includes(part)
-        ).length;
-
-        if (matchCount >= 2 || (matchCount === 1 && folderParts.length === 1)) {
-            return product;
+        if (!matched) {
+            categorized.other.push(file);
         }
     }
 
-    return null;
+    return categorized;
 }
 
-function getImageFiles(folderPath) {
-    if (!fs.existsSync(folderPath)) return [];
+/**
+ * Builds the ordered image array based on the required order
+ */
+function buildOrderedImageList(categorized) {
+    const ordered = [];
 
-    const files = fs.readdirSync(folderPath);
-    return files
-        .filter(file => {
-            const ext = path.extname(file).toLowerCase();
-            return SUPPORTED_EXTENSIONS.includes(ext);
-        })
-        .map(file => ({
-            name: file,
-            path: path.join(folderPath, file),
-            isFront: file.toLowerCase().includes('front'),
-            isBack: file.toLowerCase().includes('back'),
-        }))
-        // Sort: front images first, then back, then others
-        .sort((a, b) => {
-            if (a.isFront && !b.isFront) return -1;
-            if (!a.isFront && b.isFront) return 1;
-            if (a.isBack && !b.isBack) return -1;
-            if (!a.isBack && b.isBack) return 1;
-            return a.name.localeCompare(b.name);
+    // Priority order: Showcase, Front, Benefits, Ingredients, Back
+    if (categorized.showcase) ordered.push(categorized.showcase);
+    if (categorized.front) ordered.push(categorized.front);
+    if (categorized.benefits) ordered.push(categorized.benefits);
+    if (categorized.ingredients) ordered.push(categorized.ingredients);
+    if (categorized.back) ordered.push(categorized.back);
+
+    // Add any remaining images at the end
+    ordered.push(...categorized.other);
+
+    return ordered;
+}
+
+/**
+ * Uploads an image file to Sanity
+ */
+async function uploadImage(filePath, filename) {
+    try {
+        const imageBuffer = fs.readFileSync(filePath);
+        const asset = await client.assets.upload('image', imageBuffer, {
+            filename: filename,
         });
+        console.log(`  ✓ Uploaded: ${filename}`);
+        return asset;
+    } catch (error) {
+        console.error(`  ✗ Failed to upload ${filename}:`, error.message);
+        return null;
+    }
 }
 
-async function uploadImage(filePath) {
-    const fileBuffer = fs.readFileSync(filePath);
-    const fileName = path.basename(filePath);
-
-    const asset = await client.assets.upload('image', fileBuffer, {
-        filename: fileName,
-    });
-
-    return asset;
+/**
+ * Finds a product in Sanity by slug
+ */
+async function findProductBySlug(slug) {
+    try {
+        const product = await client.fetch(
+            `*[_type == "product" && slug.current == $slug && !(_id match "drafts.*") && !(_id match "versions.*")][0]{_id, name, slug}`,
+            { slug }
+        );
+        return product;
+    } catch (error) {
+        console.error(`  ✗ Error finding product with slug ${slug}:`, error.message);
+        return null;
+    }
 }
 
-async function updateProductImages(productId, imageAssets, productName) {
-    const images = imageAssets.map((asset, index) => ({
-        _type: 'image',
-        _key: `img-${index}-${Date.now()}`,
-        asset: {
-            _type: 'reference',
-            _ref: asset._id,
-        },
-        alt: `${productName} - Image ${index + 1}`,
-    }));
+/**
+ * Updates a product's images array
+ */
+async function updateProductImages(productId, imageAssets) {
+    try {
+        const images = imageAssets.map((asset) => ({
+            _type: 'image',
+            _key: asset._id.replace('image-', '').substring(0, 12),
+            asset: {
+                _type: 'reference',
+                _ref: asset._id,
+            },
+        }));
 
-    await client
-        .patch(productId)
-        .set({ images })
-        .commit();
+        await client
+            .patch(productId)
+            .set({ images })
+            .commit();
+
+        console.log(`  ✓ Updated product images (${images.length} images)`);
+        return true;
+    } catch (error) {
+        console.error(`  ✗ Failed to update product:`, error.message);
+        return false;
+    }
 }
 
-async function processFolder(folderName, products, stats) {
+/**
+ * Processes a single product folder
+ */
+async function processProductFolder(folderName) {
+    console.log(`\n📦 Processing: ${folderName}`);
+
     const folderPath = path.join(IMAGES_FOLDER, folderName);
 
-    // Skip if not a directory
-    if (!fs.statSync(folderPath).isDirectory()) {
-        return;
+    // Check if folder exists
+    if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) {
+        console.log(`  ⚠ Skipping: Not a directory`);
+        return { success: false, skipped: true };
     }
 
-    console.log(`\n📁 Processing: ${folderName}`);
+    // Get the product slug
+    const productSlug = FOLDER_TO_PRODUCT_MAP[folderName];
+    if (!productSlug) {
+        console.log(`  ⚠ Skipping: No mapping found for folder "${folderName}"`);
+        return { success: false, skipped: true, reason: 'no-mapping' };
+    }
 
-    // Find matching product
-    const product = findMatchingProduct(folderName, products);
-
+    // Find the product in Sanity
+    const product = await findProductBySlug(productSlug);
     if (!product) {
-        console.log(`   ❌ No matching product found`);
-        stats.unmatched.push(folderName);
-        return;
+        console.log(`  ⚠ Skipping: Product with slug "${productSlug}" not found in Sanity`);
+        return { success: false, skipped: true, reason: 'product-not-found' };
     }
 
-    console.log(`   ✓ Matched to: ${product.name} (${product.slug})`);
+    console.log(`  Found product: ${product.name} (${product._id})`);
 
-    // Get image files
-    const imageFiles = getImageFiles(folderPath);
+    // Get all files in the folder
+    const files = fs.readdirSync(folderPath);
 
-    if (imageFiles.length === 0) {
-        console.log(`   ⚠️ No image files found in folder`);
-        stats.noImages.push(folderName);
-        return;
+    // Categorize images
+    const categorized = categorizeImages(files);
+
+    // Build ordered list
+    const orderedImages = buildOrderedImageList(categorized);
+
+    if (orderedImages.length === 0) {
+        console.log(`  ⚠ Skipping: No images found in folder`);
+        return { success: false, skipped: true, reason: 'no-images' };
     }
 
-    console.log(`   📷 Found ${imageFiles.length} images: ${imageFiles.map(f => f.name).join(', ')}`);
-
-    // Check if product already has images
-    if (product.hasImages) {
-        console.log(`   ⚠️ Product already has images - skipping (use --force to overwrite)`);
-        stats.skipped.push({ folder: folderName, product: product.name, reason: 'already has images' });
-        return;
-    }
+    console.log(`  Found ${orderedImages.length} images to upload:`);
+    orderedImages.forEach((img, i) => console.log(`    ${i + 1}. ${img}`));
 
     // Upload images
-    console.log(`   ⬆️ Uploading images...`);
     const uploadedAssets = [];
-
-    for (const imageFile of imageFiles) {
-        try {
-            console.log(`      - Uploading ${imageFile.name}...`);
-            const asset = await uploadImage(imageFile.path);
+    for (const imageFile of orderedImages) {
+        const filePath = path.join(folderPath, imageFile);
+        const asset = await uploadImage(filePath, imageFile);
+        if (asset) {
             uploadedAssets.push(asset);
-            console.log(`        ✓ Done (${asset._id})`);
-        } catch (error) {
-            console.log(`        ❌ Failed: ${error.message}`);
-            stats.errors.push({ folder: folderName, file: imageFile.name, error: error.message });
         }
     }
 
     if (uploadedAssets.length === 0) {
-        console.log(`   ❌ No images were uploaded successfully`);
-        return;
+        console.log(`  ✗ No images were uploaded successfully`);
+        return { success: false, skipped: false, reason: 'upload-failed' };
     }
 
-    // Update product with images
-    console.log(`   💾 Updating product with ${uploadedAssets.length} images...`);
-    try {
-        await updateProductImages(product._id, uploadedAssets, product.name);
-        console.log(`   ✅ Success! Product updated with ${uploadedAssets.length} images`);
-        stats.success.push({ folder: folderName, product: product.name, images: uploadedAssets.length });
-    } catch (error) {
-        console.log(`   ❌ Failed to update product: ${error.message}`);
-        stats.errors.push({ folder: folderName, error: error.message });
-    }
+    // Update the product with new images
+    const success = await updateProductImages(product._id, uploadedAssets);
+
+    return { success, skipped: false };
 }
 
+/**
+ * Main function
+ */
 async function main() {
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log('   VISHWA WELLNESS - Bulk Product Image Upload Script');
-    console.log('═══════════════════════════════════════════════════════════════\n');
+    console.log('🚀 Sanity Product Image Upload Script');
+    console.log('=====================================\n');
 
-    // Verify environment
+    // Verify Sanity token
     if (!process.env.SANITY_API_TOKEN) {
-        console.error('❌ Error: SANITY_API_TOKEN not found in .env.local');
-        console.error('   Please add your Sanity API token with write permissions.');
+        console.error('❌ Error: SANITY_API_TOKEN not found in environment variables');
         process.exit(1);
     }
 
+    // Verify images folder exists
     if (!fs.existsSync(IMAGES_FOLDER)) {
         console.error(`❌ Error: Images folder not found: ${IMAGES_FOLDER}`);
         process.exit(1);
     }
 
-    const stats = {
-        success: [],
-        skipped: [],
-        unmatched: [],
-        noImages: [],
-        errors: [],
-    };
+    // Get all folders
+    const folders = fs.readdirSync(IMAGES_FOLDER).filter((item) => {
+        const itemPath = path.join(IMAGES_FOLDER, item);
+        return fs.statSync(itemPath).isDirectory();
+    });
 
-    // Get products from Sanity
-    const products = await getProductsFromSanity();
-
-    // Get all folders in images directory
-    const folders = fs.readdirSync(IMAGES_FOLDER).filter(f =>
-        fs.statSync(path.join(IMAGES_FOLDER, f)).isDirectory()
-    );
-
-    console.log(`📂 Found ${folders.length} product folders to process`);
+    console.log(`Found ${folders.length} product folders\n`);
 
     // Process each folder
+    const results = {
+        success: [],
+        failed: [],
+        skipped: [],
+    };
+
     for (const folder of folders) {
-        await processFolder(folder, products, stats);
+        const result = await processProductFolder(folder);
+
+        if (result.skipped) {
+            results.skipped.push({ folder, reason: result.reason });
+        } else if (result.success) {
+            results.success.push(folder);
+        } else {
+            results.failed.push({ folder, reason: result.reason });
+        }
     }
 
     // Print summary
-    console.log('\n═══════════════════════════════════════════════════════════════');
-    console.log('   SUMMARY');
-    console.log('═══════════════════════════════════════════════════════════════\n');
+    console.log('\n\n📊 Summary');
+    console.log('==========');
+    console.log(`✅ Successfully updated: ${results.success.length}`);
+    console.log(`❌ Failed: ${results.failed.length}`);
+    console.log(`⚠️ Skipped: ${results.skipped.length}`);
 
-    console.log(`✅ Successfully uploaded: ${stats.success.length} products`);
-    stats.success.forEach(s => console.log(`   - ${s.product}: ${s.images} images`));
-
-    if (stats.skipped.length > 0) {
-        console.log(`\n⏭️ Skipped (already have images): ${stats.skipped.length} products`);
-        stats.skipped.forEach(s => console.log(`   - ${s.product}`));
+    if (results.success.length > 0) {
+        console.log('\n✅ Successfully updated products:');
+        results.success.forEach((f) => console.log(`   - ${f}`));
     }
 
-    if (stats.unmatched.length > 0) {
-        console.log(`\n❓ Unmatched folders: ${stats.unmatched.length}`);
-        stats.unmatched.forEach(f => console.log(`   - ${f}`));
+    if (results.failed.length > 0) {
+        console.log('\n❌ Failed products:');
+        results.failed.forEach((f) => console.log(`   - ${f.folder}: ${f.reason}`));
     }
 
-    if (stats.noImages.length > 0) {
-        console.log(`\n📭 No images in folder: ${stats.noImages.length}`);
-        stats.noImages.forEach(f => console.log(`   - ${f}`));
+    if (results.skipped.length > 0) {
+        console.log('\n⚠️ Skipped products:');
+        results.skipped.forEach((f) => console.log(`   - ${f.folder}: ${f.reason || 'unknown'}`));
     }
-
-    if (stats.errors.length > 0) {
-        console.log(`\n❌ Errors: ${stats.errors.length}`);
-        stats.errors.forEach(e => console.log(`   - ${e.folder}: ${e.error || e.file}`));
-    }
-
-    console.log('\n═══════════════════════════════════════════════════════════════');
-    console.log('   DONE!');
-    console.log('═══════════════════════════════════════════════════════════════\n');
 }
 
 // Run the script
-main().catch(error => {
-    console.error('Fatal error:', error);
-    process.exit(1);
-});
+main().catch(console.error);

@@ -2,7 +2,91 @@ import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { createOrder, getOrders } from '@/lib/orders';
 import { CreateOrderSchema, validateRequest } from '@/lib/validations';
+import { client, isSanityConfigured } from '@/lib/sanity';
 import type { CreateOrderInput, Address } from '@/types/orders';
+
+// Price tolerance for floating point comparison (in rupees)
+const PRICE_TOLERANCE = 1;
+
+// Shipping thresholds
+const FREE_SHIPPING_THRESHOLD = 999;
+const STANDARD_SHIPPING_COST = 99;
+
+interface SanityProduct {
+    _id: string;
+    price: number;
+    comparePrice?: number;
+    stock?: number;
+}
+
+// Fetch product prices from Sanity for validation
+async function fetchProductPrices(productIds: string[]): Promise<Map<string, SanityProduct>> {
+    if (!isSanityConfigured() || productIds.length === 0) {
+        return new Map();
+    }
+
+    const query = `*[_type == "product" && _id in $ids] {
+        _id,
+        price,
+        "comparePrice": compareAtPrice,
+        "stock": inventory
+    }`;
+
+    const products = await client.fetch<SanityProduct[]>(query, { ids: productIds });
+    return new Map(products.map(p => [p._id, p]));
+}
+
+// Validate coupon server-side
+async function validateCouponServerSide(
+    supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+    couponCode: string,
+    subtotal: number
+): Promise<{ valid: boolean; discountAmount: number; error?: string }> {
+    const { data: coupon, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .eq('is_active', true)
+        .single();
+
+    if (error || !coupon) {
+        return { valid: false, discountAmount: 0, error: 'Invalid coupon code' };
+    }
+
+    // Check validity dates
+    const now = new Date();
+    if (coupon.valid_from && new Date(coupon.valid_from) > now) {
+        return { valid: false, discountAmount: 0, error: 'Coupon not yet active' };
+    }
+    if (coupon.valid_until && new Date(coupon.valid_until) < now) {
+        return { valid: false, discountAmount: 0, error: 'Coupon expired' };
+    }
+
+    // Check usage limit
+    if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
+        return { valid: false, discountAmount: 0, error: 'Coupon usage limit reached' };
+    }
+
+    // Check minimum order value
+    if (coupon.min_order_value && subtotal < coupon.min_order_value) {
+        return { valid: false, discountAmount: 0, error: `Minimum order value is ${coupon.min_order_value}` };
+    }
+
+    // Calculate discount
+    let discountAmount = 0;
+    if (coupon.discount_type === 'percentage') {
+        discountAmount = Math.round((subtotal * coupon.discount_value) / 100);
+    } else if (coupon.discount_type === 'fixed') {
+        discountAmount = coupon.discount_value;
+    }
+
+    // Apply max discount cap
+    if (coupon.max_discount && discountAmount > coupon.max_discount) {
+        discountAmount = coupon.max_discount;
+    }
+
+    return { valid: true, discountAmount };
+}
 
 // GET: Fetch user's orders
 export async function GET() {
@@ -55,6 +139,99 @@ export async function POST(request: Request) {
 
         const validatedData = validation.data;
 
+        // ==== SERVER-SIDE PRICE VALIDATION ====
+        // Fetch actual product prices from Sanity to prevent price manipulation
+        const productIds = validatedData.items.map(item => item.productId);
+        const productPrices = await fetchProductPrices(productIds);
+
+        // Calculate server-side subtotal based on actual prices
+        let serverSubtotal = 0;
+        const validatedItems: Array<{
+            product_id: string;
+            product_name: string;
+            product_image?: string;
+            quantity: number;
+            unit_price: number;
+        }> = [];
+
+        for (const item of validatedData.items) {
+            const product = productPrices.get(item.productId);
+
+            if (!product) {
+                // If we can't find the product in Sanity, log warning but continue
+                // This handles edge cases where products might not be in CMS
+                console.warn(`[order] Product ${item.productId} not found in Sanity, using client price`);
+                serverSubtotal += item.price * item.quantity;
+                validatedItems.push({
+                    product_id: item.productId,
+                    product_name: item.productTitle,
+                    product_image: item.productImage,
+                    quantity: item.quantity,
+                    unit_price: item.price,
+                });
+                continue;
+            }
+
+            // Use the actual price from Sanity
+            const actualPrice = product.price;
+
+            // Check if client-provided price matches server price (with tolerance)
+            if (Math.abs(item.price - actualPrice) > PRICE_TOLERANCE) {
+                console.warn(`[order] Price mismatch for ${item.productId}: client=${item.price}, server=${actualPrice}`);
+            }
+
+            serverSubtotal += actualPrice * item.quantity;
+            validatedItems.push({
+                product_id: item.productId,
+                product_name: item.productTitle,
+                product_image: item.productImage,
+                quantity: item.quantity,
+                unit_price: actualPrice, // Use server-validated price
+            });
+        }
+
+        // Calculate server-side shipping
+        const serverShipping = serverSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST;
+
+        // Validate coupon and calculate server-side discount
+        let serverDiscount = 0;
+        if (validatedData.coupon_code) {
+            const couponValidation = await validateCouponServerSide(
+                supabase,
+                validatedData.coupon_code,
+                serverSubtotal
+            );
+
+            if (!couponValidation.valid) {
+                return NextResponse.json(
+                    { error: 'Invalid coupon', message: couponValidation.error },
+                    { status: 400 }
+                );
+            }
+
+            serverDiscount = couponValidation.discountAmount;
+        }
+
+        // Calculate server-side total
+        const serverTotal = serverSubtotal + serverShipping - serverDiscount;
+
+        // Check if client-provided total significantly differs from server calculation
+        // Allow some tolerance for rounding differences
+        if (Math.abs(validatedData.total - serverTotal) > PRICE_TOLERANCE) {
+            console.error(`[order] Total mismatch: client=${validatedData.total}, server=${serverTotal}`);
+            return NextResponse.json(
+                {
+                    error: 'Price validation failed',
+                    message: 'Order total does not match calculated total. Please refresh and try again.',
+                    details: {
+                        clientTotal: validatedData.total,
+                        serverTotal: serverTotal,
+                    }
+                },
+                { status: 400 }
+            );
+        }
+
         // Transform validated Zod data to match CreateOrderInput type from types/orders.ts
         const shippingAddress: Address = {
             firstName: validatedData.shipping_address.firstName,
@@ -80,24 +257,19 @@ export async function POST(request: Request) {
             phone: validatedData.billing_address.phone,
         } : undefined;
 
+        // Use SERVER-VALIDATED prices and totals
         const orderInput: CreateOrderInput = {
-            items: validatedData.items.map(item => ({
-                product_id: item.productId,
-                product_name: item.productTitle,
-                product_image: item.productImage,
-                quantity: item.quantity,
-                unit_price: item.price,
-            })),
+            items: validatedItems,
             customer_email: validatedData.customer_email,
             customer_name: validatedData.customer_name,
             customer_phone: validatedData.customer_phone,
             shipping_address: shippingAddress,
             billing_address: billingAddress,
-            subtotal: validatedData.subtotal,
-            shipping_cost: validatedData.shipping_cost,
-            tax_amount: validatedData.tax,
-            discount_amount: validatedData.discount,
-            total: validatedData.total,
+            subtotal: serverSubtotal, // Server-calculated
+            shipping_cost: serverShipping, // Server-calculated
+            tax_amount: 0, // Calculate if needed
+            discount_amount: serverDiscount, // Server-calculated
+            total: serverTotal, // Server-calculated
             notes: validatedData.notes,
         };
 

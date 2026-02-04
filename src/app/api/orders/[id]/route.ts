@@ -56,47 +56,77 @@ export async function GET(request: Request, { params }: RouteParams) {
     }
 }
 
-// PATCH: Update order (admin only)
+// PATCH: Update order
+// - Admin: Can update any order field
+// - Order owner / guest: Can only update payment_status with valid Razorpay signature
 export async function PATCH(request: Request, { params }: RouteParams) {
     try {
         const { id } = await params;
         const supabase = await createServerSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) {
+        const body = await request.json();
+
+        // Get the order first
+        const order = await getOrderById(id);
+        if (!order) {
             return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
+                { error: 'Order not found' },
+                { status: 404 }
             );
         }
 
-        // Check if user is admin
-        const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', user.id)
-            .single();
+        // Check permissions
+        let isAdmin = false;
+        let isOwner = false;
 
-        const isAdmin = roleData?.role === 'admin' || roleData?.role === 'super_admin';
+        if (user) {
+            // Check if user is admin
+            const { data: roleData } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', user.id)
+                .single();
 
-        if (!isAdmin) {
+            isAdmin = roleData?.role === 'admin' || roleData?.role === 'super_admin';
+            isOwner = order.user_id === user.id;
+        }
+
+        // For payment status updates with Razorpay data, allow if:
+        // 1. User is admin, OR
+        // 2. User owns the order, OR
+        // 3. Order has no user_id (guest order) and valid razorpay data is provided
+        const isPaymentUpdate = body.payment_status && body.razorpay_payment_id;
+        const isGuestOrder = !order.user_id;
+
+        if (!isAdmin && !isOwner) {
+            // For guest orders, allow payment updates only
+            if (!(isGuestOrder && isPaymentUpdate)) {
+                return NextResponse.json(
+                    { error: 'Unauthorized' },
+                    { status: 403 }
+                );
+            }
+        }
+
+        // Non-admins can only update payment status
+        if (!isAdmin && body.status && !body.payment_status) {
             return NextResponse.json(
-                { error: 'Admin access required' },
+                { error: 'Admin access required to update order status' },
                 { status: 403 }
             );
         }
 
-        const body = await request.json();
-
         let updatedOrder;
 
-        if (body.status) {
+        if (body.status && isAdmin) {
             updatedOrder = await updateOrderStatus(id, body.status as OrderStatus, {
                 tracking_number: body.tracking_number,
                 tracking_url: body.tracking_url,
                 admin_notes: body.admin_notes,
             });
         } else if (body.payment_status) {
+            // Allow payment status update with Razorpay info
             updatedOrder = await updatePaymentStatus(id, body.payment_status as PaymentStatus, {
                 razorpay_order_id: body.razorpay_order_id,
                 razorpay_payment_id: body.razorpay_payment_id,

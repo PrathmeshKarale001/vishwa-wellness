@@ -8,7 +8,6 @@ export async function middleware(request: NextRequest) {
     const code = searchParams.get('code');
 
     if (pathname === '/' && code) {
-        console.log('[MIDDLEWARE] OAuth code detected at root, redirecting to /auth/callback');
         const callbackUrl = new URL('/auth/callback', request.url);
         callbackUrl.searchParams.set('code', code);
         // Preserve any other params

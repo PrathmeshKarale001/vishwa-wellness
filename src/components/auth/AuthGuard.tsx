@@ -47,7 +47,6 @@ export function AuthGuard({
 
         // If we have a user, we're good
         if (user) {
-            console.log('[AuthGuard] User found:', user.email);
             setIsWaiting(false);
             hasChecked.current = true;
             return;
@@ -56,17 +55,14 @@ export function AuthGuard({
         // If no user and we haven't checked yet, wait longer after OAuth
         if (!hasChecked.current) {
             const delay = isPostOAuth ? 2000 : 500; // Longer wait after OAuth
-            console.log('[AuthGuard] Waiting', delay, 'ms for session sync...');
 
             const timer = setTimeout(async () => {
                 // Re-initialize auth to pick up any new session
                 await initialize();
 
                 const currentUser = useAuthStore.getState().user;
-                console.log('[AuthGuard] After re-init, user:', currentUser?.email || 'none');
 
                 if (!currentUser) {
-                    console.log('[AuthGuard] No user found after wait, redirecting to login');
                     setShouldRedirect(true);
                 }
                 setIsWaiting(false);

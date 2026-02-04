@@ -193,9 +193,6 @@ export const useAuthStore = create<AuthState>()(
                     },
                 });
 
-                if (error) {
-                    console.error('[GOOGLE AUTH] Error:', error.message);
-                }
 
                 return { error };
             },

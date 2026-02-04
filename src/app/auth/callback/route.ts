@@ -12,14 +12,11 @@ export async function GET(request: NextRequest) {
         next = authRedirectCookie ? decodeURIComponent(authRedirectCookie) : '/account';
     }
 
-    console.log('[AUTH CALLBACK] Received request with code:', code ? 'present' : 'missing', 'next:', next);
-
     if (!next.startsWith('/')) {
         next = '/account';
     }
 
     if (!code) {
-        console.log('[AUTH CALLBACK] No code, redirecting to login');
         return NextResponse.redirect(`${origin}/account/login`);
     }
 
@@ -54,7 +51,6 @@ export async function GET(request: NextRequest) {
                     return request.cookies.getAll();
                 },
                 setAll(cookies) {
-                    console.log('[AUTH CALLBACK] setAll called with', cookies.length, 'cookies');
                     cookies.forEach((cookie) => {
                         cookiesToSet.push(cookie);
                     });
@@ -67,32 +63,23 @@ export async function GET(request: NextRequest) {
 
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
 
-    console.log('[AUTH CALLBACK] Exchange result:', error ? `error: ${error.message}` : `success, user: ${data?.user?.email}`);
-
     if (error) {
-        console.log('[AUTH CALLBACK] Exchange failed');
         return NextResponse.redirect(`${origin}/account/login?error=callback_failed`);
     }
 
     // Wait for setAll to be called with a timeout
     const timeoutPromise = new Promise<void>((resolve) => setTimeout(resolve, 1000));
-
-    console.log('[AUTH CALLBACK] Waiting for cookies...');
     await Promise.race([cookiesSetPromise, timeoutPromise]);
-
-    console.log('[AUTH CALLBACK] setAllCalled:', setAllCalled, 'cookies:', cookiesToSet.length);
 
     // Create response with cookies
     const response = NextResponse.redirect(redirectUrl);
 
     cookiesToSet.forEach(({ name, value, options }) => {
-        console.log('[AUTH CALLBACK] Setting cookie:', name);
         response.cookies.set(name, value, options as any);
     });
 
     // Clear the auth_redirect cookie after use
     response.cookies.set('auth_redirect', '', { path: '/', maxAge: 0 });
 
-    console.log('[AUTH CALLBACK] Redirecting to:', redirectUrl);
     return response;
 }

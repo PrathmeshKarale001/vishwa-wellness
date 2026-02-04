@@ -178,12 +178,21 @@ export const useAuthStore = create<AuthState>()(
                 // Use clean callback URL without query parameters
                 const callbackUrl = `${window.location.origin}/auth/callback`;
 
+                console.log('[GOOGLE AUTH] Starting OAuth flow');
+                console.log('[GOOGLE AUTH] Origin:', window.location.origin);
+                console.log('[GOOGLE AUTH] Callback URL:', callbackUrl);
+                console.log('[GOOGLE AUTH] Redirect after auth:', redirectTo || '/account');
+
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
                         redirectTo: callbackUrl,
                     },
                 });
+
+                if (error) {
+                    console.error('[GOOGLE AUTH] Error:', error.message);
+                }
 
                 return { error };
             },

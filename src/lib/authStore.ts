@@ -183,6 +183,9 @@ export const useAuthStore = create<AuthState>()(
                 console.log('[GOOGLE AUTH] Callback URL:', callbackUrl);
                 console.log('[GOOGLE AUTH] Redirect after auth:', redirectTo || '/account');
 
+                // Set flag so AuthGuard knows to wait longer after redirect
+                sessionStorage.setItem('oauth_in_progress', 'true');
+
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {

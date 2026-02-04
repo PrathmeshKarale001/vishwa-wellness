@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, ReactNode, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, ReactNode, useState, useRef } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/authStore';
 
 interface AuthGuardProps {
@@ -17,25 +17,65 @@ export function AuthGuard({
 }: AuthGuardProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, isLoading, isInitialized } = useAuthStore();
+    const searchParams = useSearchParams();
+    const { user, isLoading, isInitialized, initialize } = useAuthStore();
     const [shouldRedirect, setShouldRedirect] = useState(false);
+    const [isWaiting, setIsWaiting] = useState(true);
+    const hasChecked = useRef(false);
+
+    // Detect if we just came from OAuth callback
+    const isPostOAuth = typeof window !== 'undefined' && (
+        document.referrer.includes('/auth/callback') ||
+        sessionStorage.getItem('oauth_in_progress') === 'true'
+    );
 
     useEffect(() => {
-        // Wait a bit after initialization to allow session to sync
-        // This prevents premature redirects right after OAuth callback
-        if (isInitialized && !isLoading && !user) {
+        // Clear OAuth flag after a delay
+        if (isPostOAuth) {
             const timer = setTimeout(() => {
-                // Double-check after delay
+                sessionStorage.removeItem('oauth_in_progress');
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [isPostOAuth]);
+
+    useEffect(() => {
+        // Don't check until initialized
+        if (!isInitialized || isLoading) {
+            return;
+        }
+
+        // If we have a user, we're good
+        if (user) {
+            console.log('[AuthGuard] User found:', user.email);
+            setIsWaiting(false);
+            hasChecked.current = true;
+            return;
+        }
+
+        // If no user and we haven't checked yet, wait longer after OAuth
+        if (!hasChecked.current) {
+            const delay = isPostOAuth ? 2000 : 500; // Longer wait after OAuth
+            console.log('[AuthGuard] Waiting', delay, 'ms for session sync...');
+
+            const timer = setTimeout(async () => {
+                // Re-initialize auth to pick up any new session
+                await initialize();
+
                 const currentUser = useAuthStore.getState().user;
+                console.log('[AuthGuard] After re-init, user:', currentUser?.email || 'none');
+
                 if (!currentUser) {
-                    console.log('[AuthGuard] No user found, redirecting to login');
+                    console.log('[AuthGuard] No user found after wait, redirecting to login');
                     setShouldRedirect(true);
                 }
-            }, 100); // Small delay to allow session sync
+                setIsWaiting(false);
+                hasChecked.current = true;
+            }, delay);
 
             return () => clearTimeout(timer);
         }
-    }, [user, isLoading, isInitialized]);
+    }, [user, isLoading, isInitialized, isPostOAuth, initialize]);
 
     useEffect(() => {
         if (shouldRedirect) {
@@ -46,7 +86,7 @@ export function AuthGuard({
     }, [shouldRedirect, router, redirectTo, pathname]);
 
     // Show loading state while checking auth
-    if (!isInitialized || isLoading) {
+    if (!isInitialized || isLoading || isWaiting) {
         return fallback || (
             <div className="min-h-[60vh] flex items-center justify-center">
                 <div className="text-center">

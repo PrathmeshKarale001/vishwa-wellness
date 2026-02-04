@@ -79,18 +79,28 @@ export async function middleware(request: NextRequest) {
     // For admin routes, verify the user has admin/staff role
     if (request.nextUrl.pathname.startsWith('/admin') && user) {
         // Fetch the user's role from user_roles table
-        const { data: roleData } = await supabase
+        const { data: roleData, error: roleError } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', user.id)
             .single();
 
-        const userRole = roleData?.role;
-        const isStaffOrAbove = userRole === 'staff' || userRole === 'admin' || userRole === 'super_admin';
+        // If RLS blocks access or user has no role, fallback to allowing super_admin emails
+        if (roleError) {
+            // Fallback: Check if user email is a known admin
+            const adminEmails = ['eodonsocial@gmail.com', 'admin@vishwawellness.com'];
+            if (!adminEmails.includes(user.email || '')) {
+                return NextResponse.redirect(new URL('/account', request.url));
+            }
+            // If admin email, allow through
+        } else {
+            const userRole = roleData?.role;
+            const isStaffOrAbove = userRole === 'staff' || userRole === 'admin' || userRole === 'super_admin';
 
-        if (!isStaffOrAbove) {
-            // Redirect non-admin users to account page
-            return NextResponse.redirect(new URL('/account', request.url));
+            if (!isStaffOrAbove) {
+                // Redirect non-admin users to account page
+                return NextResponse.redirect(new URL('/account', request.url));
+            }
         }
     }
 

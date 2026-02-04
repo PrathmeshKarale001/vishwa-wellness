@@ -56,11 +56,7 @@ export default function ReviewsSection({ productId, initialRating = 0, initialRe
                     content,
                     is_verified,
                     created_at,
-                    user_name,
-                    profiles (
-                        full_name,
-                        avatar_url
-                    )
+                    user_name
                 `)
                 .eq('product_id', productId)
                 .eq('status', 'approved')
@@ -72,7 +68,7 @@ export default function ReviewsSection({ productId, initialRating = 0, initialRe
             const mappedReviews: Review[] = (data || []).map((r: any) => ({
                 id: r.id,
                 product_id: r.product_id,
-                user_name: r.user_name || r.profiles?.full_name || 'Anonymous',
+                user_name: r.user_name || 'Anonymous',
                 rating: r.rating,
                 title: r.title,
                 review_text: r.content,

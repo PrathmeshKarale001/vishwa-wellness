@@ -12,9 +12,10 @@ import { client } from "@/lib/sanity";
 import { allProductsQuery } from "@/lib/sanity.queries";
 import { Product, ProductImage } from "@/types";
 
-// Extended Product type that may include Sanity _id
-interface SearchProduct extends Product {
+// Extended Product type that may include Sanity _id and category object
+interface SearchProduct extends Omit<Product, 'category'> {
     _id?: string;
+    category?: string | { name: string; slug: string };
 }
 
 interface GlobalSearchProps {
@@ -112,7 +113,9 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     // Filter products based on search term
     const filteredProducts = products.filter(p =>
         p.title.toLowerCase().includes(search.toLowerCase()) ||
-        p.category?.toLowerCase?.().includes(search.toLowerCase())
+        (typeof p.category === 'string'
+            ? p.category.toLowerCase().includes(search.toLowerCase())
+            : p.category?.name?.toLowerCase?.().includes(search.toLowerCase()))
     ).slice(0, 5);
 
     // Handle keyboard shortcut
@@ -203,7 +206,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                                                     <div className="flex-1 min-w-0">
                                                         {product.category && (
                                                             <span className="inline-block px-2 py-0.5 bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-wider rounded-full mb-1">
-                                                                {product.category}
+                                                                {typeof product.category === 'string' ? product.category : product.category.name}
                                                             </span>
                                                         )}
                                                         <p className="font-semibold text-gray-900 truncate group-hover:text-[var(--color-primary)] transition-colors">

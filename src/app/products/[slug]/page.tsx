@@ -1,8 +1,17 @@
 import { notFound } from 'next/navigation';
-import { fetchProductDetail } from '@/lib/sanity.fetch';
+import { fetchProductDetail, fetchAllProductSlugs } from '@/lib/sanity.fetch';
 import { sanityProductToFrontend } from '@/lib/sanity.utils';
 import ProductDetailClient from './ProductDetailClient';
 import { Metadata } from 'next';
+
+// Revalidate every hour for ISR
+export const revalidate = 3600;
+
+// Generate static pages for all products at build time
+export async function generateStaticParams() {
+    const slugs = await fetchAllProductSlugs();
+    return slugs.map((slug) => ({ slug }));
+}
 
 interface ProductPageProps {
     params: Promise<{

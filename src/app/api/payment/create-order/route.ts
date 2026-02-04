@@ -1,8 +1,24 @@
 import { NextResponse } from 'next/server';
 import { createOrder } from '@/lib/razorpay';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/ratelimit';
+import { headers } from 'next/headers';
 
 export async function POST(request: Request) {
     try {
+        // Rate limiting
+        const headersList = await headers();
+        const ip = headersList.get('x-forwarded-for')?.split(',')[0] ||
+            headersList.get('x-real-ip') ||
+            'unknown';
+
+        const rateLimit = await checkRateLimit(ip, 'payment');
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: 'Too many requests. Please try again later.' },
+                { status: 429, headers: getRateLimitHeaders(rateLimit) }
+            );
+        }
+
         const body = await request.json();
         const { amount, receipt, notes } = body;
 

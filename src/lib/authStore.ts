@@ -169,16 +169,19 @@ export const useAuthStore = create<AuthState>()(
             signInWithGoogle: async (redirectTo?: string) => {
                 const supabase = getSupabaseClient();
 
-                // Build callback URL with next parameter if provided
-                const callbackUrl = new URL('/auth/callback', window.location.origin);
+                // Store the redirect destination in a cookie (accessible by server-side callback)
+                // Query params in redirectTo URL can cause Supabase redirect validation to fail
                 if (redirectTo) {
-                    callbackUrl.searchParams.set('next', redirectTo);
+                    document.cookie = `auth_redirect=${encodeURIComponent(redirectTo)}; path=/; max-age=300; SameSite=Lax`;
                 }
+
+                // Use clean callback URL without query parameters
+                const callbackUrl = `${window.location.origin}/auth/callback`;
 
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: callbackUrl.toString(),
+                        redirectTo: callbackUrl,
                     },
                 });
 

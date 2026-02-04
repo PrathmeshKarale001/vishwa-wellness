@@ -143,3 +143,18 @@ export async function fetchRituals(): Promise<Retreat[]> {
         return [];
     }
 }
+
+// Fetch all product slugs for static generation
+export async function fetchAllProductSlugs(): Promise<string[]> {
+    if (!isSanityConfigured()) return [];
+
+    try {
+        const slugs = await sanityFetch<{ slug: string }[]>({
+            query: `*[_type == "product" && defined(slug.current)]{ "slug": slug.current }`,
+            tags: ['product'],
+        });
+        return slugs.map((s) => s.slug);
+    } catch {
+        return [];
+    }
+}

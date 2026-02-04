@@ -4,9 +4,15 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
-    let next = searchParams.get('next') ?? '/account';
 
-    console.log('[AUTH CALLBACK] Received request with code:', code ? 'present' : 'missing');
+    // Check for redirect destination: first URL param, then cookie, then default
+    let next = searchParams.get('next');
+    if (!next) {
+        const authRedirectCookie = request.cookies.get('auth_redirect')?.value;
+        next = authRedirectCookie ? decodeURIComponent(authRedirectCookie) : '/account';
+    }
+
+    console.log('[AUTH CALLBACK] Received request with code:', code ? 'present' : 'missing', 'next:', next);
 
     if (!next.startsWith('/')) {
         next = '/account';
@@ -83,6 +89,9 @@ export async function GET(request: NextRequest) {
         console.log('[AUTH CALLBACK] Setting cookie:', name);
         response.cookies.set(name, value, options as any);
     });
+
+    // Clear the auth_redirect cookie after use
+    response.cookies.set('auth_redirect', '', { path: '/', maxAge: 0 });
 
     console.log('[AUTH CALLBACK] Redirecting to:', redirectUrl);
     return response;

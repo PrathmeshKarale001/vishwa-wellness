@@ -16,6 +16,31 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(callbackUrl);
     }
 
+    // Define routes that need auth checking
+    const protectedPaths = ['/account', '/admin'];
+    const publicAuthPages = ['/account/login', '/account/register', '/account/forgot-password', '/account/reset-password'];
+    const authPaths = ['/auth/login', '/auth/signup'];
+
+    const isProtectedPath = protectedPaths.some((path) =>
+        pathname.startsWith(path)
+    );
+    const isPublicAuthPage = publicAuthPages.some((path) =>
+        pathname === path
+    );
+    const isAuthPath = authPaths.some((path) =>
+        pathname === path
+    );
+
+    // PERFORMANCE: Only call Supabase for routes that actually need auth
+    // This prevents MIDDLEWARE_INVOCATION_TIMEOUT on public pages
+    const needsAuth = (isProtectedPath && !isPublicAuthPage) || isAuthPath;
+
+    if (!needsAuth) {
+        return NextResponse.next({ request });
+    }
+
+    // --- Auth-required routes only below this point ---
+
     let supabaseResponse = NextResponse.next({
         request,
     });
@@ -51,33 +76,20 @@ export async function middleware(request: NextRequest) {
         }
     );
 
-    // Refresh session if exists
+    // Refresh session — only called for protected/auth routes now
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Protected routes that require authentication
-    const protectedPaths = ['/account', '/admin'];
-    const publicAuthPages = ['/account/login', '/account/register', '/account/forgot-password', '/account/reset-password'];
-
-    const isProtectedPath = protectedPaths.some((path) =>
-        request.nextUrl.pathname.startsWith(path)
-    );
-
-    // Exclude public auth pages from protection
-    const isPublicAuthPage = publicAuthPages.some((path) =>
-        request.nextUrl.pathname === path
-    );
-
     // Redirect to login if accessing protected route without authentication
     if (isProtectedPath && !isPublicAuthPage && !user) {
         const loginUrl = new URL('/account/login', request.url);
-        loginUrl.searchParams.set('next', request.nextUrl.pathname);
+        loginUrl.searchParams.set('next', pathname);
         return NextResponse.redirect(loginUrl);
     }
 
     // For admin routes, verify the user has admin/staff role
-    if (request.nextUrl.pathname.startsWith('/admin') && user) {
+    if (pathname.startsWith('/admin') && user) {
         // Fetch the user's role from user_roles table
         const { data: roleData, error: roleError } = await supabase
             .from('user_roles')
@@ -104,12 +116,7 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // Redirect logged-in users away from auth pages (optional)
-    const authPaths = ['/auth/login', '/auth/signup'];
-    const isAuthPath = authPaths.some((path) =>
-        request.nextUrl.pathname === path
-    );
-
+    // Redirect logged-in users away from auth pages
     if (isAuthPath && user) {
         return NextResponse.redirect(new URL('/account', request.url));
     }

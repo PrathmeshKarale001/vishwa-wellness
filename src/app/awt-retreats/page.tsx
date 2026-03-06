@@ -3,7 +3,7 @@ import RetreatsContent from "./RetreatsContent";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "AWT Retreats | Vishwa Wellness",
+    title: "Agnihotra Wellness Retreats | Vishwa Wellness",
     description: "Immersive wellness retreats focused on sacred fire ceremonies, Bhasma rituals, and profound healing.",
 };
 

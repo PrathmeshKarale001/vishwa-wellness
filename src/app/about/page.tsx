@@ -73,7 +73,7 @@ export default function AboutPage() {
                 badge="Our Story"
                 title="About Vishwa Wellness"
                 description="Born from a 170+ year old Guru Lineage, we empower individuals to channel their spiritual energy and manifest a new life."
-                bgImage="/firelineage.jpg"
+                bgImage="/hero-about-us.png"
                 theme="dark"
             />
 
@@ -250,6 +250,37 @@ export default function AboutPage() {
                             </Card>
                         </motion.div>
                     ))}
+                </div>
+            </Section>
+
+            {/* Wellness Video */}
+            <Section background="beige">
+                <SectionHeading
+                    title="Experience Our Wellness Journey"
+                    subtitle="Watch and discover the transformative power of ancient healing"
+                />
+
+                <div className="max-w-4xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="relative rounded-2xl overflow-hidden shadow-2xl"
+                    >
+                        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                            <iframe
+                                className="absolute inset-0 w-full h-full"
+                                src="https://www.youtube.com/embed/H79P9JWeEYI"
+                                title="Vishwa Wellness Video"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                            />
+                        </div>
+                    </motion.div>
+                    <p className="text-center text-[var(--color-charcoal)] mt-6 opacity-80">
+                        Discover how ancient Vedic practices and sacred fire rituals are transforming lives around the world.
+                    </p>
                 </div>
             </Section>
 

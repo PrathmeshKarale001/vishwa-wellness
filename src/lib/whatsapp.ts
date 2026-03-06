@@ -29,7 +29,7 @@ export function getWhatsAppURL(phoneNumber: string, message?: string): string {
 export const whatsAppMessages = {
     general: 'Hi! I have a question about Vishwa Wellness.',
     product: 'Hi! I\'d like to know more about one of your products.',
-    retreat: 'Hi! I\'m interested in learning more about AWT Retreats.',
+    retreat: 'Hi! I\'m interested in learning more about Agnihotra Wellness Retreats.',
     consultation: 'Hi! I\'d like to schedule a wellness consultation.',
     custom: (message: string) => message
 };

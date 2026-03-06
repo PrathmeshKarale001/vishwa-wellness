@@ -16,7 +16,7 @@ const footerLinks = {
     explore: [
         { name: 'Why Ash?', href: '/why-ash' },
         { name: 'Bhasma Rituals', href: '/bhasma-rituals' },
-        { name: 'AWT Retreats', href: '/awt-retreats' },
+        { name: 'Agnihotra Wellness Retreats', href: '/awt-retreats' },
         { name: 'Ash Water Guide', href: '/ash-water' },
         { name: 'DIY Recipes', href: '/diy-recipes' },
         { name: 'Science & Mysticism', href: '/science-mysticism' },
@@ -35,7 +35,7 @@ const socialLinks = [
     { name: 'Facebook', icon: Facebook, href: 'https://facebook.com/vishwawellness' },
     { name: 'Instagram', icon: Instagram, href: 'https://instagram.com/vishwawellness' },
     { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/vishwawellness' },
-    { name: 'YouTube', icon: Youtube, href: 'https://youtube.com/vishwawellness' },
+    { name: 'YouTube', icon: Youtube, href: 'https://www.youtube.com/@VishwaWellness' },
 ];
 
 export default function Footer() {

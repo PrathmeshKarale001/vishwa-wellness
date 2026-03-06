@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Droplets, Hand, Wine, Search, Calendar, Sparkles, Heart, Brain, Shield, Zap, Leaf, Users, Plus, Minus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Droplets, Hand, Wine, Search, Calendar, Sparkles, Heart, Brain, Shield, Zap, Leaf, Users, Plus, Minus, MapPin, ChevronDown } from 'lucide-react';
 import ProductCard from '@/components/shop/ProductCard';
 import { Product } from '@/types';
 import FAQAccordion from '@/components/ui/FAQAccordion';
@@ -33,27 +33,30 @@ interface HeroSlide {
     ctaSecondaryLink?: string;
 }
 
-// Hero Slides
+// Slide auto-advance duration in ms
+const SLIDE_DURATION = 8000;
+
+// Hero Slides — Slide 1: Facility/Place, Slide 2: Products & Brand
 const heroSlides: HeroSlide[] = [
     {
         id: 1,
-        subtitle: 'Ancient Wisdom • Modern Wellness',
-        title: 'Healing Begins',
-        highlight: 'in the Ash',
-        description: 'Discover the sacred science of Bhasma through authentic rituals and Agni-infused products',
-        image: '/hero-1.jpg',
-        cta: { text: 'Explore Products', href: '/shop' },
-        ctaSecondary: { text: 'Learn About Ash', href: '/why-ash' },
+        subtitle: 'Welcome to Vishwa Wellness',
+        title: 'Where Ancient',
+        highlight: 'Healing Lives',
+        description: 'Step into a sacred sanctuary nestled in nature — where fire rituals, Bhasma traditions, and holistic healing come alive.',
+        image: '/hero-2.jpg',
+        cta: { text: 'Explore Our Sanctuary', href: '/about' },
+        ctaSecondary: { text: 'Shop Products', href: '/shop' },
     },
     {
         id: 2,
-        subtitle: 'Transformative Experiences',
-        title: 'AWT Retreats',
-        highlight: 'A Deep Reset',
-        description: 'Immerse yourself in sacred fire ceremonies and personalized healing protocols',
-        image: '/hero-2.jpg',
-        cta: { text: 'Book Retreat', href: '/awt-retreats' },
-        ctaSecondary: { text: 'View Programs', href: '/awt-retreats' },
+        subtitle: 'Sacred Products & Rituals',
+        title: 'Rooted in Fire,',
+        highlight: 'Crafted with Devotion',
+        description: 'From Bhasma-infused wellness products to transformative retreat experiences — discover the ancient science of Agni healing.',
+        image: '/hero-1.jpg',
+        cta: { text: 'Shop Collection', href: '/shop' },
+        ctaSecondary: { text: 'Book a Retreat', href: '/awt-retreats' },
     },
 ];
 
@@ -111,7 +114,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % activeHeroSlides.length);
-        }, 6000);
+        }, SLIDE_DURATION);
         return () => clearInterval(timer);
     }, [activeHeroSlides.length]);
 
@@ -128,152 +131,242 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
 
     return (
         <>
-            {/* ========== HERO SLIDER ========== */}
-            <section className="relative h-[100svh] max-h-[550px] lg:h-[550px] overflow-hidden">
-                {activeHeroSlides.map((slide, index) => (
-                    <div
-                        key={slide._key || slide.id || index}
-                        className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-                            }`}
-                    >
-                        {/* Mobile: Full-screen image with overlay text */}
-                        <div className="lg:hidden relative h-full">
-                            {/* Background Image */}
-                            <Image
-                                src={getSlideImageUrl(slide.image)}
-                                alt={slide.title}
-                                fill
-                                className={`object-cover transition-transform duration-[2000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-110'}`}
-                                priority={index === 0}
-                                quality={85}
-                            />
-                            {/* Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            {/* ========== IMMERSIVE HERO SLIDER ========== */}
+            <section className="relative min-h-[500px] overflow-hidden bg-black" style={{ height: 'calc(100svh - 120px)' }}>
+                {activeHeroSlides.map((slide, index) => {
+                    const isActive = index === currentSlide;
+                    const isSlide1 = index === 0;
 
-                            {/* Mobile Content - positioned at bottom */}
-                            <div className="absolute bottom-0 left-0 right-0 p-6 pb-20">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={index === currentSlide ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                                    transition={{ duration: 0.8, delay: 0.3 }}
-                                >
-                                    <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold uppercase tracking-widest rounded-full mb-4 border border-white/30">
-                                        ✧ {slide.subtitle}
-                                    </span>
-
-                                    <h1 className="text-3xl sm:text-4xl font-bold !text-white mb-0 leading-[1.1] drop-shadow-lg" style={{ fontFamily: 'var(--font-heading)' }}>
-                                        {slide.title}
-                                    </h1>
-
-                                    {slide.highlight && (
-                                        <h2 className="text-3xl sm:text-4xl font-bold !text-white italic mt-[-8px] mb-4 leading-[0.8] drop-shadow-lg" style={{ fontFamily: 'var(--font-heading)' }}>
-                                            {slide.highlight}
-                                        </h2>
-                                    )}
-
-                                    <p className="!text-white/90 text-sm sm:text-base mb-6 leading-relaxed max-w-md line-clamp-2">
-                                        {slide.description}
-                                    </p>
-
-                                    <div className="flex flex-wrap gap-3">
-                                        <Link href={slide.cta?.href || slide.ctaLink || '#'} className="btn-solid text-sm">
-                                            {slide.cta?.text || slide.ctaText || 'Learn More'}
-                                        </Link>
-                                        {(slide.ctaSecondary || slide.ctaSecondaryLink) && (
-                                            <Link href={slide.ctaSecondary?.href || slide.ctaSecondaryLink || '#'} className="btn-outline !border-white/40 !text-white hover:!bg-white hover:!text-black text-sm">
-                                                {slide.ctaSecondary?.text || slide.ctaSecondaryText || 'View Details'}
-                                            </Link>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            </div>
-                        </div>
-
-                        {/* Desktop: Side-by-side layout */}
-                        <div className="hidden lg:grid lg:grid-cols-2 h-full">
-                            {/* Text Side */}
-                            <div className="flex items-center justify-end px-16 bg-[#f7f7f7]">
-                                <div className="max-w-xl w-full">
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 30 }}
-                                        animate={index === currentSlide ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                                        transition={{ duration: 0.8, delay: 0.3 }}
-                                    >
-                                        <span className="inline-block px-4 py-1.5 bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-bold uppercase tracking-widest rounded-full mb-6 border border-[var(--color-primary)]/10">
-                                            ✧ {slide.subtitle}
-                                        </span>
-
-                                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#222] mb-0 leading-[1.1]" style={{ fontFamily: 'var(--font-heading)' }}>
-                                            {slide.title}
-                                        </h1>
-
-                                        {slide.highlight && (
-                                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-primary)] italic mt-[-10px] mb-5 leading-[1.0]" style={{ fontFamily: 'var(--font-heading)' }}>
-                                                {slide.highlight}
-                                            </h2>
-                                        )}
-
-                                        <p className="text-[#666] text-lg lg:text-xl mb-8 leading-relaxed max-w-lg">
-                                            {slide.description}
-                                        </p>
-
-                                        <div className="flex flex-wrap gap-5">
-                                            <Link href={slide.cta?.href || slide.ctaLink || '#'} className="btn-solid hover:-translate-y-1 transition-transform">
-                                                {slide.cta?.text || slide.ctaText || 'Learn More'}
-                                            </Link>
-                                            {(slide.ctaSecondary || slide.ctaSecondaryLink) && (
-                                                <Link href={slide.ctaSecondary?.href || slide.ctaSecondaryLink || '#'} className="btn-outline hover:-translate-y-1 transition-transform">
-                                                    {slide.ctaSecondary?.text || slide.ctaSecondaryText || 'View Details'}
-                                                </Link>
-                                            )}
-                                        </div>
-                                    </motion.div>
-                                </div>
-                            </div>
-
-                            {/* Image Side */}
-                            <div className="relative h-full overflow-hidden">
+                    return (
+                        <div
+                            key={slide._key || slide.id || index}
+                            className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                                }`}
+                        >
+                            {/* === Full-Bleed Background Image with Ken Burns === */}
+                            <div className="absolute inset-0 overflow-hidden">
                                 <Image
                                     src={getSlideImageUrl(slide.image)}
                                     alt={slide.title}
                                     fill
-                                    className={`object-cover transition-transform duration-[2000ms] ease-out ${index === currentSlide ? 'scale-100' : 'scale-110'}`}
+                                    className="object-cover"
+                                    style={{
+                                        animation: isActive
+                                            ? `${isSlide1 ? 'kenBurnsZoom' : 'kenBurnsZoomAlt'} ${SLIDE_DURATION / 1000 + 2}s ease-out forwards`
+                                            : 'none',
+                                        transform: 'scale(1)',
+                                    }}
                                     priority={index === 0}
-                                    quality={85}
+                                    quality={90}
                                 />
                             </div>
-                        </div>
-                    </div>
-                ))}
 
-                {/* Slide Navigation - desktop only */}
+                            {/* === Cinematic Gradient Overlays === */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 z-[1]" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent z-[1] hidden lg:block" />
+
+                            {/* === Ambient Glow Orbs (fire theme) === */}
+                            <div
+                                className="absolute w-[300px] h-[300px] rounded-full z-[2] pointer-events-none hidden lg:block"
+                                style={{
+                                    background: 'radial-gradient(circle, rgba(199,60,46,0.15) 0%, transparent 70%)',
+                                    top: '20%',
+                                    right: '15%',
+                                    animation: 'floatGlow 8s ease-in-out infinite',
+                                }}
+                            />
+                            <div
+                                className="absolute w-[200px] h-[200px] rounded-full z-[2] pointer-events-none hidden lg:block"
+                                style={{
+                                    background: 'radial-gradient(circle, rgba(244,160,52,0.12) 0%, transparent 70%)',
+                                    bottom: '30%',
+                                    left: '10%',
+                                    animation: 'floatGlow2 10s ease-in-out infinite',
+                                }}
+                            />
+
+                            {/* === Content === */}
+                            <div className="relative z-10 h-full flex items-end lg:items-center">
+                                <div className="w-full max-w-7xl mx-auto px-5 sm:px-8 pb-28 sm:pb-32 lg:pb-0">
+                                    <div className="max-w-2xl">
+                                        {/* Badge */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={isActive ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                                            transition={{ duration: 0.6, delay: 0.2 }}
+                                        >
+                                            <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md text-white text-xs font-bold uppercase tracking-[0.2em] rounded-full mb-6 border border-white/20">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] animate-pulse" />
+                                                {slide.subtitle}
+                                            </span>
+                                        </motion.div>
+
+                                        {/* Title */}
+                                        <motion.h1
+                                            initial={{ opacity: 0, y: 30 }}
+                                            animate={isActive ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                                            transition={{ duration: 0.7, delay: 0.4 }}
+                                            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold !text-white leading-[1.05] drop-shadow-lg"
+                                            style={{ fontFamily: 'var(--font-heading)', margin: 0, padding: 0 }}
+                                        >
+                                            {slide.title}
+                                        </motion.h1>
+
+                                        {/* Highlight */}
+                                        {slide.highlight && (
+                                            <motion.h2
+                                                initial={{ opacity: 0, y: 30 }}
+                                                animate={isActive ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                                                transition={{ duration: 0.7, delay: 0.55 }}
+                                                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] drop-shadow-lg !text-white"
+                                                style={{
+                                                    fontFamily: 'var(--font-heading)',
+                                                    margin: 0,
+                                                    marginBottom: '1rem',
+                                                    padding: 0,
+                                                }}
+                                            >
+                                                {slide.highlight}
+                                            </motion.h2>
+                                        )}
+
+                                        {/* Description */}
+                                        <motion.p
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={isActive ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                                            transition={{ duration: 0.6, delay: 0.7 }}
+                                            className="!text-white/80 text-base sm:text-lg lg:text-xl mb-8 leading-relaxed max-w-xl"
+                                        >
+                                            {slide.description}
+                                        </motion.p>
+
+                                        {/* Slide 1 extras: Location badge */}
+                                        {isSlide1 && (
+                                            <motion.div
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={isActive ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                                                transition={{ duration: 0.5, delay: 0.85 }}
+                                                className="flex items-center gap-2 mb-8"
+                                            >
+                                                <div className="flex items-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-md rounded-xl border border-white/15">
+                                                    <MapPin size={16} className="text-[var(--color-accent)]" />
+                                                    <span className="!text-white/90 text-sm font-medium">Nestled in Nature • India</span>
+                                                </div>
+                                            </motion.div>
+                                        )}
+
+                                        {/* Slide 2 extras: Trust badges */}
+                                        {!isSlide1 && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 15 }}
+                                                animate={isActive ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+                                                transition={{ duration: 0.5, delay: 0.85 }}
+                                                className="flex flex-wrap items-center gap-3 mb-8"
+                                            >
+                                                {['100% Natural', 'Vedic Certified', 'Ancient Formulas'].map((badge) => (
+                                                    <span
+                                                        key={badge}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 backdrop-blur-sm text-white/90 text-xs font-semibold rounded-full border border-white/15"
+                                                    >
+                                                        <Sparkles size={12} className="text-[var(--color-accent)]" />
+                                                        {badge}
+                                                    </span>
+                                                ))}
+                                            </motion.div>
+                                        )}
+
+                                        {/* CTAs */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={isActive ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                                            transition={{ duration: 0.6, delay: 1.0 }}
+                                            className="flex flex-wrap gap-4"
+                                        >
+                                            <Link
+                                                href={slide.cta?.href || slide.ctaLink || '#'}
+                                                className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#222] text-sm font-bold uppercase tracking-[0.15em] hover:bg-[var(--color-accent)] hover:text-white transition-all duration-300 hover:-translate-y-0.5 shadow-lg"
+                                            >
+                                                {slide.cta?.text || slide.ctaText || 'Learn More'}
+                                            </Link>
+                                            {(slide.ctaSecondary || slide.ctaSecondaryLink) && (
+                                                <Link
+                                                    href={slide.ctaSecondary?.href || slide.ctaSecondaryLink || '#'}
+                                                    className="inline-flex items-center justify-center px-8 py-4 bg-transparent !text-white text-sm font-bold uppercase tracking-[0.15em] border border-white/40 hover:bg-white/15 hover:border-white/70 transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-sm"
+                                                >
+                                                    {slide.ctaSecondary?.text || slide.ctaSecondaryText || 'View Details'}
+                                                </Link>
+                                            )}
+                                        </motion.div>
+                                    </div>
+
+                                    {/* Slide 1: Floating Stats (desktop) */}
+                                    {isSlide1 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, x: 40 }}
+                                            animate={isActive ? { opacity: 1, x: 0 } : { opacity: 0, x: 40 }}
+                                            transition={{ duration: 0.8, delay: 1.1 }}
+                                            className="hidden lg:block absolute right-8 xl:right-16 bottom-16 xl:bottom-24"
+                                        >
+                                            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl">
+                                                <div className="grid grid-cols-3 gap-6 text-center">
+                                                    <div>
+                                                        <div className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>50+</div>
+                                                        <div className="text-xs text-white/60 mt-1">Years of<br />Practice</div>
+                                                    </div>
+                                                    <div className="border-x border-white/15 px-4">
+                                                        <div className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>50,000+</div>
+                                                        <div className="text-xs text-white/60 mt-1">Patients<br />Treated</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-3xl font-bold text-white" style={{ fontFamily: 'var(--font-heading)' }}>3</div>
+                                                        <div className="text-xs text-white/60 mt-1">Sacred<br />Rituals</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {/* === Slide Navigation Arrows === */}
                 <button
                     onClick={prevSlide}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/80 hover:bg-white rounded-full hidden lg:flex items-center justify-center transition-colors shadow-md"
+                    className="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 z-30 w-11 h-11 bg-white/10 hover:bg-white/25 backdrop-blur-md rounded-full hidden lg:flex items-center justify-center transition-all duration-300 border border-white/20 hover:border-white/40 group"
                     aria-label="Previous slide"
                 >
-                    <ChevronLeft size={24} />
+                    <ChevronLeft size={20} className="text-white group-hover:scale-110 transition-transform" />
                 </button>
                 <button
                     onClick={nextSlide}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-white/80 hover:bg-white rounded-full hidden lg:flex items-center justify-center transition-colors shadow-md"
+                    className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 w-11 h-11 bg-white/10 hover:bg-white/25 backdrop-blur-md rounded-full hidden lg:flex items-center justify-center transition-all duration-300 border border-white/20 hover:border-white/40 group"
                     aria-label="Next slide"
                 >
-                    <ChevronRight size={24} />
+                    <ChevronRight size={20} className="text-white group-hover:scale-110 transition-transform" />
                 </button>
 
-                {/* Slide Dots - bottom center */}
-                <div className="absolute bottom-6 lg:bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+                {/* === Premium Pill Navigation === */}
+                <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-4 py-2.5 border border-white/15">
                     {activeHeroSlides.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setCurrentSlide(index)}
-                            className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full transition-all ${index === currentSlide
-                                ? 'bg-white lg:bg-[var(--color-primary)] w-6 lg:w-8'
-                                : 'bg-white/50 lg:bg-[#ddd] hover:bg-white/80 lg:hover:bg-[#bbb]'
-                                }`}
+                            className="relative h-1.5 rounded-full transition-all duration-500 overflow-hidden"
+                            style={{ width: index === currentSlide ? '48px' : '16px' }}
                             aria-label={`Go to slide ${index + 1}`}
-                        />
+                        >
+                            <div className="absolute inset-0 bg-white/30 rounded-full" />
+                            {index === currentSlide && (
+                                <div
+                                    className="absolute inset-0 bg-white rounded-full"
+                                    style={{
+                                        animation: `slideProgress ${SLIDE_DURATION / 1000}s linear forwards`,
+                                    }}
+                                />
+                            )}
+                        </button>
                     ))}
                 </div>
             </section>
@@ -357,15 +450,15 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-[var(--color-primary)]" style={{ fontFamily: 'var(--font-heading)' }}>
-                                            10+
+                                            50+
                                         </div>
                                         <div className="text-xs text-[#666] mt-1">Years of Practice</div>
                                     </div>
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-[var(--color-primary)]" style={{ fontFamily: 'var(--font-heading)' }}>
-                                            500+
+                                            50,000+
                                         </div>
-                                        <div className="text-xs text-[#666] mt-1">Lives Transformed</div>
+                                        <div className="text-xs text-[#666] mt-1">Patients Treated</div>
                                     </div>
                                 </div>
                                 <div className="mt-3 pt-3 border-t border-[#eee] text-center">
@@ -478,7 +571,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                                     Experience
                                 </h3>
                                 <p className="text-[#666] leading-relaxed">
-                                    Begin your practice with our products or join an AWT Retreat for an immersive transformation experience.
+                                    Begin your practice with our products or join an Agnihotra Wellness Retreat for an immersive transformation experience.
                                 </p>
                             </div>
                             {/* Connector Arrow - Desktop only */}
@@ -516,7 +609,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                 </div>
             </section>
 
-            {/* ========== AWT RETREATS PREVIEW ========== */}
+            {/* ========== AGNIHOTRA WELLNESS RETREATS PREVIEW ========== */}
             <section className="section-padding bg-[#f9f9f9]">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -537,7 +630,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                                     >
                                         <Image
                                             src={img}
-                                            alt={`AWT Retreat ${idx + 1}`}
+                                            alt={`Agnihotra Wellness Retreat ${idx + 1}`}
                                             fill
                                             className="object-cover"
                                             sizes="(max-width: 768px) 100vw, 50vw"
@@ -573,7 +666,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                         >
                             <span className="text-[var(--color-primary)] text-sm font-bold uppercase tracking-widest">Transformative Experiences</span>
                             <h2 className="text-3xl md:text-4xl font-bold text-[#222] mt-3 mb-6" style={{ fontFamily: 'var(--font-heading)' }}>
-                                AWT Retreats
+                                Agnihotra Wellness Retreats
                             </h2>
 
                             <p className="text-[#666] leading-relaxed mb-6">
@@ -809,6 +902,45 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                     </div>
 
                     <FAQAccordion />
+                </div>
+            </section>
+
+            {/* ========== YOUTUBE CHANNEL CTA ========== */}
+            <section className="section-padding bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a]">
+                <div className="max-w-5xl mx-auto px-4">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="text-center"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-600/20 rounded-full mb-6 border border-red-500/30">
+                            <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+                                <path d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="white" />
+                            </svg>
+                            <span className="text-red-400 text-xs font-bold uppercase tracking-widest">YouTube Channel</span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold !text-white mt-2 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
+                            Watch Us on YouTube
+                        </h2>
+                        <p className="text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                            Discover sacred rituals, wellness tips, and transformative practices on our YouTube channel. Join thousands of seekers on the path to holistic healing.
+                        </p>
+                        <a
+                            href="https://www.youtube.com/@VishwaWellness"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-3 px-8 py-4 bg-red-600 hover:bg-red-700 text-white text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-red-600/30 rounded-lg"
+                        >
+                            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+                                <path d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="white" />
+                            </svg>
+                            Subscribe to Our Channel
+                        </a>
+                    </motion.div>
                 </div>
             </section>
         </>

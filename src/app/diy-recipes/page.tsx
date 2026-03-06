@@ -303,7 +303,7 @@ export default function DIYRecipesPage() {
                         All our DIY recipes use certified, ritual-grade ash prepared through
                         authentic Agni-Saṃskāra process.
                     </p>
-                    <Link href="/agni-products">
+                    <Link href="/shop">
                         <Button className="bg-white !text-[var(--color-navy)] hover:bg-[var(--color-beige)]">
                             Shop Ritual Ash
                             <ArrowRight className="w-4 h-4 ml-2" />

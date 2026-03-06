@@ -82,7 +82,7 @@ export default function WhatsAppWidget() {
                             onClick={() => handleChatClick('retreat')}
                             className="w-full text-left px-4 py-2.5 bg-white border border-[#eee] rounded-lg hover:border-[#25D366] hover:bg-[#25D366]/5 transition-colors text-xs font-medium text-[#333]"
                         >
-                            🧘 AWT Retreats
+                            🧘 Agnihotra Wellness Retreats
                         </button>
                         <button
                             onClick={() => handleChatClick('consultation')}

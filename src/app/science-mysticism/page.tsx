@@ -108,7 +108,7 @@ export default function ScienceMysticismPage() {
                 badge="Two Paths, One Truth"
                 title="Science & Mysticism"
                 description="Ancient sages knew what modern laboratories are now confirming. Explore the convergence of sacred wisdom and scientific evidence."
-                bgImage="/whyash.jpg"
+                bgImage="/hero-science-mysticism.png"
                 theme="dark"
             />
 
@@ -213,7 +213,7 @@ export default function ScienceMysticismPage() {
                         ritually-prepared products.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Link href="/agni-products">
+                        <Link href="/shop">
                             <Button className="bg-white !text-[var(--color-navy)] hover:bg-[var(--color-beige)]">
                                 Shop Products
                                 <ArrowRight className="w-4 h-4 ml-2" />

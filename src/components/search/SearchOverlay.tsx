@@ -95,7 +95,7 @@ const quickLinks = [
     { label: 'About Us', href: '/about', icon: BookOpen },
     { label: 'Bhasma Rituals', href: '/bhasma-rituals', icon: Flame },
     { label: 'DIY Recipes', href: '/diy-recipes', icon: Sparkles },
-    { label: 'AWT Retreats', href: '/awt-retreats', icon: MapPin },
+    { label: 'Agnihotra Wellness Retreats', href: '/awt-retreats', icon: MapPin },
 ];
 
 interface SearchOverlayProps {

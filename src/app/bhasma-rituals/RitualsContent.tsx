@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Hero } from "@/components/ui/Hero";
 import { Ritual } from "@/types";
 
 interface RitualsContentProps {
@@ -112,38 +113,14 @@ export default function RitualsContent({ rituals }: RitualsContentProps) {
     return (
         <>
             {/* Hero */}
-            <section className="relative min-h-[75vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-beige)] to-[var(--color-cream)]" />
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/firelineage.jpg"
-                        alt="Bhasma Rituals Background"
-                        className="w-full h-full object-cover opacity-15"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-cream)] via-transparent to-[var(--color-beige)]/50" />
-                </div>
-
-                <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <div className="inline-block px-4 py-1 rounded-full bg-[var(--color-terracotta)]/10 border border-[var(--color-terracotta)]/20 mb-8">
-                            <span className="text-[var(--color-terracotta)] text-xs font-bold uppercase tracking-[0.2em]">Sacred Practices</span>
-                        </div>
-
-                        <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl lg:text-7xl font-bold text-[var(--color-navy)] mb-6 leading-[1.1]">
-                            Bhasma Rituals
-                        </h1>
-
-                        <p className="text-lg md:text-xl text-[var(--color-ash)] max-w-2xl mx-auto mb-12 leading-relaxed">
-                            Three sacred practices passed down through fire lineages.
-                            Each ritual serves a specific healing purpose.
-                        </p>
-                    </motion.div>
-                </div>
-            </section>
+            <Hero
+                badge="Sacred Practices"
+                title="Bhasma Rituals"
+                highlight="Three Sacred Practices"
+                description="Three sacred practices passed down through fire lineages. Each ritual serves a specific healing purpose."
+                bgImage="/hero-bhasma-rituals.png"
+                theme="dark"
+            />
 
             {/* Ritual Navigation */}
             <Section background="white" className="!py-8">
@@ -283,7 +260,7 @@ export default function RitualsContent({ rituals }: RitualsContentProps) {
                                                     </li>
                                                 ))}
                                             </ul>
-                                            <Link href="/agni-products">
+                                            <Link href="/shop">
                                                 <Button className="w-full bg-white !text-[var(--color-navy)] hover:bg-[var(--color-beige)] transition-colors shadow-md">
                                                     Shop {ritual.name} Products
                                                 </Button>
@@ -307,7 +284,7 @@ export default function RitualsContent({ rituals }: RitualsContentProps) {
                         Explore our curated collection of Agni-Infused products designed for each sacred ritual.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Link href="/agni-products">
+                        <Link href="/shop">
                             <Button>
                                 Shop All Products
                                 <ArrowRight className="w-4 h-4 ml-2" />

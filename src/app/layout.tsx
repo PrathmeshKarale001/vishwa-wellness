@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import "@fontsource/lato/400.css";
-import "@fontsource/lato/700.css";
-import "@fontsource/playfair-display/400.css";
-import "@fontsource/playfair-display/600.css";
-import "@fontsource/playfair-display/700.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/cormorant-garamond/400.css";
+import "@fontsource/cormorant-garamond/600.css";
+import "@fontsource/cormorant-garamond/700.css";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { OrganizationSchema } from "@/components/seo/JsonLd";
@@ -17,7 +19,7 @@ import WhatsAppWidget from "@/components/chat/WhatsAppWidget";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://vishwawellness.com'),
   title: "Vishwa Wellness - Healing Begins in the Ash",
-  description: "Discover ancient Bhasma rituals, Agni-infused wellness products, and transformative AWT retreats. Experience the sacred science of ash for holistic healing.",
+  description: "Discover ancient Bhasma rituals, Agni-infused wellness products, and transformative Agnihotra Wellness retreats. Experience the sacred science of ash for holistic healing.",
   keywords: "wellness, bhasma, ash therapy, ayurveda, holistic healing, retreats, agni",
   icons: {
     icon: '/favicon.ico',

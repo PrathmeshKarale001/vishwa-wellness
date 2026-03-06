@@ -8,38 +8,68 @@ import {
     Users,
     CheckCircle2,
     ArrowRight,
-    Star,
-    MapPin
+    MapPin,
+    Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Section, SectionHeading } from "@/components/ui/Section";
-import { Card, CardImage, CardContent, CardTitle, CardDescription } from "@/components/ui/Card";
+import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { Retreat } from "@/types";
-import { getImageUrl } from "@/lib/image-utils";
 
 interface RetreatsContentProps {
     retreats: Retreat[];
 }
 
-const testimonials = [
+const retreatFormats = [
     {
-        name: "Priya M.",
-        location: "Mumbai",
-        retreat: "7-Day Detox",
-        quote: "The retreat transformed my relationship with my body. The ash rituals were profound."
+        title: "3-Day Pain & Stress Reset",
+        focus: "Immediate relief, nervous system calming, and rhythm correction.",
+        bestFor: "First-time participants, working professionals, stress and pain management.",
+        includes: [
+            "Daily Agnihotra",
+            "Bhasma Snān™, Lepam™, Pāna™",
+            "Agni Jal™ support",
+            "Restorative routines"
+        ],
+        link: "/contact",
+        linkText: "Explore 3-Day Retreat",
+        accent: "var(--color-terracotta)"
     },
     {
-        name: "Rahul S.",
-        location: "Bangalore",
-        retreat: "3-Day Reset",
-        quote: "I came for stress relief and found so much more. The fire ceremonies were life-changing."
+        title: "7-Day Detox & Metabolic Reset",
+        focus: "Internal cleansing, digestive balance, inflammation reduction, and energy restoration.",
+        bestFor: "Metabolic issues, chronic fatigue, digestive disorders, toxin overload.",
+        includes: [
+            "Deeper Bhasma therapies",
+            "Structured Agni-aligned diet",
+            "Extended internal support",
+            "Lifestyle rhythm recalibration"
+        ],
+        link: "/contact",
+        linkText: "Explore 7-Day Retreat",
+        accent: "var(--color-ochre)"
     },
     {
-        name: "Sarah L.",
-        location: "New York",
-        retreat: "15-Day Rejuvenation",
-        quote: "Worth every rupee. I feel 10 years younger and completely aligned with my purpose."
+        title: "15-Day Advanced Rejuvenation",
+        focus: "Long-standing imbalance, deep regeneration, and systemic restoration.",
+        bestFor: "Chronic conditions, long-term stress, and those seeking profound renewal.",
+        includes: [
+            "Full Agnihotra Wellness immersion",
+            "Advanced ash therapies",
+            "Extended Agni Jal™ protocols",
+            "Long-term lifestyle guidance"
+        ],
+        link: "/contact",
+        linkText: "Explore 15-Day Retreat",
+        accent: "var(--color-forest)"
     }
+];
+
+const beyondRetreatItems = [
+    "Personalised Agnihotra Wellness guidance",
+    "Agni-based daily routines",
+    "Agni-Infused™ products for home use",
+    "Clear understanding of the Bhasma Ritual System™"
 ];
 
 export default function RetreatsContent({ retreats }: RetreatsContentProps) {
@@ -51,7 +81,7 @@ export default function RetreatsContent({ retreats }: RetreatsContentProps) {
                 <div className="absolute inset-0 z-0">
                     <img
                         src="/hero-2.jpg"
-                        alt="AWT Retreats Background"
+                        alt="Agnihotra Wellness Retreats Background"
                         className="w-full h-full object-cover opacity-40"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-navy)] via-transparent to-[var(--color-navy)]/50" />
@@ -64,7 +94,7 @@ export default function RetreatsContent({ retreats }: RetreatsContentProps) {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
                         <div className="inline-block px-4 py-1 rounded-full bg-[var(--color-ochre)]/10 border border-[var(--color-ochre)]/20 mb-8">
-                            <span className="text-[var(--color-ochre)] text-xs font-bold uppercase tracking-[0.2em]">AWT Retreats</span>
+                            <span className="text-[var(--color-ochre)] text-xs font-bold uppercase tracking-[0.2em]">Agnihotra Wellness Retreats</span>
                         </div>
 
                         <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl lg:text-7xl font-bold !text-white mb-6 leading-[1.1] drop-shadow-xl">
@@ -95,136 +125,189 @@ export default function RetreatsContent({ retreats }: RetreatsContentProps) {
                 </div>
             </section>
 
-            {/* Retreat Options */}
+            {/* ========== RETREAT FORMATS ========== */}
             <Section background="cream">
                 <SectionHeading
-                    title="Choose Your Journey"
-                    subtitle="From weekend resets to deep immersive experiences, find the retreat that calls to you."
+                    title="Choose Your Depth of Healing"
                 />
 
-                {retreats && retreats.length > 0 ? (
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {retreats.map((retreat, index) => (
-                            <motion.div
-                                key={retreat._id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className="h-full"
-                            >
-                                <Card variant="bordered" className="h-full flex flex-col">
-                                    <CardImage
-                                        src={getImageUrl(retreat.images?.[0])}
-                                        alt={retreat.title}
-                                        aspectRatio="video"
-                                    />
-                                    <CardContent className="flex-1 flex flex-col">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <span className="px-3 py-1 bg-[var(--color-terracotta)] text-white text-xs font-medium rounded-full">
-                                                {retreat.duration}
-                                            </span>
-                                            {retreat.location && (
-                                                <span className="text-xs text-gray-500 flex items-center gap-1">
-                                                    <MapPin size={12} /> {retreat.location}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <CardTitle className="text-2xl mb-2">{retreat.title}</CardTitle>
-                                        <p className="text-3xl font-semibold mb-4 text-[var(--color-navy)]">
-                                            ₹{retreat.price.toLocaleString('en-IN')}
-                                            <span className="text-sm font-normal opacity-70"> / person</span>
-                                        </p>
-                                        <CardDescription className="mb-6">{retreat.description}</CardDescription>
-
-                                        {retreat.features && retreat.features.length > 0 && (
-                                            <div className="mb-6 flex-1">
-                                                <p className="font-medium mb-3">What's Included:</p>
-                                                <ul className="space-y-2">
-                                                    {retreat.features.slice(0, 5).map((item) => (
-                                                        <li key={item} className="flex items-start gap-2 text-sm opacity-90">
-                                                            <CheckCircle2 className="w-4 h-4 text-[var(--color-forest)] flex-shrink-0 mt-0.5" />
-                                                            {item}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        <Link href="/contact" className="mt-auto">
-                                            <Button className="w-full">
-                                                Book Now
-                                                <ArrowRight className="w-4 h-4 ml-2" />
-                                            </Button>
-                                        </Link>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500">Coming soon! We are curating our next sacred retreat experiences.</p>
-                    </div>
-                )}
-            </Section>
-
-            {/* Testimonials */}
-            <Section background="white">
-                <SectionHeading
-                    title="Transformation Stories"
-                    subtitle="Hear from those who have walked the fire path before you."
-                />
-
-                <div className="grid md:grid-cols-3 gap-8">
-                    {testimonials.map((testimonial, index) => (
+                <div className="grid md:grid-cols-3 gap-8 mt-12">
+                    {retreatFormats.map((format, index) => (
                         <motion.div
-                            key={testimonial.name}
-                            initial={{ opacity: 0, y: 20 }}
+                            key={format.title}
+                            initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            transition={{ duration: 0.6, delay: index * 0.15 }}
                             viewport={{ once: true }}
+                            className="h-full"
                         >
-                            <Card variant="bordered" className="p-8 h-full">
-                                <div className="flex gap-1 mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className="w-4 h-4 fill-[var(--color-gold)] text-[var(--color-gold)]" />
-                                    ))}
-                                </div>
-                                <p className="italic mb-6 opacity-90">
-                                    &ldquo;{testimonial.quote}&rdquo;
-                                </p>
-                                <div>
-                                    <p className="font-semibold">{testimonial.name}</p>
-                                    <p className="text-sm opacity-70">
-                                        {testimonial.location} • {testimonial.retreat}
-                                    </p>
-                                </div>
+                            <Card variant="bordered" className="h-full flex flex-col p-0 overflow-hidden">
+                                {/* Card accent top bar */}
+                                <div className="h-1.5 w-full" style={{ backgroundColor: format.accent }} />
+
+                                <CardContent className="flex-1 flex flex-col p-8">
+                                    <div className="flex items-center gap-3 mb-5">
+                                        <span className="text-xl">🔹</span>
+                                        <CardTitle className="text-xl md:text-2xl !mb-0">
+                                            {format.title}
+                                        </CardTitle>
+                                    </div>
+
+                                    <div className="mb-5">
+                                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-terracotta)] mb-2">Focus</p>
+                                        <p className="text-gray-600 leading-relaxed text-sm">{format.focus}</p>
+                                    </div>
+
+                                    <div className="mb-5">
+                                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-terracotta)] mb-2">Best for</p>
+                                        <p className="text-gray-600 leading-relaxed text-sm">{format.bestFor}</p>
+                                    </div>
+
+                                    <div className="mb-8 flex-1">
+                                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-terracotta)] mb-3">Includes</p>
+                                        <ul className="space-y-2.5">
+                                            {format.includes.map((item) => (
+                                                <li key={item} className="flex items-start gap-3 text-sm text-gray-600">
+                                                    <CheckCircle2 className="w-4 h-4 text-[var(--color-forest)] flex-shrink-0 mt-0.5" />
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    <Link href={format.link} className="mt-auto">
+                                        <Button className="w-full group">
+                                            {format.linkText}
+                                            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                                        </Button>
+                                    </Link>
+                                </CardContent>
                             </Card>
                         </motion.div>
                     ))}
                 </div>
             </Section>
 
-            {/* Continue at Home */}
-            <Section background="beige">
-                <div className="text-center max-w-2xl mx-auto">
-                    <Flame className="w-12 h-12 text-[var(--color-terracotta)] mx-auto mb-6" />
-                    <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--color-navy)] mb-6">
-                        Continue at Home
-                    </h2>
-                    <p className="mb-8 opacity-90">
-                        Every retreat participant receives a curated collection of products
-                        to continue their practice at home.
-                    </p>
-                    <Link href="/agni-products">
-                        <Button variant="outline">
-                            Shop Retreat Products
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                    </Link>
+            {/* ========== BEYOND THE RETREAT ========== */}
+            <section className="relative py-20 md:py-28 bg-[var(--color-navy)] overflow-hidden">
+                {/* Decorative glow */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-[var(--color-ochre)] blur-[120px]" />
+                    <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-[var(--color-forest)] blur-[100px]" />
+                </div>
+
+                <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
+                    >
+                        <div className="inline-block px-5 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
+                            <span className="text-[var(--color-ochre)] text-xs font-bold uppercase tracking-[0.2em]">
+                                🌿 What Makes Healing Last
+                            </span>
+                        </div>
+
+                        <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-5xl font-bold !text-white mb-6 leading-[1.1]">
+                            Beyond the Retreat
+                        </h2>
+
+                        <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto mb-12 leading-relaxed">
+                            Healing does not end when the retreat ends.
+                        </p>
+
+                        <div className="text-left max-w-lg mx-auto mb-10">
+                            <p className="text-white/60 mb-5 text-base">Participants leave with:</p>
+                            <ul className="space-y-4">
+                                {beyondRetreatItems.map((item) => (
+                                    <li key={item} className="flex items-start gap-3">
+                                        <CheckCircle2 className="w-5 h-5 text-[var(--color-ochre)] flex-shrink-0 mt-0.5" />
+                                        <span className="text-white/80 text-base">{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <p className="text-base text-white/50 max-w-2xl mx-auto leading-relaxed">
+                            This ensures continuity of healing beyond the retreat environment.
+                        </p>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* ========== SAFETY & SUPERVISION ========== */}
+            <Section background="cream">
+                <div className="max-w-3xl mx-auto text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.7 }}
+                        viewport={{ once: true }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[var(--color-terracotta)]/10 border border-[var(--color-terracotta)]/20 mb-8">
+                            <Shield className="w-4 h-4 text-[var(--color-terracotta)]" />
+                            <span className="text-[var(--color-terracotta)] text-xs font-bold uppercase tracking-[0.2em]">
+                                Safety & Supervision
+                            </span>
+                        </div>
+
+                        <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-[var(--color-navy)] mb-8">
+                            Applied with Responsibility
+                        </h2>
+
+                        <div className="space-y-4 text-gray-600 text-lg leading-relaxed">
+                            <p>
+                                Agnihotra Wellness Retreats are guided and supervised.
+                            </p>
+                            <p>
+                                Ash therapies follow strict preparation and application protocols.
+                            </p>
+                            <p className="text-gray-500 mt-6">
+                                The aim is not intensity — but <strong className="text-[var(--color-navy)]">precision, safety, and sustainability</strong>.
+                            </p>
+                        </div>
+                    </motion.div>
                 </div>
             </Section>
+
+            {/* ========== CLOSING STATEMENT ========== */}
+            <section className="relative py-24 md:py-32 bg-[var(--color-navy)] overflow-hidden">
+                <div className="absolute inset-0 opacity-[0.07]">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[var(--color-ochre)] blur-[150px]" />
+                </div>
+
+                <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.9 }}
+                        viewport={{ once: true }}
+                    >
+                        <Flame className="w-8 h-8 text-[var(--color-ochre)] mx-auto mb-10 opacity-80" />
+
+                        <div className="space-y-6">
+                            <p className="font-[family-name:var(--font-playfair)] text-2xl md:text-3xl text-white/90 leading-relaxed">
+                                The fire restores order.
+                            </p>
+                            <p className="font-[family-name:var(--font-playfair)] text-2xl md:text-3xl text-white/90 leading-relaxed">
+                                The ash removes imbalance.
+                            </p>
+                            <p className="font-[family-name:var(--font-playfair)] text-2xl md:text-3xl text-white/90 leading-relaxed">
+                                Rhythm allows healing to stay.
+                            </p>
+                        </div>
+
+                        <div className="mt-12 pt-10 border-t border-white/10">
+                            <p className="text-white/50 text-sm uppercase tracking-[0.2em] mb-3">This is the promise of</p>
+                            <p className="font-[family-name:var(--font-playfair)] text-xl md:text-2xl text-[var(--color-ochre)] font-semibold">
+                                Agnihotra Wellness Therapy™
+                            </p>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
+
         </>
     );
 }

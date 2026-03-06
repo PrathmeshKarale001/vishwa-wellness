@@ -82,15 +82,15 @@ const faqCategories = [
         ]
     },
     {
-        title: 'AWT Retreats',
+        title: 'Agnihotra Wellness Retreats',
         faqs: [
             {
-                question: 'What is included in an AWT Retreat?',
-                answer: 'Our Agni Wellness Transformation (AWT) Retreats include accommodation, all vegetarian meals, daily ritual practices, yoga and meditation sessions, fire ceremonies, one-on-one consultations, and take-home wellness products. Transportation to the retreat center is not included.'
+                question: 'What is included in an Agnihotra Wellness Retreat?',
+                answer: 'Our Agnihotra Wellness Retreats include accommodation, all vegetarian meals, daily ritual practices, yoga and meditation sessions, fire ceremonies, one-on-one consultations, and take-home wellness products. Transportation to the retreat center is not included.'
             },
             {
                 question: 'How do I book a retreat?',
-                answer: 'Visit our AWT Retreats page to view upcoming dates and locations. Click "Book Now" to select your preferred retreat, complete registration, and make payment. We recommend booking 2-3 months in advance as spaces are limited.'
+                answer: 'Visit our Agnihotra Wellness Retreats page to view upcoming dates and locations. Click "Book Now" to select your preferred retreat, complete registration, and make payment. We recommend booking 2-3 months in advance as spaces are limited.'
             },
             {
                 question: 'What is the cancellation policy for retreats?',

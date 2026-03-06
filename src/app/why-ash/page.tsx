@@ -63,7 +63,7 @@ export default function WhyAshPage() {
                 badge="The Hero Ingredient"
                 title="Why Ash?"
                 description="The oldest medicine on Earth. Revered by every ancient civilization. Now validated by modern science."
-                bgImage="/whyash.jpg"
+                bgImage="/hero-why-ash.png"
                 theme="dark"
             />
 
@@ -200,7 +200,7 @@ export default function WhyAshPage() {
                         ))}
                     </div>
 
-                    <Link href="/agni-products">
+                    <Link href="/shop">
                         <Button className="bg-white !text-[var(--color-navy)] hover:bg-[var(--color-beige)]">
                             Explore Agni-Infused Products
                             <ArrowRight className="w-4 h-4 ml-2" />

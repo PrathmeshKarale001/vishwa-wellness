@@ -1,20 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-    Droplets,
     CheckCircle2,
     AlertTriangle,
-    ArrowRight,
-    GlassWater,
     Sparkles,
     Heart,
-    Brain
+    Brain,
+    Droplets
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Section, SectionHeading, SacredDivider } from "@/components/ui/Section";
-import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/Card";
+import { Section, SectionHeading } from "@/components/ui/Section";
 import { Hero } from "@/components/ui/Hero";
 
 const ancientBenefits = [
@@ -69,18 +65,11 @@ const steps = [
 const safetyRules = [
     "Use ONLY certified food-grade ritual ash",
     "Never use industrial or commercial ash",
-    "Consult a doctor if pregnant or on medication",
+    "Consult our experts if pregnant or on medication",
     "Start with small amounts (1/8 tsp) and increase gradually",
-    "Do not consume daily — weekly or during detox only",
     "Stop immediately if any discomfort occurs",
 ];
 
-const kitProducts = [
-    { name: "Certified Agni Jal Ash", price: "₹599" },
-    { name: "Traditional Copper Vessel", price: "₹1,299" },
-    { name: "Fine Mesh Sieve (Set of 3)", price: "₹349" },
-    { name: "Complete Agni Jal Kit", price: "₹1,999" },
-];
 
 export default function AshWaterPage() {
     return (
@@ -102,7 +91,7 @@ export default function AshWaterPage() {
                             What is Agni Jal?
                         </h2>
                         <p className="text-lg leading-relaxed mb-6">
-                            Agni Jal (अग्नि जल) literally translates to "Fire Water." It is an ancient preparation
+                            Agni Jal (अग्नि जल) literally translates to "Fire-Infused Water." It is an ancient preparation
                             where water is infused with the essence of sacred ash, traditionally stored in
                             copper vessels overnight.
                         </p>
@@ -225,48 +214,6 @@ export default function AshWaterPage() {
                             ))}
                         </ul>
                     </div>
-                </div>
-            </Section>
-
-            {/* Products */}
-            <Section background="white">
-                <SectionHeading
-                    title="Agni Jal Essentials"
-                    subtitle="Everything you need to prepare sacred ash water at home"
-                />
-
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {kitProducts.map((product, index) => (
-                        <motion.div
-                            key={product.name}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            viewport={{ once: true }}
-                        >
-                            <Card className="text-center h-full">
-                                <div className="aspect-square bg-[var(--color-beige)] flex items-center justify-center">
-                                    <Droplets className="w-16 h-16 text-[var(--color-terracotta)]" />
-                                </div>
-                                <CardContent>
-                                    <CardTitle className="text-lg">{product.name}</CardTitle>
-                                    <p className="text-xl font-semibold mt-2">
-                                        {product.price}
-                                    </p>
-                                    <Button size="sm" className="mt-4 w-full">Add to Cart</Button>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    ))}
-                </div>
-
-                <div className="text-center mt-12">
-                    <Link href="/agni-products">
-                        <Button variant="outline">
-                            Shop All Agni Jal Products
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                    </Link>
                 </div>
             </Section>
         </>

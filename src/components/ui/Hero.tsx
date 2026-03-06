@@ -100,7 +100,7 @@ export function Hero({
                                 )}
 
                                 {description && (
-                                    <p className="text-[#666] text-base lg:text-lg mb-8 leading-relaxed max-w-lg">
+                                    <p className="!text-[#666] text-base lg:text-lg mb-8 leading-relaxed max-w-lg">
                                         {description}
                                     </p>
                                 )}

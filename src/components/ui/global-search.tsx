@@ -35,7 +35,7 @@ const quickLinks = [
     { icon: BookOpen, label: "About Us", href: "/about" },
     { icon: Flame, label: "Bhasma Rituals", href: "/bhasma-rituals" },
     { icon: Sparkles, label: "DIY Recipes", href: "/diy-recipes" },
-    { icon: MapPin, label: "AWT Retreats", href: "/awt-retreats" },
+    { icon: MapPin, label: "Agnihotra Wellness Retreats", href: "/awt-retreats" },
 ];
 
 const trendingSearches = [

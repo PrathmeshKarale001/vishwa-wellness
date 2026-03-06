@@ -23,8 +23,8 @@ const faqs: FAQItem[] = [
         answer: 'The best way to begin is with our Bhasma Snān (ash bath ritual), which is the most accessible practice. You can purchase our ritual kit that includes detailed instructions, or join one of our workshops or retreats for hands-on guidance from experienced practitioners. We provide step-by-step guidance for all three rituals.',
     },
     {
-        question: 'What can I expect from an AWT Retreat?',
-        answer: 'Our AWT Retreats offer a transformative 3-7 day experience that includes sacred fire ceremonies, personalized healing consultations, hands-on training in all three Bhasma rituals, organic meals, and time for rest and integration. You\'ll be guided by experienced practitioners in a serene natural setting designed to support deep healing.',
+        question: 'What can I expect from an Agnihotra Wellness Retreat?',
+        answer: 'Our Agnihotra Wellness Retreats offer a transformative 3-7 day experience that includes sacred fire ceremonies, personalized healing consultations, hands-on training in all three Bhasma rituals, organic meals, and time for rest and integration. You\'ll be guided by experienced practitioners in a serene natural setting designed to support deep healing.',
     },
     {
         question: 'Do I need any prior experience with yoga or meditation?',

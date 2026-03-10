@@ -259,3 +259,37 @@ export const ritualsQuery = `
     }
   }
 `;
+
+// Fetch all DIY recipes grouped by category
+export const allDiyRecipesQuery = `
+  *[_type == "diyRecipe"] | order(category asc, order asc) {
+    _id,
+    title,
+    "slug": slug.current,
+    category,
+    time,
+    difficulty,
+    ingredients,
+    steps,
+    benefits,
+    "image": image.asset->url,
+    order
+  }
+`;
+
+// Fetch single blog post by slug (with full body)
+export const postBySlugQuery = (slug: string) => `
+  *[_type == "post" && slug.current == "${slug}"][0] {
+    _id,
+    title,
+    "slug": slug.current,
+    author->{
+      name,
+      "image": image.asset->url
+    },
+    "mainImage": mainImage.asset->url,
+    excerpt,
+    body,
+    publishedAt
+  }
+`;

@@ -256,7 +256,7 @@ export default function AboutPage() {
             {/* Wellness Video */}
             <Section background="beige">
                 <SectionHeading
-                    title="Experience Our Wellness Journey"
+                    title="Experience Our Wellness Journey  Vishwa Ahes Tu"
                     subtitle="Watch and discover the transformative power of ancient healing"
                 />
 
@@ -271,7 +271,7 @@ export default function AboutPage() {
                         <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                             <iframe
                                 className="absolute inset-0 w-full h-full"
-                                src="https://www.youtube.com/embed/H79P9JWeEYI"
+                                src="https://www.youtube.com/embed/EEYHO-3EWnU?si=ueTx4F5-cX7bd68Z"
                                 title="Vishwa Wellness Video"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                 allowFullScreen

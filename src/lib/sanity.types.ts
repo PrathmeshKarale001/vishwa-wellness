@@ -115,3 +115,30 @@ export interface Category {
     productCount: number;
 }
 
+export interface DiyRecipe {
+    _id: string;
+    title: string;
+    slug: string;
+    category: string;
+    time: string;
+    difficulty: string;
+    ingredients: string[];
+    steps: string[];
+    benefits: string;
+    image?: string;
+    order?: number;
+}
+
+export interface BlogPost {
+    _id: string;
+    title: string;
+    slug: string;
+    author?: {
+        name: string;
+        image?: string;
+    };
+    mainImage?: string;
+    excerpt?: string;
+    body?: any[];
+    publishedAt?: string;
+}

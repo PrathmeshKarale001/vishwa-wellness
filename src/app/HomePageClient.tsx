@@ -928,6 +928,19 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                         <p className="text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
                             Discover sacred rituals, wellness tips, and transformative practices on our YouTube channel. Join thousands of seekers on the path to holistic healing.
                         </p>
+
+                        {/* Embedded Video */}
+                        <div className="relative w-full max-w-3xl mx-auto mb-10 rounded-xl overflow-hidden shadow-2xl shadow-black/40" style={{ aspectRatio: '16/9' }}>
+                            <iframe
+                                src="https://www.youtube.com/embed/nH4GAbjbq2A"
+                                title="Vishwa Wellness - YouTube"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                                className="absolute inset-0 w-full h-full"
+                                style={{ border: 'none' }}
+                            />
+                        </div>
+
                         <a
                             href="https://www.youtube.com/@VishwaWellness"
                             target="_blank"

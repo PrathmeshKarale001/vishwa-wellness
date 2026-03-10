@@ -1,5 +1,5 @@
 import { client, isSanityConfigured } from './sanity';
-import type { HeroSlide, Product, Retreat, Category } from './sanity.types';
+import type { HeroSlide, Product, Retreat, Category, DiyRecipe, BlogPost } from './sanity.types';
 
 // Fetch with Next.js caching
 export async function sanityFetch<T>({
@@ -152,6 +152,62 @@ export async function fetchAllProductSlugs(): Promise<string[]> {
         const slugs = await sanityFetch<{ slug: string }[]>({
             query: `*[_type == "product" && defined(slug.current)]{ "slug": slug.current }`,
             tags: ['product'],
+        });
+        return slugs.map((s) => s.slug);
+    } catch {
+        return [];
+    }
+}
+
+export async function fetchDiyRecipes(): Promise<DiyRecipe[]> {
+    const { allDiyRecipesQuery } = await import('./sanity.queries');
+    if (!isSanityConfigured()) return [];
+
+    try {
+        return await sanityFetch<DiyRecipe[]>({
+            query: allDiyRecipesQuery,
+            tags: ['diyRecipe'],
+        });
+    } catch {
+        return [];
+    }
+}
+
+export async function fetchPosts(): Promise<BlogPost[]> {
+    const { allPostsQuery } = await import('./sanity.queries');
+    if (!isSanityConfigured()) return [];
+
+    try {
+        return await sanityFetch<BlogPost[]>({
+            query: allPostsQuery,
+            tags: ['post'],
+        });
+    } catch {
+        return [];
+    }
+}
+
+export async function fetchPostBySlug(slug: string): Promise<BlogPost | null> {
+    const { postBySlugQuery } = await import('./sanity.queries');
+    if (!isSanityConfigured()) return null;
+
+    try {
+        return await sanityFetch<BlogPost>({
+            query: postBySlugQuery(slug),
+            tags: ['post', slug],
+        });
+    } catch {
+        return null;
+    }
+}
+
+export async function fetchAllPostSlugs(): Promise<string[]> {
+    if (!isSanityConfigured()) return [];
+
+    try {
+        const slugs = await sanityFetch<{ slug: string }[]>({
+            query: `*[_type == "post" && defined(slug.current)]{ "slug": slug.current }`,
+            tags: ['post'],
         });
         return slugs.map((s) => s.slug);
     } catch {

@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Droplets, Hand, Wine, Search, Calendar, Sparkles, Heart, Brain, Shield, Zap, Leaf, Users, Plus, Minus, MapPin, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Droplets, Hand, Wine, Search, Calendar, Sparkles, Heart, Brain, Shield, Zap, Leaf, MapPin, PlayCircle, ExternalLink } from 'lucide-react';
 import ProductCard from '@/components/shop/ProductCard';
 import { Product } from '@/types';
 import FAQAccordion from '@/components/ui/FAQAccordion';
+import { YouTubeVideo, formatVideoDate } from '@/lib/youtube';
 
 // Type definition for hero slides (supports both hardcoded and Sanity CMS formats)
 interface HeroSlide {
@@ -94,6 +95,7 @@ const rituals = [
 interface HomePageClientProps {
     featuredProducts: Product[];
     heroSlides?: HeroSlide[];
+    latestVideos?: YouTubeVideo[];
 }
 
 // Helper to extract image URL from string or object
@@ -103,7 +105,7 @@ function getSlideImageUrl(image: string | { url: string; alt?: string } | undefi
     return image.url || '/hero-placeholder.jpg';
 }
 
-export default function HomePageClient({ featuredProducts, heroSlides: sanityHeroSlides }: HomePageClientProps) {
+export default function HomePageClient({ featuredProducts, heroSlides: sanityHeroSlides, latestVideos = [] }: HomePageClientProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [currentRetreatImage, setCurrentRetreatImage] = useState(0);
 
@@ -890,6 +892,108 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                     </div>
                 </div>
             </section >
+
+            {/* ========== LATEST PODCASTS ========== */}
+            {latestVideos.length > 0 && (
+                <section className="section-padding bg-white">
+                    <div className="max-w-7xl mx-auto px-4">
+                        {/* Header */}
+                        <div className="text-center mb-12">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 rounded-full mb-4 border border-red-100">
+                                <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+                                    <path d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="white" />
+                                </svg>
+                                <span className="text-red-500 text-xs font-bold uppercase tracking-widest">YouTube</span>
+                            </div>
+                            <span className="block text-[var(--color-primary)] text-sm font-bold uppercase tracking-widest mb-1">Latest From Our Channel</span>
+                            <h2 className="text-3xl md:text-4xl font-bold text-[#222] mt-2" style={{ fontFamily: 'var(--font-heading)' }}>
+                                Watch Our Podcasts
+                            </h2>
+                            <p className="text-[#666] mt-4 max-w-xl mx-auto">
+                                Dive into sacred wisdom, healing practices, and wellness insights — new episodes every week.
+                            </p>
+                        </div>
+
+                        {/* Video Cards Grid */}
+                        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+                            {latestVideos.map((video, index) => (
+                                <motion.a
+                                    key={video.videoId}
+                                    href={video.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                                    className="group block bg-white border border-[#eee] rounded-2xl overflow-hidden hover:shadow-xl hover:border-[var(--color-primary)]/30 transition-all duration-300 hover:-translate-y-1"
+                                >
+                                    {/* Thumbnail */}
+                                    <div className="relative aspect-video overflow-hidden bg-[#111]">
+                                        <Image
+                                            src={video.thumbnail}
+                                            alt={video.title}
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, 33vw"
+                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        {/* Play overlay */}
+                                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                                                <PlayCircle className="w-8 h-8 text-red-600 fill-red-600" />
+                                            </div>
+                                        </div>
+                                        {/* YouTube badge */}
+                                        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 bg-black/70 backdrop-blur-sm rounded-full">
+                                            <svg className="w-3 h-3 text-red-400" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+                                                <path d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="white" />
+                                            </svg>
+                                            <span className="text-white text-[10px] font-semibold">YouTube</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Card Content */}
+                                    <div className="p-5">
+                                        <h3
+                                            className="font-bold text-[#222] text-base leading-snug line-clamp-2 mb-3 group-hover:text-[var(--color-primary)] transition-colors duration-200"
+                                            style={{ fontFamily: 'var(--font-heading)' }}
+                                        >
+                                            {video.title}
+                                        </h3>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1.5 text-[#999] text-xs">
+                                                <Calendar className="w-3.5 h-3.5" />
+                                                <span>{formatVideoDate(video.published)}</span>
+                                            </div>
+                                            <span className="inline-flex items-center gap-1 text-[var(--color-primary)] text-xs font-semibold group-hover:gap-2 transition-all duration-200">
+                                                Watch <ExternalLink className="w-3 h-3" />
+                                            </span>
+                                        </div>
+                                    </div>
+                                </motion.a>
+                            ))}
+                        </div>
+
+                        {/* CTA */}
+                        <div className="text-center mt-10">
+                            <a
+                                href="https://www.youtube.com/@VishwaWellness"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-3 px-8 py-4 bg-red-600 hover:bg-red-700 text-white text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-red-600/20 rounded-lg"
+                            >
+                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+                                    <path d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="white" />
+                                </svg>
+                                View All Videos
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* ========== FAQ SECTION ========== */}
             <section className="section-padding bg-white">

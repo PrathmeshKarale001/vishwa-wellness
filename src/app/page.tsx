@@ -2,12 +2,14 @@ import { fetchProducts, fetchHeroSlides } from '@/lib/sanity.fetch';
 import { sanityProductsToFrontend } from '@/lib/sanity.utils';
 import { Product } from '@/types';
 import HomePageClient from './HomePageClient';
+import { fetchLatestYouTubeVideos, YouTubeVideo } from '@/lib/youtube';
 
 export default async function HomePage() {
-  // Fetch products and hero slides from Sanity
-  const [sanityProducts, sanityHeroSlides] = await Promise.all([
+  // Fetch products, hero slides, and latest YouTube videos in parallel
+  const [sanityProducts, sanityHeroSlides, latestVideos] = await Promise.all([
     fetchProducts(),
-    fetchHeroSlides()
+    fetchHeroSlides(),
+    fetchLatestYouTubeVideos(3),
   ]);
 
   // Convert to frontend format
@@ -25,6 +27,7 @@ export default async function HomePage() {
     <HomePageClient
       featuredProducts={displayProducts}
       heroSlides={sanityHeroSlides}
+      latestVideos={latestVideos}
     />
   );
 }

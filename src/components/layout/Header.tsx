@@ -24,6 +24,7 @@ const staticNavItems: NavItem[] = [
     { name: 'Ash Water', href: '/ash-water' },
     { name: 'DIY Recipes', href: '/diy-recipes' },
     { name: 'Science', href: '/science-mysticism' },
+    { name: 'Gallery', href: '/gallery' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
 ];

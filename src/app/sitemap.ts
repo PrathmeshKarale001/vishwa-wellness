@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { route: '/why-ash', priority: 0.7, changeFrequency: 'monthly' },
         { route: '/ash-water', priority: 0.7, changeFrequency: 'monthly' },
         { route: '/diy-recipes', priority: 0.6, changeFrequency: 'monthly' },
+        { route: '/gallery', priority: 0.7, changeFrequency: 'weekly' },
         { route: '/contact', priority: 0.6, changeFrequency: 'monthly' },
         { route: '/faq', priority: 0.5, changeFrequency: 'monthly' },
         { route: '/privacy', priority: 0.4, changeFrequency: 'yearly' },

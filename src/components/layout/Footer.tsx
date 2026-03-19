@@ -17,6 +17,7 @@ const footerLinks = {
         { name: 'Why Ash?', href: '/why-ash' },
         { name: 'Bhasma Rituals', href: '/bhasma-rituals' },
         { name: 'Agnihotra Wellness Retreats', href: '/awt-retreats' },
+        { name: 'Gallery', href: '/gallery' },
         { name: 'Ash Water Guide', href: '/ash-water' },
         { name: 'DIY Recipes', href: '/diy-recipes' },
         { name: 'Science & Mysticism', href: '/science-mysticism' },

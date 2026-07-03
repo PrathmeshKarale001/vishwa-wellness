@@ -29,7 +29,6 @@ interface CheckoutOrderSummaryProps {
     items: CartItem[];
     subtotal: number;
     shipping: number;
-    tax?: number;
     discount?: number;
     total: number;
     couponCode: string;
@@ -48,7 +47,6 @@ export default function CheckoutOrderSummary({
     items,
     subtotal,
     shipping,
-    tax = 0,
     discount = 0,
     total,
     couponCode,
@@ -225,18 +223,13 @@ export default function CheckoutOrderSummary({
                         )}
                     </span>
                 </div>
-                {tax > 0 && (
-                    <div className="flex justify-between text-sm">
-                        <span className="text-[#777]">Tax</span>
-                        <span className="font-medium">₹{tax.toLocaleString('en-IN')}</span>
-                    </div>
-                )}
                 <div className="flex justify-between pt-3 border-t border-[#eee]">
                     <span className="text-lg font-semibold text-[#222]">Total</span>
                     <span className="text-lg font-bold text-[var(--color-primary)]">
                         ₹{total.toLocaleString('en-IN')}
                     </span>
                 </div>
+                <p className="text-xs text-[#999] text-center mt-1">Inclusive of all taxes (GST)</p>
             </div>
 
             {/* Free Shipping Progress */}

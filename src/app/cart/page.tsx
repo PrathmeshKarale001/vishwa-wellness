@@ -306,6 +306,7 @@ export default function CartPage() {
                                                 ₹{Math.round(finalTotal).toLocaleString()}
                                             </span>
                                         </div>
+                                        <p className="text-xs text-[#999] text-center mt-1">Inclusive of all taxes (GST)</p>
                                     </div>
 
                                     {/* Checkout Button */}

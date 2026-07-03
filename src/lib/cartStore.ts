@@ -243,7 +243,9 @@ export const useCartStore = create<CartState>()(
             },
 
             getShipping: () => {
-                return 0; // Free shipping
+                const subtotal = get().getSubtotal();
+                // Must match server-side: FREE_SHIPPING_THRESHOLD=999, STANDARD_SHIPPING_COST=99
+                return subtotal >= 999 ? 0 : 99;
             },
 
             getTotal: () => {

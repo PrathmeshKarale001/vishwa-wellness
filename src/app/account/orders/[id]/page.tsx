@@ -274,7 +274,7 @@ function OrderDetailContent() {
                                     </div>
                                     {order.tax_amount > 0 && (
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-[#777]">Tax</span>
+                                            <span className="text-[#777]">Tax (included)</span>
                                             <span>₹{Math.round(order.tax_amount).toLocaleString()}</span>
                                         </div>
                                     )}
@@ -282,6 +282,7 @@ function OrderDetailContent() {
                                         <span>Total</span>
                                         <span className="text-[var(--color-primary)]">₹{Math.round(order.total).toLocaleString()}</span>
                                     </div>
+                                    <p className="text-xs text-[#999] text-center mt-1">Inclusive of all taxes (GST)</p>
                                 </div>
                             </div>
 

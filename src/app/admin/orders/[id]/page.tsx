@@ -394,7 +394,7 @@ export default function AdminOrderDetailPage() {
                                 </div>
                                 {order.tax_amount > 0 && (
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Tax</span>
+                                        <span className="text-gray-600">Tax (included)</span>
                                         <span>{formatCurrency(order.tax_amount)}</span>
                                     </div>
                                 )}
@@ -402,6 +402,7 @@ export default function AdminOrderDetailPage() {
                                     <span>Total</span>
                                     <span className="text-[var(--color-primary)]">{formatCurrency(order.total)}</span>
                                 </div>
+                                <p className="text-xs text-gray-500 text-center mt-1">All prices are inclusive of GST</p>
                             </div>
                         </div>
 

@@ -18,15 +18,33 @@ interface NavItem {
 // Static navigation items (non-shop items)
 const staticNavItems: NavItem[] = [
     { name: 'Home', href: '/' },
-    { name: 'Why Ash?', href: '/why-ash' },
-    { name: 'Bhasma Rituals', href: '/bhasma-rituals' },
-    { name: 'Retreats', href: '/awt-retreats' },
-    { name: 'Ash Water', href: '/ash-water' },
-    { name: 'DIY Recipes', href: '/diy-recipes' },
-    { name: 'Science', href: '/science-mysticism' },
+    {
+        name: 'Knowledge',
+        href: '#',
+        dropdown: [
+            { name: 'Why Ash?', href: '/why-ash' },
+            { name: 'The Science', href: '/science-mysticism' },
+            { name: 'DIY Recipes', href: '/diy-recipes' },
+        ]
+    },
+    {
+        name: 'Rituals',
+        href: '#',
+        dropdown: [
+            { name: 'Bhasma Rituals', href: '/bhasma-rituals' },
+            { name: 'Ash Water', href: '/ash-water' },
+            { name: 'Retreats', href: '/awt-retreats' },
+        ]
+    },
     { name: 'Gallery', href: '/gallery' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
+    {
+        name: 'About',
+        href: '/about',
+        dropdown: [
+            { name: 'Our Story', href: '/about' },
+            { name: 'Contact', href: '/contact' },
+        ]
+    },
 ];
 
 interface HeaderProps {
@@ -48,7 +66,7 @@ export default function Header({ categories = [] }: HeaderProps) {
     // Build dynamic shop dropdown from Sanity categories
     const shopDropdown = [
         { name: 'All Products', href: '/shop' },
-        ...categories.map(cat => ({
+        ...(categories || []).map(cat => ({
             name: cat.name,
             href: `/shop?category=${cat.slug}`,
         })),
@@ -57,14 +75,15 @@ export default function Header({ categories = [] }: HeaderProps) {
     // Build navigation items with dynamic shop dropdown
     const navItems: NavItem[] = [
         staticNavItems[0], // Home
-        staticNavItems[1], // Why Ash?
-        staticNavItems[2], // Bhasma Rituals
         {
             name: 'Shop',
             href: '/shop',
             dropdown: shopDropdown,
         },
-        ...staticNavItems.slice(3), // Rest of nav items
+        staticNavItems[1], // Knowledge
+        staticNavItems[2], // Rituals
+        staticNavItems[3], // Gallery
+        staticNavItems[4], // About
     ];
 
     // Prevent hydration mismatch

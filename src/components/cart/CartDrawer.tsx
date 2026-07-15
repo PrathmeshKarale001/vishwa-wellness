@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { X, ShoppingBag } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/cartStore';
 import { urlFor } from '@/lib/sanity.image';
 
@@ -20,6 +21,7 @@ export default function CartDrawer() {
     } = useCartStore();
 
     const [mounted, setMounted] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         setMounted(true);
@@ -81,7 +83,10 @@ export default function CartDrawer() {
                                     Add products to get started
                                 </p>
                                 <button
-                                    onClick={closeCart}
+                                    onClick={() => {
+                                        closeCart();
+                                        router.push('/shop');
+                                    }}
                                     className="px-6 py-3 bg-[#222] text-white text-sm font-medium uppercase tracking-wider hover:bg-[#333] transition-colors"
                                 >
                                     Continue Shopping

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import {
     Flame,
     Calendar,
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { Retreat } from "@/types";
+import { retreatFormats } from "./retreatFormats";
 
 // ─── Cloudinary Testimonial Videos ─────────────────────────────────────────
 const CLOUD = 'dlxfsjx9t';
@@ -120,51 +122,6 @@ function VideoCard({ video, index }: { video: typeof testimonialVideos[0]; index
 interface RetreatsContentProps {
     retreats: Retreat[];
 }
-
-const retreatFormats = [
-    {
-        title: "3-Day Pain & Stress Reset",
-        focus: "Immediate relief, nervous system calming, and rhythm correction.",
-        bestFor: "First-time participants, working professionals, stress and pain management.",
-        includes: [
-            "Daily Agnihotra",
-            "Bhasma Snān™, Lepam™, Pāna™",
-            "Agni Jal™ support",
-            "Restorative routines"
-        ],
-        link: "/contact",
-        linkText: "Explore 3-Day Retreat",
-        accent: "var(--color-terracotta)"
-    },
-    {
-        title: "7-Day Detox & Metabolic Reset",
-        focus: "Internal cleansing, digestive balance, inflammation reduction, and energy restoration.",
-        bestFor: "Metabolic issues, chronic fatigue, digestive disorders, toxin overload.",
-        includes: [
-            "Deeper Bhasma therapies",
-            "Structured Agni-aligned diet",
-            "Extended internal support",
-            "Lifestyle rhythm recalibration"
-        ],
-        link: "/contact",
-        linkText: "Explore 7-Day Retreat",
-        accent: "var(--color-ochre)"
-    },
-    {
-        title: "15-Day Advanced Rejuvenation",
-        focus: "Long-standing imbalance, deep regeneration, and systemic restoration.",
-        bestFor: "Chronic conditions, long-term stress, and those seeking profound renewal.",
-        includes: [
-            "Full Agnihotra Wellness immersion",
-            "Advanced ash therapies",
-            "Extended Agni Jal™ protocols",
-            "Long-term lifestyle guidance"
-        ],
-        link: "/contact",
-        linkText: "Explore 15-Day Retreat",
-        accent: "var(--color-forest)"
-    }
-];
 
 const beyondRetreatItems = [
     "Personalised Agnihotra Wellness guidance",
@@ -276,7 +233,7 @@ export default function RetreatsContent({ retreats }: RetreatsContentProps) {
                                         </ul>
                                     </div>
 
-                                    <Link href={format.link} className="mt-auto">
+                                    <Link href={`/awt-retreats/${format.slug}`} className="mt-auto">
                                         <Button className="w-full group">
                                             {format.linkText}
                                             <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
@@ -286,6 +243,65 @@ export default function RetreatsContent({ retreats }: RetreatsContentProps) {
                             </Card>
                         </motion.div>
                     ))}
+                </div>
+            </Section>
+
+            {/* ========== UPCOMING SCHEDULE ========== */}
+            <Section id="upcoming" background="white">
+                <SectionHeading
+                    title="Upcoming Retreats Schedule"
+                    subtitle="Secure your space in our next healing circle"
+                />
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+                    {retreats && retreats.length > 0 ? (
+                        retreats.map((retreat, index) => (
+                            <motion.div
+                                key={retreat._id}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: index * 0.1 }}
+                                viewport={{ once: true }}
+                            >
+                                <Card className="h-full flex flex-col hover:shadow-lg transition-shadow border border-gray-200">
+                                    <div className="aspect-[4/3] relative overflow-hidden bg-gray-100 rounded-t-lg">
+                                        <Image
+                                            src={retreat.images?.[0]?.src || '/placeholder-product.jpg'}
+                                            alt={retreat.title}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                    <CardContent className="flex-1 flex flex-col p-6">
+                                        <h3 className="text-xl font-semibold text-[var(--color-navy)] mb-2">{retreat.title}</h3>
+                                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                                            <Calendar className="w-4 h-4" />
+                                            <span>{retreat.duration}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+                                            <MapPin className="w-4 h-4" />
+                                            <span>{retreat.location || "Sacred Valley, India"}</span>
+                                        </div>
+                                        <p className="text-gray-600 line-clamp-3 mb-6 flex-1">
+                                            {retreat.description}
+                                        </p>
+                                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                            <span className="font-semibold text-lg text-[var(--color-terracotta)]">
+                                                ₹{retreat.price?.toLocaleString()}
+                                            </span>
+                                            <Button asChild>
+                                                <Link href="/contact">Book Now</Link>
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        ))
+                    ) : (
+                        <div className="col-span-full text-center py-12 text-gray-500">
+                            No upcoming retreats scheduled at the moment. Please check back later.
+                        </div>
+                    )}
                 </div>
             </Section>
 

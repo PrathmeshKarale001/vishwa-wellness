@@ -15,7 +15,6 @@ import { fetchCategories } from "@/lib/sanity.fetch";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import WhatsAppWidget from "@/components/chat/WhatsAppWidget";
 
-
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://vishwawellness.com'),
   title: "Vishwa Wellness - Healing Begins in the Ash",

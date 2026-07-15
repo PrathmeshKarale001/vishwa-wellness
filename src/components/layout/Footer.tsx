@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin, Send } from 'lucide-react';
+import { showToast } from '@/components/ui/toast';
 
 const footerLinks = {
     shop: [
@@ -33,8 +34,8 @@ const footerLinks = {
 };
 
 const socialLinks = [
-    { name: 'Facebook', icon: Facebook, href: 'https://facebook.com/vishwawellness' },
-    { name: 'Instagram', icon: Instagram, href: 'https://instagram.com/vishwawellness' },
+    { name: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/share/1EatnQQGWE/' },
+    { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/vishwa.wellness' },
     { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/vishwawellness' },
     { name: 'YouTube', icon: Youtube, href: 'https://www.youtube.com/@VishwaWellness' },
 ];
@@ -48,6 +49,7 @@ export default function Footer() {
         if (email) {
             setSubscribed(true);
             setEmail('');
+            showToast.success('Thank You for Subscribing!');
             setTimeout(() => setSubscribed(false), 3000);
         }
     };

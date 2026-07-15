@@ -47,7 +47,7 @@ export const CreateOrderSchema = z.object({
     discount: z.number().nonnegative('Discount must be non-negative').default(0),
     tax: z.number().nonnegative('Tax must be non-negative').default(0),
     total: z.number().positive('Total must be positive'),
-    payment_method: z.enum(['razorpay', 'cod', 'upi']).default('razorpay'),
+    payment_method: z.enum(['razorpay', 'upi']).default('razorpay'),
     coupon_code: z.string().optional(),
     notes: z.string().optional(),
 });

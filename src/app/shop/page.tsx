@@ -22,6 +22,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
     return (
         <ShopPageClient
+            key={initialCategory}
             products={products}
             categories={sanityCategories}
             initialCategory={initialCategory}

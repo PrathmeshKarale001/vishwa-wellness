@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDown, ChevronUp, Grid3X3, List, SlidersHorizontal, X } from 'lucide-react';
@@ -34,6 +34,11 @@ export default function ShopPage({ products = [], categories: sanityCategories =
         categories: true,
         price: true,
     });
+
+    // Sync selectedCategory when navigating to a different collection via URL query param
+    useEffect(() => {
+        setSelectedCategory(initialCategory);
+    }, [initialCategory]);
 
     // Use passed products
     const displayProducts = products;
@@ -188,13 +193,13 @@ export default function ShopPage({ products = [], categories: sanityCategories =
                 title="Agni-Infused™"
                 highlight="Products"
                 description="Discover our collection of sacred ash products, each prepared through the ancient Agni-Saṃskāra process to carry the transformative energy of sacred fire."
-                bgImage="/package-1.jpg"
+                bgImage="/13.jpg"
                 minHeight="min-h-[60vh]"
             >
                 {/* Quick Stats Overlay (Optional but nice to keep) */}
                 <div className="flex flex-wrap gap-6 justify-center mt-8">
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-white">8+</div>
+                        <div className="text-3xl font-bold text-white">60+</div>
                         <div className="text-xs text-white/60 uppercase tracking-wider">Products</div>
                     </div>
                     <div className="w-px bg-white/20 hidden sm:block" />
@@ -204,7 +209,7 @@ export default function ShopPage({ products = [], categories: sanityCategories =
                     </div>
                     <div className="w-px bg-white/20 hidden sm:block" />
                     <div className="text-center">
-                        <div className="text-3xl font-bold text-white">500+</div>
+                        <div className="text-3xl font-bold text-white">50,000</div>
                         <div className="text-xs text-white/60 uppercase tracking-wider">Happy Customers</div>
                     </div>
                 </div>

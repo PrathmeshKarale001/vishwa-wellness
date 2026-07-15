@@ -9,6 +9,8 @@ import { Heart, Truck, RotateCcw, ShieldCheck, Minus, Plus, ChevronDown, Shoppin
 import Link from 'next/link';
 import { useCartStore } from '@/lib/cartStore';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useAuthStore } from '@/lib/authStore';
+import { useRouter } from 'next/navigation';
 import CouponHighlight from '@/components/product/CouponHighlight';
 import RelatedProducts from '@/components/product/RelatedProducts';
 import RecentlyViewed, { addToRecentlyViewed } from '@/components/product/RecentlyViewed';
@@ -25,6 +27,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
     const { addItem } = useCartStore();
     const { isInWishlist, addToWishlist, removeFromWishlist, syncWithServer } = useWishlist();
+    const { user } = useAuthStore();
+    const router = useRouter();
     const isWishlisted = isInWishlist(product.id);
 
     useEffect(() => {
@@ -39,6 +43,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(prev => Math.max(1, Math.min(product.stock, prev + delta)));
+    };
+
+    const handleWishlistToggle = () => {
+        if (!user) {
+            router.push('/account/login');
+            return;
+        }
+        if (isWishlisted) {
+            removeFromWishlist(product.id);
+        } else {
+            addToWishlist(product.id);
+        }
     };
 
     const discount = product.comparePrice && product.price
@@ -189,7 +205,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                             {/* Secondary Actions */}
                             <div className="flex items-center gap-3">
                                 <button
-                                    onClick={() => isWishlisted ? removeFromWishlist(product.id) : addToWishlist(product.id)}
+                                    onClick={handleWishlistToggle}
                                     className={`flex items-center gap-2 px-4 py-2 border-2 rounded-lg transition-all ${isWishlisted
                                         ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]'
                                         : 'border-gray-300 hover:border-gray-400 text-gray-600'
@@ -209,8 +225,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                             <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200">
                                 <Truck className="w-8 h-8 text-[var(--color-primary)] flex-shrink-0" />
                                 <div>
-                                    <p className="font-semibold text-sm text-gray-900">Free Shipping</p>
-                                    <p className="text-xs text-gray-600">On orders above ₹499</p>
+                                    <p className="font-semibold text-sm text-gray-900">Flat ₹50 Shipping</p>
+                                    <p className="text-xs text-gray-600">On all orders</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-200">
@@ -328,13 +344,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <div className="mt-16 bg-gradient-to-r from-[var(--color-primary)]/5 via-[var(--color-secondary)]/5 to-[var(--color-primary)]/5 border-y border-gray-200 py-12">
                     <div className="max-w-5xl mx-auto px-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {/* Free Shipping */}
+                            {/* Shipping */}
                             <div className="flex flex-col items-center text-center group">
                                 <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mb-4 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
                                     <Truck className="w-8 h-8 text-[var(--color-primary)]" />
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">Free Shipping</h3>
-                                <p className="text-sm text-gray-600">On all orders above ₹499</p>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">Flat ₹50 Shipping</h3>
+                                <p className="text-sm text-gray-600">On all orders</p>
                             </div>
 
                             {/* Easy Returns */}

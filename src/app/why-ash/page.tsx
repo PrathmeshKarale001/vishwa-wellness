@@ -63,7 +63,7 @@ export default function WhyAshPage() {
                 badge="The Hero Ingredient"
                 title="Why Ash?"
                 description="The oldest medicine on Earth. Revered by every ancient civilization. Now validated by modern science."
-                bgImage="/hero-why-ash.png"
+                bgImage="/26.png"
                 theme="dark"
             />
 
@@ -168,7 +168,7 @@ export default function WhyAshPage() {
 
                     <div className="relative aspect-[21/9] rounded-2xl overflow-hidden mb-12 shadow-2xl">
                         <img
-                            src="/firelineage.jpg"
+                            src="/24.png"
                             alt="Agni-Saṃskāra — The Sacred Fire Preparation"
                             className="w-full h-full object-cover"
                         />
@@ -186,9 +186,9 @@ export default function WhyAshPage() {
 
                     <div className="grid md:grid-cols-3 gap-8 mb-12">
                         {[
-                            { step: "01", title: "Sacred Materials", desc: "Cow dung cakes, pure ghee, and specific herbs are gathered with intention." },
-                            { step: "02", title: "Copper Pyramid", desc: "The fire is lit within a copper pyramid structure to amplify subtle energies." },
-                            { step: "03", title: "Vedic Mantras", desc: "Ancient mantras are chanted throughout the burn, infusing the ash with vibration." },
+                            { step: "01", title: "Sacred Materials", desc: "Cow dung cakes, pure desi cow ghee, and sacred herbs like ashwagandha, turmeric, and neem are gathered with reverence. Each material is sourced from verified, authentic Vedic farms." },
+                            { step: "02", title: "Copper Pyramid", desc: "The fire is lit within a copper pyramid (Agnihotra Kund) that amplifies subtle bio-energies. Copper's natural conductivity creates a powerful resonance field that purifies the surroundings." },
+                            { step: "03", title: "Vedic Mantras", desc: "Trained Vedic scholars chant mantras from the Atharva Veda and Yajur Veda throughout the burn. These sound vibrations infuse the ash with sacred energy, transforming it into Bhasma." },
                         ].map((item) => (
                             <div key={item.step} className="text-center">
                                 <div className="text-5xl font-[family-name:var(--font-playfair)] text-[var(--color-gold)] mb-4">

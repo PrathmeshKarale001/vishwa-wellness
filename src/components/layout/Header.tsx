@@ -17,7 +17,6 @@ interface NavItem {
 
 // Static navigation items (non-shop items)
 const staticNavItems: NavItem[] = [
-    { name: 'Home', href: '/' },
     {
         name: 'Knowledge',
         href: '#',
@@ -74,16 +73,15 @@ export default function Header({ categories = [] }: HeaderProps) {
 
     // Build navigation items with dynamic shop dropdown
     const navItems: NavItem[] = [
-        staticNavItems[0], // Home
         {
             name: 'Shop',
             href: '/shop',
             dropdown: shopDropdown,
         },
-        staticNavItems[1], // Knowledge
-        staticNavItems[2], // Rituals
-        staticNavItems[3], // Gallery
-        staticNavItems[4], // About
+        staticNavItems[0], // Knowledge
+        staticNavItems[1], // Rituals
+        staticNavItems[2], // Gallery
+        staticNavItems[3], // About
     ];
 
     // Prevent hydration mismatch
@@ -153,7 +151,7 @@ export default function Header({ categories = [] }: HeaderProps) {
                             </a>
                         </div>
                         <div className="flex items-center gap-6">
-                            <span>Free Shipping on all orders</span>
+                            <span>Flat ₹50 Shipping on all orders</span>
                             <span className="text-[#bbb]">|</span>
                             <button
                                 onClick={() => setSearchOpen(true)}

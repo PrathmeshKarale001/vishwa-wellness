@@ -7,6 +7,8 @@ import { X, Minus, Plus, Star, Heart, ShoppingCart } from 'lucide-react';
 import { Product } from '@/types';
 import { useCartStore } from '@/lib/cartStore';
 import { useWishlistStore } from '@/lib/wishlistStore';
+import { useAuthStore } from '@/lib/authStore';
+import { useRouter } from 'next/navigation';
 
 interface QuickViewModalProps {
     product: Product | null;
@@ -19,6 +21,8 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
     const [quantity, setQuantity] = useState(1);
     const { addItem } = useCartStore();
     const { toggleItem, isInWishlist } = useWishlistStore();
+    const { user } = useAuthStore();
+    const router = useRouter();
 
     if (!product || !isOpen) return null;
 
@@ -33,6 +37,10 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
     };
 
     const handleToggleWishlist = () => {
+        if (!user) {
+            router.push('/account/login');
+            return;
+        }
         toggleItem(product);
     };
 

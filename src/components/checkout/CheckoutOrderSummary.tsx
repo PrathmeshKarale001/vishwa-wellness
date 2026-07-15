@@ -216,11 +216,7 @@ export default function CheckoutOrderSummary({
                 <div className="flex justify-between text-sm">
                     <span className="text-[#777]">Shipping</span>
                     <span className="font-medium">
-                        {shipping === 0 ? (
-                            <span className="text-green-600">Free</span>
-                        ) : (
-                            `₹${shipping.toLocaleString('en-IN')}`
-                        )}
+                        ₹{shipping.toLocaleString('en-IN')}
                     </span>
                 </div>
                 <div className="flex justify-between pt-3 border-t border-[#eee]">
@@ -232,21 +228,7 @@ export default function CheckoutOrderSummary({
                 <p className="text-xs text-[#999] text-center mt-1">Inclusive of all taxes (GST)</p>
             </div>
 
-            {/* Free Shipping Progress */}
-            {subtotal < 999 && (
-                <div className="px-6 py-4 bg-[#f9f9f9] border-t border-[#eee]">
-                    <p className="text-sm text-[#777] mb-2">
-                        Add ₹{(999 - subtotal).toLocaleString('en-IN')} more for{' '}
-                        <span className="text-green-600 font-medium">FREE shipping</span>
-                    </p>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-green-500 transition-all duration-300"
-                            style={{ width: `${Math.min((subtotal / 999) * 100, 100)}%` }}
-                        />
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 }

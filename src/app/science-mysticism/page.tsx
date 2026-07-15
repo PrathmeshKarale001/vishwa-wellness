@@ -195,9 +195,11 @@ export default function ScienceMysticismPage() {
                 </div>
 
                 <div className="text-center mt-12">
-                    <Button variant="outline">
-                        <Download className="w-4 h-4 mr-2" />
-                        Download Scientific PDF
+                    <Button variant="outline" asChild>
+                        <a href="/Vishwa_Wellness_Science.pdf" download="Vishwa_Wellness_Science.pdf">
+                            <Download className="w-4 h-4 mr-2" />
+                            Download Scientific PDF
+                        </a>
                     </Button>
                 </div>
             </Section>

@@ -11,6 +11,7 @@ import { useCartStore } from '@/lib/cartStore';
 import { useWishlistStore } from '@/lib/wishlistStore';
 import { useQuickViewStore } from '@/lib/quickViewStore';
 import { getImageUrl, getImageAlt } from '@/lib/image-utils';
+import { useAuthStore } from '@/lib/authStore';
 
 interface ProductCardProps {
     product: Product;
@@ -32,6 +33,7 @@ function ProductCard({
     const { addItem } = useCartStore();
     const { toggleItem, isInWishlist } = useWishlistStore();
     const { openQuickView } = useQuickViewStore();
+    const { user } = useAuthStore();
 
     const inWishlist = mounted ? isInWishlist(product.id) : false;
 
@@ -49,6 +51,12 @@ function ProductCard({
     const handleToggleWishlist = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        
+        if (!user) {
+            router.push('/account/login');
+            return;
+        }
+
         toggleItem(product);
         onAddToWishlist?.(product);
     };

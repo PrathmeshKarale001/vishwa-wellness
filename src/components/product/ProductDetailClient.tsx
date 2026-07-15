@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useCartStore } from '@/lib/cartStore';
 import { useWishlistStore } from '@/lib/wishlistStore';
+import { useAuthStore } from '@/lib/authStore';
+import { useRouter } from 'next/navigation';
 import { ProductTrustBadges } from '@/components/ui/trust-badges';
 import { StickyAddToCart } from '@/components/ui/sticky-add-to-cart';
 import { showToast } from '@/components/ui/toast';
@@ -73,7 +75,7 @@ interface ProductDetailProps {
 const productFeatures = [
     { icon: Shield, label: '100% Natural', desc: 'Ayurvedic Formula' },
     { icon: Award, label: 'AYUSH Certified', desc: 'Quality Assured' },
-    { icon: Truck, label: 'Free Shipping', desc: 'On all orders' },
+    { icon: Truck, label: 'Flat ₹50 Shipping', desc: 'On all orders' },
     { icon: RotateCcw, label: 'Easy Returns', desc: '7 Day Policy' },
 ];
 
@@ -88,7 +90,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
 
     const { addItem } = useCartStore();
     const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
-
+    const { user } = useAuthStore();
+    const router = useRouter();
+    
+    // Safety check - ensure images array exists
     const isWishlisted = isInWishlist(product._id);
     const images = product.images || [];
     const stock = product.stock ?? 100;
@@ -120,6 +125,11 @@ export default function ProductDetailClient({ product, relatedProducts = [] }: P
     };
 
     const handleWishlist = () => {
+        if (!user) {
+            router.push('/account/login');
+            return;
+        }
+
         if (isWishlisted) {
             removeFromWishlist(product._id);
         } else {

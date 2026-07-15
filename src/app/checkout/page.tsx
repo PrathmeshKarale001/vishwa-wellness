@@ -287,15 +287,15 @@ export default function CheckoutPage() {
                 clearCart();
             }
         } else {
-            // COD or UPI order - same flow (no payment processing needed)
+            // UPI order - no payment processing needed
             try {
                 const orderResponse = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ...orderPayload,
-                        payment_method: paymentMethod === 'cod' ? 'cod' : 'upi',
-                        notes: `${paymentMethod.toUpperCase()} Order${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
+                        payment_method: 'upi',
+                        notes: `UPI Order${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
                     }),
                 });
 
@@ -485,7 +485,6 @@ export default function CheckoutPage() {
                                             <h3 className="font-medium text-[#222] mb-2">Payment Method</h3>
                                             <p className="text-[#777] text-sm">
                                                 {paymentMethod === 'online' && 'Razorpay (Cards, UPI, Net Banking)'}
-                                                {paymentMethod === 'cod' && 'Cash on Delivery'}
                                                 {paymentMethod === 'upi' && 'UPI Payment'}
                                             </p>
                                             <button

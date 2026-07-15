@@ -22,6 +22,28 @@ export const contactFormSchema = z.object({
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
 
+// Retreat enquiry form validation schema (retreat detail pages)
+export const retreatEnquirySchema = z.object({
+    name: z.string()
+        .min(2, 'Name must be at least 2 characters')
+        .max(100, 'Name must be less than 100 characters'),
+    email: z.string()
+        .email('Please enter a valid email address'),
+    phone: z.string()
+        .optional()
+        .refine(
+            (val) => !val || /^[+]?[\d\s-]{10,15}$/.test(val),
+            'Please enter a valid phone number'
+        ),
+    preferredMonth: z.string().optional(),
+    participants: z.string().optional(),
+    message: z.string()
+        .max(2000, 'Message must be less than 2000 characters')
+        .optional(),
+});
+
+export type RetreatEnquiryData = z.infer<typeof retreatEnquirySchema>;
+
 // Login form validation schema
 export const loginFormSchema = z.object({
     email: z.string()

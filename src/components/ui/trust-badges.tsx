@@ -56,8 +56,8 @@ export function ProductTrustBadges({ className }: { className?: string }) {
             />
             <TrustBadge
                 icon={<Truck className="w-5 h-5" />}
-                title="Free Shipping"
-                subtitle="On orders above ₹499"
+                title="Flat ₹50 Shipping"
+                subtitle="On all orders"
             />
             <TrustBadge
                 icon={<RefreshCw className="w-5 h-5" />}

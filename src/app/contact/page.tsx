@@ -82,10 +82,28 @@ export default function ContactPage() {
 
     const selectedInterest = watch("interest");
 
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
     const onSubmit = async (data: ContactFormData) => {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Form submitted:", data);
-        setIsSubmitted(true);
+        setSubmitError(null);
+        try {
+            const response = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                const result = await response.json();
+                throw new Error(result.error || "Failed to send message");
+            }
+
+            setIsSubmitted(true);
+        } catch (error) {
+            setSubmitError(
+                error instanceof Error ? error.message : "Something went wrong. Please try again."
+            );
+        }
     };
 
     const handleReset = () => {
@@ -281,6 +299,12 @@ export default function ContactPage() {
                                                 <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>
                                             )}
                                         </div>
+
+                                        {submitError && (
+                                            <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+                                                <p className="text-sm text-red-600">{submitError}</p>
+                                            </div>
+                                        )}
 
                                         <Button type="submit" size="lg" className="w-full sm:w-auto" loading={isSubmitting}>
                                             <Send className="w-4 h-4 mr-2" />

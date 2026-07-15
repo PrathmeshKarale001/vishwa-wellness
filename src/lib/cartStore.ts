@@ -243,9 +243,8 @@ export const useCartStore = create<CartState>()(
             },
 
             getShipping: () => {
-                const subtotal = get().getSubtotal();
-                // Must match server-side: FREE_SHIPPING_THRESHOLD=999, STANDARD_SHIPPING_COST=99
-                return subtotal >= 999 ? 0 : 99;
+                // Flat ₹50 shipping on all orders — must match server-side STANDARD_SHIPPING_COST=50
+                return 50;
             },
 
             getTotal: () => {

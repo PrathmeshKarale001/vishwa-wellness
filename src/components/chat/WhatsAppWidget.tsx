@@ -1,25 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { getWhatsAppURL, whatsAppMessages } from '@/lib/whatsapp';
 
 export default function WhatsAppWidget() {
     const [isExpanded, setIsExpanded] = useState(false);
-    const [isVisible, setIsVisible] = useState(true);
+    const [isVisible] = useState(true);
 
-    // Get WhatsApp number from environment variable (you'll need to add this)
-    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ''; // Add your number here
-
-    useEffect(() => {
-        // Show widget on scroll
-        const handleScroll = () => {
-            setIsVisible(window.scrollY > 300);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    const whatsappNumber = '917447489101';
 
     const handleChatClick = (messageType: keyof typeof whatsAppMessages = 'general') => {
         const message = typeof whatsAppMessages[messageType] === 'function'

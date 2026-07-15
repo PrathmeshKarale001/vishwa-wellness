@@ -31,8 +31,8 @@ export default function ShippingPage() {
                     <div className="grid sm:grid-cols-3 gap-4 mb-12">
                         <div className="bg-[#f9f9f9] p-6 text-center border border-[#eee]">
                             <Truck className="mx-auto text-[var(--color-primary)] mb-3" size={32} />
-                            <h3 className="font-semibold text-[#222]">Free Shipping</h3>
-                            <p className="text-sm text-[#777] mt-1">On all orders</p>
+                            <h3 className="font-semibold text-[#222]">Standard Shipping</h3>
+                            <p className="text-sm text-[#777] mt-1">Flat ₹50 on all orders</p>
                         </div>
                         <div className="bg-[#f9f9f9] p-6 text-center border border-[#eee]">
                             <Clock className="mx-auto text-[var(--color-primary)] mb-3" size={32} />
@@ -66,7 +66,7 @@ export default function ShippingPage() {
                                 <tr>
                                     <td className="p-3 border border-[#eee] text-[#777]">Standard Shipping</td>
                                     <td className="p-3 border border-[#eee] text-[#777]">5-7 business days</td>
-                                    <td className="p-3 border border-[#eee] text-[#777]"><span className="text-green-600 font-medium">Free</span></td>
+                                    <td className="p-3 border border-[#eee] text-[#777]"><span className="font-medium">₹50</span></td>
                                 </tr>
                                 <tr>
                                     <td className="p-3 border border-[#eee] text-[#777]">Express Shipping</td>

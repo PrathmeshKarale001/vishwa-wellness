@@ -52,7 +52,7 @@ export default function ReturnsPage() {
                             Return Policy Overview
                         </h2>
                         <p className="text-[#777] mb-4">
-                            We want you to be completely satisfied with your purchase. If you are not happy with your order, you may return eligible items within 30 days of delivery for a refund or exchange.
+                            We have a strict no-return policy unless the item you received is defective or was damaged during travel.
                         </p>
 
                         <h2 className="text-xl font-semibold text-[#222] mt-8 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -137,7 +137,7 @@ export default function ReturnsPage() {
                             Exchange Policy
                         </h2>
                         <p className="text-[#777] mb-4">
-                            If you&apos;d like to exchange an item for a different variant or product, please follow the return process and place a new order. This ensures faster processing and availability of your preferred item.
+                            We do not offer product exchanges.
                         </p>
 
                         <h2 className="text-xl font-semibold text-[#222] mt-8 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -148,7 +148,7 @@ export default function ReturnsPage() {
                         </p>
                         <ul className="list-disc pl-6 text-[#777] space-y-2 mb-6">
                             <li>30+ days before: Full refund minus ₹500 booking fee</li>
-                            <li>15-30 days before: 50% refund</li>
+                            <li>15+ days before: 50% refund</li>
                             <li>Less than 15 days: No refund (one-time transfer to future retreat allowed)</li>
                         </ul>
 
@@ -162,7 +162,7 @@ export default function ReturnsPage() {
                                         <a href="mailto:crm@vishwaglobal.com" className="text-[var(--color-primary)]">
                                             crm@vishwaglobal.com
                                         </a>{' '}
-                                        or call +91 74474 89101
+                                        or call +91 95797 22111
                                     </p>
                                 </div>
                             </div>

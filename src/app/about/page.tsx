@@ -40,7 +40,8 @@ const guidingLight = [
     {
         name: "Paramsadguru Shree Gajanan Maharaj",
         role: "The Visionary of Global Healing",
-        image: "https://vishwaglobal.com/images/newtheme/Paramsadguru.jpg",
+        image: "/27.jpg",
+        position: "object-top",
         bio: "As the disciple of Swami Samarth Maharaj, Paramsadguru inspired by the teachings of the lineage, created a global vision and mission to heal humanity and reset the planet.",
         link: "https://paramsadguru.vishwaglobal.com/"
     },
@@ -73,23 +74,116 @@ export default function AboutPage() {
                 badge="Our Story"
                 title="About Vishwa Wellness"
                 description="Born from a 170+ year old Guru Lineage, we empower individuals to channel their spiritual energy and manifest a new life."
-                bgImage="/hero-about-us.png"
+                bgImage="/21.jpg"
                 theme="dark"
             />
 
-            {/* Mission & Vision */}
+            {/* Our Story */}
             <Section background="white">
-                <div className="max-w-4xl mx-auto text-center space-y-12">
-                    <div>
-                        <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--color-navy)] mb-6">Our Vision</h2>
-                        <p className="text-lg text-[var(--color-charcoal)] leading-relaxed">
-                            Vishwa envisions a world of universal oneness and profound inner peace. Our vision is to create a global community where the timeless wisdom of the Vedas guides individuals to channel their spiritual energy to manifest a new life.
+                <div className="max-w-6xl mx-auto">
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                        {/* Left: Image */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7 }}
+                            className="relative"
+                        >
+                            <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[3/4]">
+                                <Image
+                                    src="/34_37.jpg"
+                                    alt="Vishwa Wellness — Our Story"
+                                    fill
+                                    className="object-cover object-[70%_20%]"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-navy)]/30 via-transparent to-transparent" />
+                            </div>
+                            {/* Decorative accent frame */}
+                            <div className="absolute -bottom-4 -right-4 w-32 h-32 border-2 border-[var(--color-gold)]/40 rounded-2xl -z-10" />
+                            <div className="absolute -top-4 -left-4 w-24 h-24 border-2 border-[var(--color-gold)]/25 rounded-2xl -z-10" />
+                        </motion.div>
+
+                        {/* Right: Text Content */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7, delay: 0.15 }}
+                        >
+                            <div className="mb-8">
+                                <span className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--color-terracotta)]">Our Story</span>
+                                <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-semibold text-[var(--color-navy)] mt-3">
+                                    A Legacy Reimagined for Modern Living
+                                </h2>
+                                <div className="h-px w-16 bg-[var(--color-gold)] mt-6" />
+                            </div>
+                            <div className="space-y-5 text-base md:text-lg text-[var(--color-charcoal)] leading-relaxed">
+                                <p>
+                                    Long before sustainability became a movement, wellness became an industry, or conscious living became a global aspiration, the Vedic way of life showed humanity how to live in harmony—with nature, with one another, and with ourselves.
+                                </p>
+                                <p>
+                                    For generations, this timeless wisdom has been preserved and shared through the teachings and blessings of Param Sadguru Shree Gajanan Maharaj, whose revival of Agnihotra and the Five-Fold Path inspired a global movement dedicated to creating healthier homes, happier families, and a more harmonious world.
+                                </p>
+                                <p>
+                                    As this movement grew, so did a simple realization: people were not only seeking knowledge—they wanted to live it. They wanted products made with integrity, homes inspired by nature, and everyday choices that reflected their values.
+                                </p>
+                                <p>
+                                    <span className="font-semibold text-[var(--color-navy)]">Vishwa Lifestyle was born from this vision.</span> Our mission is to bring the timeless principles of the Vedic lifestyle into modern living through thoughtfully curated products that are natural, sustainable, beautifully crafted, and designed to enrich everyday life.
+                                </p>
+                                <p>
+                                    More than a lifestyle brand, Vishwa Lifestyle is an invitation to rediscover a way of living where beauty, wellbeing, and sustainability exist in perfect harmony.
+                                </p>
+                            </div>
+                            <p className="font-[family-name:var(--font-playfair)] text-xl italic text-[var(--color-navy)] mt-8 border-l-2 border-[var(--color-gold)] pl-6">
+                                Inspired by Ancient Wisdom. Designed for Modern Living.
+                            </p>
+                        </motion.div>
+                    </div>
+                </div>
+            </Section>
+
+            {/* Our Philosophy */}
+            <Section background="cream">
+                <div className="max-w-3xl mx-auto">
+                    <div className="text-center mb-10">
+                        <span className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--color-terracotta)]">Our Philosophy</span>
+                        <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-semibold text-[var(--color-navy)] mt-3">
+                            Living in Harmony
+                        </h2>
+                        <div className="h-px w-16 bg-[var(--color-gold)] mx-auto mt-6" />
+                    </div>
+                    <div className="space-y-6 text-lg text-[var(--color-charcoal)] leading-relaxed">
+                        <p>
+                            At Vishwa Lifestyle, we believe that the way we live shapes the world we leave behind.
+                        </p>
+                        <p>
+                            We believe sustainability is not a modern trend—it is an ancient way of life.
+                        </p>
+                        <p>
+                            We believe the products we bring into our homes should be natural, responsibly made, timeless in design, and created to enrich everyday living rather than encourage unnecessary consumption.
+                        </p>
+                        <p>
+                            We are committed to protecting the environment through sustainable practices, thoughtful sourcing, eco-friendly materials, responsible packaging, and a continuous journey towards zero waste. We believe that what comes from the Earth should, wherever possible, return gently to the Earth.
+                        </p>
+                        <p>
+                            We believe in supporting traditional artisans, preserving craftsmanship, empowering women entrepreneurs, strengthening rural communities, and partnering with small businesses and cottage industries that keep timeless skills and local economies alive.
+                        </p>
+                        <p>
+                            Above all, we believe that wellbeing begins with the choices we make every day. A beautiful home, meaningful rituals, natural products, and conscious living have the power to nurture healthier people, stronger communities, and a healthier planet.
                         </p>
                     </div>
-                    <div>
-                        <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-semibold text-[var(--color-navy)] mb-6">Our Mission</h2>
-                        <p className="text-lg text-[var(--color-charcoal)] leading-relaxed">
-                            Our mission is to disseminate the profound teachings of the Guru Lineage, empowering individuals to embark on a transformative journey and learn to heal themselves. We are committed to cultivating individuals who are spiritually awakened, environmentally aware, and driven to create social change.
+
+                    <div className="text-center mt-10">
+                        <p className="text-lg font-semibold text-[var(--color-navy)]">This is our commitment.</p>
+                        <div className="mt-4 space-y-1 font-[family-name:var(--font-playfair)] text-xl text-[var(--color-charcoal)]">
+                            <p>To create with purpose.</p>
+                            <p>To live in harmony.</p>
+                            <p>To honour nature.</p>
+                            <p>To inspire a better way of living.</p>
+                        </div>
+                        <p className="font-[family-name:var(--font-playfair)] text-xl italic text-[var(--color-navy)] mt-8">
+                            Inspired by Ancient Wisdom. Designed for Modern Living.
                         </p>
                     </div>
                 </div>
@@ -225,7 +319,7 @@ export default function AboutPage() {
                                         src={guru.image}
                                         alt={guru.name}
                                         fill
-                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        className={`object-cover transition-transform duration-700 group-hover:scale-110 ${'position' in guru ? guru.position : 'object-center'}`}
                                     />
                                     {/* Overlay Gradient */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-navy)]/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />

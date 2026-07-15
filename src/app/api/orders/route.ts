@@ -8,9 +8,8 @@ import type { CreateOrderInput, Address } from '@/types/orders';
 // Price tolerance for floating point comparison (in rupees)
 const PRICE_TOLERANCE = 1;
 
-// Shipping thresholds
-const FREE_SHIPPING_THRESHOLD = 999;
-const STANDARD_SHIPPING_COST = 99;
+// Flat shipping cost
+const STANDARD_SHIPPING_COST = 50;
 
 interface SanityProduct {
     _id: string;
@@ -190,8 +189,8 @@ export async function POST(request: Request) {
             });
         }
 
-        // Calculate server-side shipping
-        const serverShipping = serverSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST;
+        // Flat ₹50 shipping on all orders
+        const serverShipping = STANDARD_SHIPPING_COST;
 
         // Validate coupon and calculate server-side discount
         let serverDiscount = 0;

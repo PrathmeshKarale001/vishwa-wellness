@@ -150,7 +150,7 @@ export default function CouponHighlight() {
                 <p className="text-sm text-gray-700">
                     Check out our <span className="font-semibold text-emerald-700">special discounts</span> at checkout!
                 </p>
-                <p className="text-xs text-emerald-600 mt-1">Free shipping on orders above ₹499</p>
+                <p className="text-xs text-emerald-600 mt-1">Flat ₹50 shipping on all orders</p>
             </div>
         </div>
     );

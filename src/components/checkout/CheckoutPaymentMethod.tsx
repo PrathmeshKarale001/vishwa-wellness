@@ -1,14 +1,13 @@
 'use client';
 
-import { CreditCard, Wallet, Banknote, Smartphone } from 'lucide-react';
+import { CreditCard, Wallet, Smartphone } from 'lucide-react';
 
-export type PaymentMethod = 'online' | 'cod' | 'upi';
+export type PaymentMethod = 'online' | 'upi';
 
 interface CheckoutPaymentMethodProps {
     selected: PaymentMethod;
     onChange: (method: PaymentMethod) => void;
     total?: number;
-    codAvailable?: boolean;
     upiAvailable?: boolean;
 }
 
@@ -16,7 +15,6 @@ export default function CheckoutPaymentMethod({
     selected,
     onChange,
     total = 0,
-    codAvailable = true,
     upiAvailable = true,
 }: CheckoutPaymentMethodProps) {
     const paymentOptions: Array<{
@@ -34,13 +32,6 @@ export default function CheckoutPaymentMethod({
                 icon: CreditCard,
                 available: true,
                 recommended: true,
-            },
-            {
-                id: 'cod',
-                name: 'Cash on Delivery',
-                description: 'Pay when you receive your order',
-                icon: Banknote,
-                available: codAvailable && total <= 10000,
             },
             {
                 id: 'upi',
@@ -109,12 +100,7 @@ export default function CheckoutPaymentMethod({
                     </label>
                 ))}
 
-                {/* COD Note */}
-                {!codAvailable && total > 10000 && (
-                    <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
-                        Cash on Delivery is not available for orders above ₹10,000
-                    </p>
-                )}
+
 
                 {/* Payment Security Note */}
                 <div className="flex items-center gap-2 pt-4 text-sm text-[#777]">

@@ -62,7 +62,7 @@ const heroSlides: HeroSlide[] = [
 ];
 
 // AWT Retreat Images
-const retreatImages = ['/awt-retreats-1.jpg', '/awt-retreats-2.jpg'];
+const retreatImages = ['/awt-retreats-1.jpg', '/awt-retreats-2.jpg', '/40.jpg'];
 
 // Ritual Cards
 const rituals = [
@@ -252,7 +252,7 @@ export default function HomePageClient({ featuredProducts, heroSlides: sanityHer
                                             >
                                                 <div className="flex items-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-md rounded-xl border border-white/15">
                                                     <MapPin size={16} className="text-[var(--color-accent)]" />
-                                                    <span className="!text-white/90 text-sm font-medium">Nestled in Nature • India</span>
+                                                    <span className="!text-white/90 text-sm font-medium">Nestled in Nature. Shivpuri, Akkalkot</span>
                                                 </div>
                                             </motion.div>
                                         )}

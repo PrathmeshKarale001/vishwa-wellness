@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from './supabase-server';
 import { createAdminSupabaseClient } from './supabase-admin';
-import { sendOrderConfirmationEmail } from './email';
+import { sendOrderConfirmationEmail, sendOrderStatusNotificationToCRM } from './email';
 import type { Order, OrderItem, CreateOrderInput, OrderStatus, PaymentStatus } from '@/types/orders';
 
 // Create a new order (uses admin client to bypass RLS for guest checkout)
@@ -167,7 +167,10 @@ export async function updateOrderStatus(
         .from('orders')
         .update(updateData)
         .eq('id', orderId)
-        .select()
+        .select(`
+            *,
+            items:order_items(*)
+        `)
         .single();
 
     if (error) {
@@ -175,7 +178,22 @@ export async function updateOrderStatus(
         return null;
     }
 
-    return data as Order;
+    const updatedOrder = data as Order;
+
+    // Send CRM notification about status change (don't block on this)
+    sendOrderStatusNotificationToCRM(updatedOrder)
+        .then((result) => {
+            if (result.success) {
+                console.log(`[order] CRM notified about status change for ${updatedOrder.order_number}`);
+            } else {
+                console.warn(`[order] Failed to notify CRM about ${updatedOrder.order_number}:`, result.error);
+            }
+        })
+        .catch((err) => {
+            console.error(`[order] Unexpected error notifying CRM:`, err);
+        });
+
+    return updatedOrder;
 }
 
 // Update payment status
@@ -204,7 +222,10 @@ export async function updatePaymentStatus(
         .from('orders')
         .update(updateData)
         .eq('id', orderId)
-        .select()
+        .select(`
+            *,
+            items:order_items(*)
+        `)
         .single();
 
     if (error) {
@@ -212,7 +233,24 @@ export async function updatePaymentStatus(
         return null;
     }
 
-    return data as Order;
+    const updatedOrder = data as Order;
+
+    // Send CRM notification when payment is confirmed (don't block on this)
+    if (paymentStatus === 'paid') {
+        sendOrderStatusNotificationToCRM(updatedOrder)
+            .then((result) => {
+                if (result.success) {
+                    console.log(`[order] CRM notified about payment for ${updatedOrder.order_number}`);
+                } else {
+                    console.warn(`[order] Failed to notify CRM about payment for ${updatedOrder.order_number}:`, result.error);
+                }
+            })
+            .catch((err) => {
+                console.error(`[order] Unexpected error notifying CRM about payment:`, err);
+            });
+    }
+
+    return updatedOrder;
 }
 
 // Get all orders (admin)

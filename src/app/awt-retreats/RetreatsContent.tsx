@@ -168,7 +168,7 @@ export default function RetreatsContent({ retreats }: RetreatsContentProps) {
                         <div className="flex flex-wrap justify-center gap-4">
                             <div className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full shadow-lg transition-transform hover:scale-105">
                                 <MapPin className="w-5 h-5 text-[var(--color-ochre)]" />
-                                <span className="text-white text-sm font-semibold">Sacred Valley, India</span>
+                                <span className="text-white text-sm font-semibold">Shivpuri (MH), India</span>
                             </div>
                             <div className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full shadow-lg transition-transform hover:scale-105">
                                 <Users className="w-5 h-5 text-[var(--color-ochre)]" />
@@ -280,7 +280,7 @@ export default function RetreatsContent({ retreats }: RetreatsContentProps) {
                                         </div>
                                         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
                                             <MapPin className="w-4 h-4" />
-                                            <span>{retreat.location || "Sacred Valley, India"}</span>
+                                            <span>{retreat.location || "Shivpuri (MH), India"}</span>
                                         </div>
                                         <p className="text-gray-600 line-clamp-3 mb-6 flex-1">
                                             {retreat.description}

@@ -43,14 +43,33 @@ const socialLinks = [
 export default function Footer() {
     const [email, setEmail] = useState('');
     const [subscribed, setSubscribed] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubscribe = (e: React.FormEvent) => {
+    const handleSubscribe = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (email) {
-            setSubscribed(true);
-            setEmail('');
-            showToast.success('Thank You for Subscribing!');
-            setTimeout(() => setSubscribed(false), 3000);
+        if (!email || isSubmitting) return;
+
+        setIsSubmitting(true);
+        try {
+            const response = await fetch('/api/newsletter', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+
+            if (response.ok) {
+                setSubscribed(true);
+                setEmail('');
+                showToast.success('Welcome! Check your inbox for a confirmation email.');
+                setTimeout(() => setSubscribed(false), 5000);
+            } else {
+                const data = await response.json();
+                showToast.error(data.error || 'Failed to subscribe. Please try again.');
+            }
+        } catch {
+            showToast.error('Something went wrong. Please try again.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -79,10 +98,11 @@ export default function Footer() {
                             />
                             <button
                                 type="submit"
-                                className="px-6 py-4 text-black font-bold text-[10px] uppercase tracking-[0.3em] hover:text-[var(--color-accent)] transition-colors flex items-center gap-3"
+                                disabled={isSubmitting}
+                                className="px-6 py-4 text-black font-bold text-[10px] uppercase tracking-[0.3em] hover:text-[var(--color-accent)] transition-colors flex items-center gap-3 disabled:opacity-50"
                             >
-                                {subscribed ? 'Subscribed' : 'Join'}
-                                <Send size={12} />
+                                {isSubmitting ? 'Joining...' : subscribed ? 'Subscribed ✓' : 'Join'}
+                                {!isSubmitting && <Send size={12} />}
                             </button>
                         </form>
                     </div>

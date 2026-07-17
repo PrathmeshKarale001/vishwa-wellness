@@ -173,8 +173,8 @@ export const OrderConfirmationEmail = ({
                         <Hr style={divider} />
                         <Text style={footerText}>
                             Questions about your order? Reply to this email or contact us at{' '}
-                            <Link href="mailto:support@vishwawellness.com" style={link}>
-                                support@vishwawellness.com
+                            <Link href="mailto:CRM@VISHWAGLOBAL.COM" style={link}>
+                                CRM@VISHWAGLOBAL.COM
                             </Link>
                         </Text>
                         <Text style={footerText}>

@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         };
 
         const { data, error } = await resendClient.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'Vishwa Wellness <onboarding@resend.dev>',
+            from: process.env.RESEND_FROM_EMAIL || 'Vishwa Wellness <CRM@VISHWAGLOBAL.COM>',
             to: 'CRM@VISHWAGLOBAL.COM',
             replyTo: email,
             subject: `New Contact Form: ${interest ? (interestLabels[interest] || interest) : 'General Inquiry'} — ${name}`,

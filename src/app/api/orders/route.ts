@@ -276,7 +276,7 @@ export async function POST(request: Request) {
 
         if (!order) {
             return NextResponse.json(
-                { error: 'Failed to create order' },
+                { error: 'Failed to create order', message: 'Database insert failed. Check server logs for details.' },
                 { status: 500 }
             );
         }
@@ -297,8 +297,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ order }, { status: 201 });
     } catch (error) {
         console.error('Error creating order:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return NextResponse.json(
-            { error: 'Failed to create order' },
+            { error: 'Failed to create order', message: errorMessage },
             { status: 500 }
         );
     }

@@ -232,12 +232,16 @@ export const useCartStore = create<CartState>()(
             },
 
             getItemCount: () => {
-                return get().items.reduce((total, item) => total + item.quantity, 0);
+                return get().items.reduce((total, item) => {
+                    if (!item?.product) return total;
+                    return total + item.quantity;
+                }, 0);
             },
 
             getSubtotal: () => {
                 return get().items.reduce((total, item) => {
-                    const price = item.variant?.price ?? item.product.price;
+                    if (!item?.product) return total;
+                    const price = item.variant?.price ?? item.product.price ?? 0;
                     return total + price * item.quantity;
                 }, 0);
             },
@@ -262,6 +266,18 @@ export const useCartStore = create<CartState>()(
                 items: state.items,
                 lastUpdated: state.lastUpdated,
             }),
+            onRehydrateStorage: () => (state) => {
+                if (state) {
+                    // Filter out corrupted cart items (missing product data)
+                    const validItems = state.items.filter(
+                        (item) => item?.product?.id && item?.product?.price != null
+                    );
+                    if (validItems.length !== state.items.length) {
+                        console.warn(`[cart] Removed ${state.items.length - validItems.length} corrupted cart item(s)`);
+                        state.items = validItems;
+                    }
+                }
+            },
         }
     )
 );

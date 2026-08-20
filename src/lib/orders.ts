@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from './supabase-server';
 import { createAdminSupabaseClient } from './supabase-admin';
-import { sendOrderConfirmationEmail, sendOrderStatusNotificationToCRM } from './email';
+import { sendOrderConfirmationEmail, sendNewOrderNotificationToCRM, sendOrderStatusNotificationToCRM } from './email';
 import type { Order, OrderItem, CreateOrderInput, OrderStatus, PaymentStatus } from '@/types/orders';
 
 // Create a new order (uses admin client to bypass RLS for guest checkout)
@@ -66,7 +66,7 @@ export async function createOrder(input: CreateOrderInput, userId?: string): Pro
         items: items || [],
     };
 
-    // Send order confirmation email (don't block on this)
+    // Send order confirmation email to customer (don't block on this)
     sendOrderConfirmationEmail(orderWithItems)
         .then((result) => {
             if (result.success) {
@@ -77,6 +77,19 @@ export async function createOrder(input: CreateOrderInput, userId?: string): Pro
         })
         .catch((error) => {
             console.error(`[order] Unexpected error sending confirmation email:`, error);
+        });
+
+    // Send new order notification to CRM with full details (don't block on this)
+    sendNewOrderNotificationToCRM(orderWithItems)
+        .then((result) => {
+            if (result.success) {
+                console.log(`[order] CRM notification sent for new order ${order.order_number}`);
+            } else {
+                console.warn(`[order] Failed to send CRM notification for ${order.order_number}:`, result.error);
+            }
+        })
+        .catch((error) => {
+            console.error(`[order] Unexpected error sending CRM notification:`, error);
         });
 
     return orderWithItems;

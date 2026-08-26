@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { ChevronDown, ChevronUp, Grid3X3, List, SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '@/components/shop/ProductCard';
 import { Hero } from '@/components/ui/Hero';
@@ -18,6 +16,22 @@ const priceRanges = [
     { label: 'Above ₹800', min: 800, max: 10000 },
 ];
 
+const ritualCollectionNames: Record<string, string> = {
+    snan: 'Snān Collection',
+    lepam: 'Lepam Collection',
+    pana: 'Pāna Collection',
+    home: 'Home & Aura',
+};
+
+const productMatchesCategory = (product: Product, category: string): boolean => {
+    const normalizedCategory = category.toLowerCase();
+
+    return product.categorySlug?.toLowerCase() === normalizedCategory
+        || product.ritualType?.toLowerCase() === normalizedCategory
+        || product.tags?.some((tag) => tag.toLowerCase() === normalizedCategory)
+        || false;
+};
+
 interface ShopPageProps {
     products: Product[];
     categories?: Category[];
@@ -32,6 +46,7 @@ export default function ShopPage({ products = [], categories: sanityCategories =
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [expandedSections, setExpandedSections] = useState({
         categories: true,
+        rituals: true,
         price: true,
     });
 
@@ -43,14 +58,12 @@ export default function ShopPage({ products = [], categories: sanityCategories =
     // Use passed products
     const displayProducts = products;
 
-    // Compute category counts dynamically from actual products
-    // Matches by category slug or tags
+    // Compute category counts dynamically from actual products.
+    // Footer collection links use ritual types, while sidebar filters can use
+    // Sanity category slugs, so both need to follow the same matching rules.
     const getCategoryCount = (slug: string): number => {
         if (slug === 'all') return displayProducts.length;
-        return displayProducts.filter(p =>
-            p.categorySlug?.toLowerCase() === slug.toLowerCase() ||
-            p.tags?.some(t => t.toLowerCase() === slug.toLowerCase())
-        ).length;
+        return displayProducts.filter((product) => productMatchesCategory(product, slug)).length;
     };
 
     // Build dynamic categories from Sanity data - fully dynamic, no hardcoded fallback
@@ -63,13 +76,17 @@ export default function ShopPage({ products = [], categories: sanityCategories =
         }))
     ];
 
+    // Ritual collections are driven by the product's ritualType rather than its
+    // Sanity category, so they get their own sidebar group. Only show the ones
+    // that actually have products.
+    const ritualCollections = Object.entries(ritualCollectionNames)
+        .map(([slug, name]) => ({ slug, name, count: getCategoryCount(slug) }))
+        .filter((collection) => collection.count > 0);
+
     // Filter products - match by category slug or tags
     const filteredProducts = displayProducts.filter((product: Product) => {
         if (selectedCategory !== 'all') {
-            const categoryMatch =
-                product.categorySlug?.toLowerCase() === selectedCategory.toLowerCase() ||
-                product.tags?.some(t => t.toLowerCase() === selectedCategory.toLowerCase());
-            if (!categoryMatch) return false;
+            if (!productMatchesCategory(product, selectedCategory)) return false;
         }
         if (selectedPrice) {
             const productPrice = Math.round(product.price);
@@ -133,6 +150,37 @@ export default function ShopPage({ products = [], categories: sanityCategories =
                     </ul>
                 )}
             </div>
+
+            {/* Ritual Collections */}
+            {ritualCollections.length > 0 && (
+                <div className="border-b border-[#eee] pb-6">
+                    <button
+                        className="flex items-center justify-between w-full text-left"
+                        onClick={() => toggleSection('rituals')}
+                    >
+                        <h4 className="font-semibold text-[#222] uppercase text-sm tracking-wider">Rituals</h4>
+                        {expandedSections.rituals ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </button>
+                    {expandedSections.rituals && (
+                        <ul className="mt-4 space-y-2">
+                            {ritualCollections.map((collection) => (
+                                <li key={collection.slug}>
+                                    <button
+                                        onClick={() => setSelectedCategory(collection.slug)}
+                                        className={`flex items-center justify-between w-full py-1 text-sm transition-colors ${selectedCategory === collection.slug
+                                            ? 'text-[var(--color-primary)] font-medium'
+                                            : 'text-[#777] hover:text-[var(--color-primary)]'
+                                            }`}
+                                    >
+                                        <span>{collection.name}</span>
+                                        <span className="text-xs text-[#999]">({collection.count})</span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
 
             {/* Price Range */}
             <div className="border-b border-[#eee] pb-6">
@@ -280,7 +328,9 @@ export default function ShopPage({ products = [], categories: sanityCategories =
                                     <span className="text-sm text-[#777]">Active Filters:</span>
                                     {selectedCategory !== 'all' && (
                                         <span className="flex items-center gap-1 px-3 py-1 bg-[#f5f2f2] text-sm">
-                                            {displayCategories.find((c) => c.slug === selectedCategory)?.name}
+                                            {displayCategories.find((c) => c.slug === selectedCategory)?.name
+                                                || ritualCollectionNames[selectedCategory]
+                                                || selectedCategory}
                                             <button onClick={() => setSelectedCategory('all')}>
                                                 <X size={14} />
                                             </button>

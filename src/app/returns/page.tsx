@@ -31,7 +31,7 @@ export default function ReturnsPage() {
                     <div className="grid sm:grid-cols-3 gap-4 mb-12">
                         <div className="bg-[#f9f9f9] p-6 text-center border border-[#eee]">
                             <Clock className="mx-auto text-[var(--color-primary)] mb-3" size={32} />
-                            <h3 className="font-semibold text-[#222]">30 Days</h3>
+                            <h3 className="font-semibold text-[#222]">3 Days</h3>
                             <p className="text-sm text-[#777] mt-1">Return window</p>
                         </div>
                         <div className="bg-[#f9f9f9] p-6 text-center border border-[#eee]">

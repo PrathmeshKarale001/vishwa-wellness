@@ -4,6 +4,8 @@ import { SubscriptionConfirmationEmail } from '../../emails/SubscriptionConfirma
 import type { Order } from '@/types/orders';
 
 const CRM_EMAIL = 'CRM@VISHWAGLOBAL.COM';
+// Sender must be on a Resend-verified domain (vishwaglobal.com is NOT verified).
+const FROM_EMAIL = 'Vishwa Wellness <noreply@vishwawellness.com>';
 
 // Lazy initialize Resend to avoid build errors when API key is missing
 let resend: Resend | null = null;
@@ -52,7 +54,7 @@ export async function sendOrderConfirmationEmail(order: Order): Promise<EmailRes
 
         // Send email
         const { data, error } = await resendClient.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || `Vishwa Wellness <${CRM_EMAIL}>`,
+            from: process.env.RESEND_FROM_EMAIL || FROM_EMAIL,
             to: order.customer_email,
             subject: `Order Confirmation - ${order.order_number}`,
             react: OrderConfirmationEmail({
@@ -161,7 +163,7 @@ export async function sendNewOrderNotificationToCRM(order: Order): Promise<Email
         const total = parseFloat(order.total.toString());
 
         const { data, error } = await resendClient.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || `Vishwa Wellness <${CRM_EMAIL}>`,
+            from: process.env.RESEND_FROM_EMAIL || FROM_EMAIL,
             to: CRM_EMAIL,
             subject: `🛒 New Order Received — ${order.order_number} | ₹${total.toFixed(2)} | ${customerName}`,
             html: `
@@ -356,7 +358,7 @@ export async function sendOrderStatusNotificationToCRM(order: Order): Promise<Em
             'Guest';
 
         const { data, error } = await resendClient.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || `Vishwa Wellness <${CRM_EMAIL}>`,
+            from: process.env.RESEND_FROM_EMAIL || FROM_EMAIL,
             to: CRM_EMAIL,
             subject: `Order ${order.order_number} — Status: ${statusLabel}`,
             html: `
@@ -438,7 +440,7 @@ export async function sendNewsletterConfirmationEmail(subscriberEmail: string): 
 
         // Send confirmation to subscriber
         const { data, error } = await resendClient.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || `Vishwa Wellness <${CRM_EMAIL}>`,
+            from: process.env.RESEND_FROM_EMAIL || FROM_EMAIL,
             to: subscriberEmail,
             subject: 'Welcome to Vishwa Wellness — Sacred Circle',
             react: SubscriptionConfirmationEmail({
@@ -455,7 +457,7 @@ export async function sendNewsletterConfirmationEmail(subscriberEmail: string): 
 
         // Also notify CRM about new subscriber (fire and forget)
         resendClient.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || `Vishwa Wellness <${CRM_EMAIL}>`,
+            from: process.env.RESEND_FROM_EMAIL || FROM_EMAIL,
             to: CRM_EMAIL,
             subject: `New Newsletter Subscriber — ${subscriberEmail}`,
             html: `
@@ -493,3 +495,137 @@ export async function sendNewsletterConfirmationEmail(subscriberEmail: string): 
     }
 }
 
+
+interface RetreatEnquiryPayload {
+    name: string;
+    email: string;
+    phone?: string;
+    preferredMonth?: string;
+    participants?: string;
+    message?: string;
+    retreatTitle: string;
+    retreatSlug: string;
+}
+
+/**
+ * Send retreat enquiry to CRM and an acknowledgement to the enquirer.
+ * The CRM notification is the critical one — its failure fails the request.
+ */
+export async function sendRetreatEnquiryEmails(enquiry: RetreatEnquiryPayload): Promise<EmailResult> {
+    try {
+        const resendClient = getResendClient();
+
+        if (!resendClient) {
+            console.warn('[email] RESEND_API_KEY not configured - skipping retreat enquiry email');
+            return { success: false, error: 'Email service not configured' };
+        }
+
+        const { name, email, phone, preferredMonth, participants, message, retreatTitle, retreatSlug } = enquiry;
+
+        const participantLabels: Record<string, string> = {
+            '1': 'Just me',
+            '2': '2 people',
+            '3-4': '3–4 people',
+            '5+': '5 or more',
+        };
+
+        const row = (label: string, value: string) => `
+            <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #777; width: 160px; vertical-align: top;">${label}</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #eee; color: #222;">${value}</td>
+            </tr>`;
+
+        // 1. Notify CRM — this is the one that must succeed
+        const { data, error } = await resendClient.emails.send({
+            from: process.env.RESEND_FROM_EMAIL || FROM_EMAIL,
+            to: CRM_EMAIL,
+            replyTo: email,
+            subject: `🧘 New Retreat Enquiry — ${retreatTitle} | ${name}`,
+            html: `
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: #1a1a2e; padding: 24px 32px; text-align: center;">
+                        <h1 style="color: #ffffff; font-size: 22px; margin: 0; letter-spacing: 2px;">VISHWA WELLNESS</h1>
+                        <p style="color: #d4a574; font-size: 13px; margin: 8px 0 0; font-style: italic;">New Retreat Enquiry</p>
+                    </div>
+                    <div style="padding: 32px; background: #ffffff;">
+                        <p style="color: #222; font-size: 16px; margin: 0 0 20px;">
+                            A new enquiry was received for <strong>${retreatTitle}</strong>.
+                        </p>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            ${row('Retreat', retreatTitle)}
+                            ${row('Name', name)}
+                            ${row('Email', `<a href="mailto:${email}" style="color: #C73C2E;">${email}</a>`)}
+                            ${phone ? row('Phone', `<a href="tel:${phone}" style="color: #C73C2E;">${phone}</a>`) : ''}
+                            ${preferredMonth ? row('Preferred Month', preferredMonth) : row('Preferred Month', 'Flexible / not sure')}
+                            ${participants ? row('Participants', participantLabels[participants] || participants) : ''}
+                            ${message ? row('Message', `<span style="white-space: pre-wrap;">${message}</span>`) : ''}
+                        </table>
+                        <p style="color: #777; font-size: 14px; margin: 20px 0 0;">
+                            Received on ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+                        </p>
+                    </div>
+                    <div style="padding: 16px 32px; background: #f5f2f2; text-align: center;">
+                        <p style="color: #999; font-size: 12px; margin: 0;">
+                            Sent from the ${retreatSlug || 'retreat'} enquiry form on vishwawellness.com
+                        </p>
+                    </div>
+                </div>
+            `,
+        });
+
+        if (error) {
+            console.error('[email] Failed to send retreat enquiry to CRM:', error);
+            return { success: false, error: error.message };
+        }
+
+        console.log(`[email] Retreat enquiry sent to CRM for ${email}: ${data?.id}`);
+
+        // 2. Acknowledge to the enquirer (fire and forget — CRM already has the lead)
+        resendClient.emails.send({
+            from: process.env.RESEND_FROM_EMAIL || FROM_EMAIL,
+            to: email,
+            replyTo: CRM_EMAIL,
+            subject: `We received your enquiry — ${retreatTitle}`,
+            html: `
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: #1a1a2e; padding: 24px 32px; text-align: center;">
+                        <h1 style="color: #ffffff; font-size: 22px; margin: 0; letter-spacing: 2px;">VISHWA WELLNESS</h1>
+                        <p style="color: #d4a574; font-size: 13px; margin: 8px 0 0; font-style: italic;">Ancient Wisdom, Modern Living</p>
+                    </div>
+                    <div style="padding: 32px; background: #ffffff;">
+                        <p style="color: #222; font-size: 18px; margin: 0 0 16px;">Namaste ${name},</p>
+                        <p style="color: #444; font-size: 15px; line-height: 1.7; margin: 0 0 16px;">
+                            Thank you for your interest in the <strong>${retreatTitle}</strong>.
+                            We have received your enquiry and our wellness team will reach out
+                            within 24 hours to discuss available dates and answer your questions.
+                        </p>
+                        ${preferredMonth ? `<p style="color: #444; font-size: 15px; line-height: 1.7; margin: 0 0 16px;">
+                            You mentioned a preferred month of <strong>${preferredMonth}</strong> — we will check availability for that period.
+                        </p>` : ''}
+                        <p style="color: #444; font-size: 15px; line-height: 1.7; margin: 0 0 8px;">
+                            If you need to reach us sooner, simply reply to this email.
+                        </p>
+                        <p style="color: #444; font-size: 15px; line-height: 1.7; margin: 24px 0 0;">
+                            Warm regards,<br/>
+                            <strong>The Vishwa Wellness Team</strong>
+                        </p>
+                    </div>
+                    <div style="padding: 16px 32px; background: #f5f2f2; text-align: center;">
+                        <p style="color: #999; font-size: 12px; margin: 0;">No payment is required now — we confirm dates and details with you first.</p>
+                    </div>
+                </div>
+            `,
+        }).catch((err) => {
+            console.error('[email] Failed to send enquiry acknowledgement to customer:', err);
+        });
+
+        return { success: true, emailId: data?.id };
+
+    } catch (error) {
+        console.error('[email] Unexpected error sending retreat enquiry:', error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+        };
+    }
+}

@@ -1,11 +1,13 @@
 import {
     Body,
+    Column,
     Container,
     Head,
     Hr,
     Html,
     Link,
     Preview,
+    Row,
     Section,
     Text,
 } from '@react-email/components';
@@ -15,67 +17,108 @@ interface SubscriptionConfirmationEmailProps {
     email: string;
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://vishwawellness.com';
+
+const benefits = [
+    {
+        title: 'Rituals & Bhasma practice',
+        description: 'Traditional preparations explained step by step, for use at home.',
+    },
+    {
+        title: 'Wellness recipes',
+        description: 'Seasonal formulations drawn from Ayurvedic practice.',
+    },
+    {
+        title: 'New releases & subscriber offers',
+        description: 'Early access to collections before they are announced publicly.',
+    },
+    {
+        title: 'Agnihotra retreat dates',
+        description: 'Programme announcements and enrolment windows as they open.',
+    },
+];
+
 export const SubscriptionConfirmationEmail = ({
     email = 'subscriber@example.com',
 }: SubscriptionConfirmationEmailProps) => {
     return (
         <Html>
             <Head />
-            <Preview>Welcome to Vishwa Wellness — You&apos;re now part of our Sacred Circle</Preview>
+            <Preview>Your subscription to the Vishwa Wellness journal is confirmed</Preview>
             <Body style={main}>
                 <Container style={container}>
-                    {/* Header */}
+                    {/* Masthead */}
                     <Section style={header}>
                         <Text style={headerTitle}>VISHWA WELLNESS</Text>
                         <Text style={tagline}>Ancient Wisdom, Modern Living</Text>
                     </Section>
 
-                    {/* Content */}
+                    {/* Accent rule beneath the masthead */}
+                    <Section style={accentBar} />
+
                     <Section style={content}>
-                        <Text style={heading}>Welcome to Our Sacred Circle 🙏</Text>
+                        <Text style={eyebrow}>SUBSCRIPTION CONFIRMED</Text>
+                        <Text style={heading}>Welcome to the Sacred Circle</Text>
+
                         <Text style={paragraph}>
-                            Thank you for subscribing to the Vishwa Wellness newsletter!
+                            Thank you for subscribing. You have joined a community of readers who
+                            practise the sacred science of ash — and you will now hear from us
+                            whenever there is something genuinely worth sharing.
                         </Text>
-                        <Text style={paragraph}>
-                            You&apos;ll now receive exclusive updates on:
-                        </Text>
-                        <Text style={listItem}>✦ Sacred rituals and Bhasma practices</Text>
-                        <Text style={listItem}>✦ DIY wellness recipes</Text>
-                        <Text style={listItem}>✦ Exclusive product launches and offers</Text>
-                        <Text style={listItem}>✦ Agnihotra Wellness Retreat announcements</Text>
-                        <Text style={listItem}>✦ Ancient wisdom for modern living</Text>
+
+                        <Hr style={divider} />
+
+                        <Text style={sectionLabel}>WHAT YOU WILL RECEIVE</Text>
+
+                        {benefits.map((benefit) => (
+                            <Row key={benefit.title} style={benefitRow}>
+                                <Column style={benefitMarkerCell}>
+                                    <Text style={benefitMarker}>&#10022;</Text>
+                                </Column>
+                                <Column>
+                                    <Text style={benefitTitle}>{benefit.title}</Text>
+                                    <Text style={benefitDescription}>{benefit.description}</Text>
+                                </Column>
+                            </Row>
+                        ))}
 
                         <Hr style={divider} />
 
                         <Text style={paragraph}>
                             In the meantime, explore our collection of authentic Bhasma-based
-                            wellness products crafted from sacred fire rituals.
+                            products, each crafted from sacred fire rituals.
                         </Text>
 
-                        {/* CTA */}
                         <Section style={ctaSection}>
-                            <Link
-                                href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://vishwawellness.com'}/shop`}
-                                style={button}
-                            >
-                                Explore Our Products
+                            <Link href={`${SITE_URL}/shop`} style={button}>
+                                Explore the Collection
                             </Link>
                         </Section>
 
-                        {/* Footer */}
-                        <Hr style={divider} />
+                        <Text style={secondaryLinkWrap}>
+                            <Link href={`${SITE_URL}/awt-retreats`} style={secondaryLink}>
+                                Or read about our wellness retreats
+                            </Link>
+                        </Text>
+                    </Section>
+
+                    {/* Footer */}
+                    <Section style={footer}>
                         <Text style={footerText}>
-                            This email was sent to {email} because you subscribed to the
-                            Vishwa Wellness newsletter.
+                            This email was sent to{' '}
+                            <Link href={`mailto:${email}`} style={footerEmailLink}>
+                                {email}
+                            </Link>{' '}
+                            because you subscribed to the Vishwa Wellness newsletter.
                         </Text>
                         <Text style={footerText}>
-                            Questions? Contact us at{' '}
-                            <Link href="mailto:CRM@VISHWAGLOBAL.COM" style={link}>
+                            Questions? Write to us at{' '}
+                            <Link href="mailto:CRM@VISHWAGLOBAL.COM" style={footerLink}>
                                 CRM@VISHWAGLOBAL.COM
                             </Link>
                         </Text>
-                        <Text style={footerText}>
-                            © {new Date().getFullYear()} Vishwa Wellness. All rights reserved.
+                        <Text style={footerMeta}>
+                            &copy; {new Date().getFullYear()} Vishwa Wellness. All rights reserved.
                         </Text>
                     </Section>
                 </Container>
@@ -86,97 +129,193 @@ export const SubscriptionConfirmationEmail = ({
 
 export default SubscriptionConfirmationEmail;
 
-// Styles
+/* ------------------------------------------------------------------ */
+/* Styles                                                              */
+/* Brand tokens mirror globals.css: navy #222, primary #C73C2E,        */
+/* gold #d4a574, cream #f5f2f2, ash #777.                              */
+/* ------------------------------------------------------------------ */
+
+const SANS =
+    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif';
+// The site sets headings in Cormorant Garamond; Georgia is the closest
+// serif that email clients reliably have installed.
+const SERIF = 'Georgia,"Times New Roman",Times,serif';
+
 const main = {
     backgroundColor: '#f5f2f2',
-    fontFamily:
-        '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+    fontFamily: SANS,
+    margin: '0',
+    padding: '0',
 };
 
 const container = {
     margin: '0 auto',
-    padding: '20px 0',
+    padding: '32px 0 40px',
     width: '600px',
+    maxWidth: '100%',
 };
 
 const header = {
     backgroundColor: '#1a1a2e',
-    padding: '32px 24px',
+    padding: '40px 24px 34px',
     textAlign: 'center' as const,
 };
 
 const headerTitle = {
     color: '#ffffff',
-    fontSize: '28px',
-    fontWeight: '700',
-    letterSpacing: '2px',
+    fontFamily: SERIF,
+    fontSize: '26px',
+    fontWeight: '400',
+    letterSpacing: '5px',
     margin: '0',
 };
 
 const tagline = {
     color: '#d4a574',
-    fontSize: '14px',
+    fontSize: '12px',
     fontStyle: 'italic',
-    margin: '8px 0 0',
+    letterSpacing: '0.6px',
+    margin: '10px 0 0',
+};
+
+const accentBar = {
+    backgroundColor: '#C73C2E',
+    fontSize: '0',
+    height: '3px',
+    lineHeight: '3px',
 };
 
 const content = {
     backgroundColor: '#ffffff',
-    padding: '32px 24px',
+    padding: '40px 44px 44px',
 };
 
-const heading = {
-    fontSize: '24px',
+const eyebrow = {
+    color: '#C73C2E',
+    fontSize: '11px',
     fontWeight: '700',
-    color: '#222',
-    margin: '0 0 16px',
-};
-
-const paragraph = {
-    fontSize: '16px',
-    lineHeight: '24px',
-    color: '#555',
+    letterSpacing: '1.6px',
     margin: '0 0 12px',
 };
 
-const listItem = {
+const heading = {
+    color: '#222222',
+    fontFamily: SERIF,
+    fontSize: '30px',
+    fontWeight: '400',
+    lineHeight: '38px',
+    margin: '0 0 20px',
+};
+
+const paragraph = {
+    color: '#555555',
     fontSize: '15px',
-    lineHeight: '28px',
-    color: '#444',
-    margin: '0',
-    paddingLeft: '8px',
+    lineHeight: '26px',
+    margin: '0 0 16px',
 };
 
 const divider = {
-    borderColor: '#eee',
-    margin: '24px 0',
+    borderColor: '#eeeeee',
+    borderTopWidth: '1px',
+    margin: '30px 0',
+};
+
+const sectionLabel = {
+    color: '#777777',
+    fontSize: '11px',
+    fontWeight: '700',
+    letterSpacing: '1.4px',
+    margin: '0 0 20px',
+};
+
+const benefitRow = {
+    marginBottom: '18px',
+};
+
+const benefitMarkerCell = {
+    verticalAlign: 'top' as const,
+    width: '26px',
+};
+
+const benefitMarker = {
+    color: '#d4a574',
+    fontSize: '14px',
+    lineHeight: '22px',
+    margin: '0',
+};
+
+const benefitTitle = {
+    color: '#222222',
+    fontSize: '15px',
+    fontWeight: '600',
+    lineHeight: '22px',
+    margin: '0 0 3px',
+};
+
+const benefitDescription = {
+    color: '#777777',
+    fontSize: '13px',
+    lineHeight: '20px',
+    margin: '0 0 14px',
 };
 
 const ctaSection = {
-    margin: '32px 0',
+    margin: '30px 0 18px',
     textAlign: 'center' as const,
 };
 
 const button = {
     backgroundColor: '#C73C2E',
-    borderRadius: '6px',
+    borderRadius: '2px',
     color: '#ffffff',
     display: 'inline-block',
-    fontSize: '16px',
+    fontSize: '13px',
     fontWeight: '600',
-    padding: '14px 32px',
+    letterSpacing: '1.1px',
+    padding: '16px 40px',
     textDecoration: 'none',
+    textTransform: 'uppercase' as const,
 };
 
-const footerText = {
-    fontSize: '12px',
-    color: '#999',
-    lineHeight: '20px',
-    margin: '8px 0',
+const secondaryLinkWrap = {
+    margin: '0',
     textAlign: 'center' as const,
 };
 
-const link = {
-    color: '#C73C2E',
+const secondaryLink = {
+    color: '#777777',
+    fontSize: '13px',
     textDecoration: 'underline',
+};
+
+const footer = {
+    backgroundColor: '#f5f2f2',
+    borderTop: '1px solid #e6e0e0',
+    padding: '26px 44px 30px',
+};
+
+const footerText = {
+    color: '#999999',
+    fontSize: '12px',
+    lineHeight: '20px',
+    margin: '0 0 8px',
+    textAlign: 'center' as const,
+};
+
+const footerEmailLink = {
+    color: '#777777',
+    textDecoration: 'none',
+};
+
+const footerLink = {
+    color: '#C73C2E',
+    textDecoration: 'none',
+};
+
+const footerMeta = {
+    color: '#b0a9a9',
+    fontSize: '11px',
+    lineHeight: '18px',
+    margin: '12px 0 0',
+    textAlign: 'center' as const,
 };

@@ -21,9 +21,9 @@ export const metadata: Metadata = {
   description: "Discover ancient Bhasma rituals, Agni-infused wellness products, and transformative Agnihotra Wellness retreats. Experience the sacred science of ash for holistic healing.",
   keywords: "wellness, bhasma, ash therapy, ayurveda, holistic healing, retreats, agni",
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/apple-icon.png',
   },
   openGraph: {
     title: "Vishwa Wellness - Healing Begins in the Ash",

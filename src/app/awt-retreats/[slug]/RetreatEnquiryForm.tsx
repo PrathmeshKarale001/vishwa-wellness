@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { retreatEnquirySchema, type RetreatEnquiryData } from "@/lib/validations/contact";
@@ -32,6 +32,7 @@ function upcomingMonths(count: number): string[] {
 
 export default function RetreatEnquiryForm({ retreatTitle, retreatSlug, accent }: RetreatEnquiryFormProps) {
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const months = useMemo(() => upcomingMonths(6), []);
 
     const {
@@ -52,13 +53,30 @@ export default function RetreatEnquiryForm({ retreatTitle, retreatSlug, accent }
     });
 
     const onSubmit = async (data: RetreatEnquiryData) => {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Retreat enquiry submitted:", { retreat: retreatSlug, ...data });
-        setIsSubmitted(true);
+        setSubmitError(null);
+        try {
+            const response = await fetch("/api/retreat-enquiry", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...data, retreatTitle, retreatSlug }),
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setSubmitError(result?.error || "Failed to send your enquiry. Please try again.");
+                return;
+            }
+
+            setIsSubmitted(true);
+        } catch {
+            setSubmitError("Network error. Please check your connection and try again.");
+        }
     };
 
     const handleReset = () => {
         reset();
+        setSubmitError(null);
         setIsSubmitted(false);
     };
 
@@ -178,6 +196,13 @@ export default function RetreatEnquiryForm({ retreatTitle, retreatSlug, accent }
                         <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>
                     )}
                 </div>
+
+                {submitError && (
+                    <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                        <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-700">{submitError}</p>
+                    </div>
+                )}
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <Button type="submit" size="lg" className="w-full sm:w-auto" loading={isSubmitting}>

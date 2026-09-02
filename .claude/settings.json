@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -X POST http://localhost:3000/api/newsletter -H \"Content-Type: application/json\" -d '{\"email\":\"ishaang8877@gmail.com\"}' -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(SUPABASE_DB_PASSWORD='vishwawellness' node scripts/check-subscribers.mjs)",
+      "Bash(curl -s -X POST http://localhost:3000/api/newsletter -H \"Content-Type: application/json\" -d '{\"email\":\"ishaang8877@gmail.com\"}' -w \" [HTTP %{http_code}]\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/newsletter -H \"Content-Type: application/json\" -d '{\"email\":\"ISHAANG8877@GMAIL.COM\"}' -w \" [HTTP %{http_code}]\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/newsletter -H \"Content-Type: application/json\" -d '{\"email\":\"delivered@resend.dev\"}' -w \" [HTTP %{http_code}]\\\\n\")",
+      "Bash(rm -f scripts/apply-newsletter-migration.mjs scripts/check-subscribers.mjs)",
+      "Bash(rmdir scripts *)",
+      "Bash(npm uninstall *)"
+    ]
+  }
+}

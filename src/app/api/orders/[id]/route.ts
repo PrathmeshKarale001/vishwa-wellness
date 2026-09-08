@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { getOrderById, updateOrderStatus, updatePaymentStatus } from '@/lib/orders';
-import type { OrderStatus, PaymentStatus } from '@/types/orders';
+import { getOrderById, updateOrderStatus } from '@/lib/orders';
+import type { OrderStatus } from '@/types/orders';
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -56,14 +56,24 @@ export async function GET(request: Request, { params }: RouteParams) {
     }
 }
 
-// PATCH: Update order
-// - Admin: Can update any order field
-// - Order owner / guest: Can only update payment_status with valid Razorpay signature
+// PATCH: Update order (admin only)
+//
+// SECURITY: Payment state is NOT settable through this endpoint. An order only
+// becomes `paid` via /api/payment/verify or the Razorpay webhook, both of which
+// verify the payment with Razorpay first. Accepting `payment_status` from a
+// request body here would let anyone mark their own order as paid.
 export async function PATCH(request: Request, { params }: RouteParams) {
     try {
         const { id } = await params;
         const supabase = await createServerSupabaseClient();
         const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
 
         const body = await request.json();
 
@@ -76,63 +86,45 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             );
         }
 
-        // Check permissions
-        let isAdmin = false;
-        let isOwner = false;
+        // Only admins may mutate orders.
+        const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .single();
 
-        if (user) {
-            // Check if user is admin
-            const { data: roleData } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', user.id)
-                .single();
+        const isAdmin = roleData?.role === 'admin' || roleData?.role === 'super_admin';
 
-            isAdmin = roleData?.role === 'admin' || roleData?.role === 'super_admin';
-            isOwner = order.user_id === user.id;
-        }
-
-        // For payment status updates with Razorpay data, allow if:
-        // 1. User is admin, OR
-        // 2. User owns the order, OR
-        // 3. Order has no user_id (guest order) and valid razorpay data is provided
-        const isPaymentUpdate = body.payment_status && body.razorpay_payment_id;
-        const isGuestOrder = !order.user_id;
-
-        if (!isAdmin && !isOwner) {
-            // For guest orders, allow payment updates only
-            if (!(isGuestOrder && isPaymentUpdate)) {
-                return NextResponse.json(
-                    { error: 'Unauthorized' },
-                    { status: 403 }
-                );
-            }
-        }
-
-        // Non-admins can only update payment status
-        if (!isAdmin && body.status && !body.payment_status) {
+        if (!isAdmin) {
             return NextResponse.json(
-                { error: 'Admin access required to update order status' },
+                { error: 'Admin access required' },
                 { status: 403 }
             );
         }
 
-        let updatedOrder;
-
-        if (body.status && isAdmin) {
-            updatedOrder = await updateOrderStatus(id, body.status as OrderStatus, {
-                tracking_number: body.tracking_number,
-                tracking_url: body.tracking_url,
-                admin_notes: body.admin_notes,
-            });
-        } else if (body.payment_status) {
-            // Allow payment status update with Razorpay info
-            updatedOrder = await updatePaymentStatus(id, body.payment_status as PaymentStatus, {
-                razorpay_order_id: body.razorpay_order_id,
-                razorpay_payment_id: body.razorpay_payment_id,
-                razorpay_signature: body.razorpay_signature,
-            });
+        // Reject any attempt to set payment state through this route.
+        if (body.payment_status || body.razorpay_payment_id || body.razorpay_order_id || body.razorpay_signature || body.paid_at) {
+            return NextResponse.json(
+                {
+                    error: 'Payment status cannot be set through this endpoint',
+                    message: 'Payments are settled only after verification with Razorpay.',
+                },
+                { status: 400 }
+            );
         }
+
+        if (!body.status) {
+            return NextResponse.json(
+                { error: 'No supported fields to update' },
+                { status: 400 }
+            );
+        }
+
+        const updatedOrder = await updateOrderStatus(id, body.status as OrderStatus, {
+            tracking_number: body.tracking_number,
+            tracking_url: body.tracking_url,
+            admin_notes: body.admin_notes,
+        });
 
         if (!updatedOrder) {
             return NextResponse.json(

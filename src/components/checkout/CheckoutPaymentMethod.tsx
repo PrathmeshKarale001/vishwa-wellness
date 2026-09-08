@@ -1,21 +1,18 @@
 'use client';
 
-import { CreditCard, Wallet, Smartphone } from 'lucide-react';
+import { CreditCard, Wallet } from 'lucide-react';
 
-export type PaymentMethod = 'online' | 'upi';
+export type PaymentMethod = 'online';
 
 interface CheckoutPaymentMethodProps {
     selected: PaymentMethod;
     onChange: (method: PaymentMethod) => void;
     total?: number;
-    upiAvailable?: boolean;
 }
 
 export default function CheckoutPaymentMethod({
     selected,
     onChange,
-    total = 0,
-    upiAvailable = true,
 }: CheckoutPaymentMethodProps) {
     const paymentOptions: Array<{
         id: PaymentMethod;
@@ -28,17 +25,10 @@ export default function CheckoutPaymentMethod({
             {
                 id: 'online',
                 name: 'Pay Online',
-                description: 'Credit/Debit Card, Net Banking, UPI, Wallets',
+                description: 'UPI, Credit/Debit Card, Net Banking, Wallets',
                 icon: CreditCard,
                 available: true,
                 recommended: true,
-            },
-            {
-                id: 'upi',
-                name: 'UPI Payment',
-                description: 'Pay using any UPI app',
-                icon: Smartphone,
-                available: upiAvailable,
             },
         ];
 

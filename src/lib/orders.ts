@@ -209,61 +209,108 @@ export async function updateOrderStatus(
     return updatedOrder;
 }
 
-// Update payment status
-export async function updatePaymentStatus(
+/**
+ * Marks an order as paid.
+ *
+ * SECURITY: This must only be called from code that has already verified the
+ * payment with Razorpay - i.e. the signature check plus an amount/capture
+ * check against the Razorpay API (see /api/payment/verify), or a
+ * signature-verified webhook. It is deliberately NOT reachable from a
+ * client-supplied request body.
+ *
+ * The update is conditional on the order not already being paid, which makes
+ * it idempotent when the browser and the webhook race each other.
+ */
+export async function markOrderPaid(
     orderId: string,
-    paymentStatus: PaymentStatus,
-    razorpayData?: {
-        razorpay_order_id?: string;
-        razorpay_payment_id?: string;
+    razorpayData: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
         razorpay_signature?: string;
     }
 ): Promise<Order | null> {
-    const supabase = await createServerSupabaseClient();
-
-    const updateData: Record<string, unknown> = {
-        payment_status: paymentStatus,
-        ...razorpayData
-    };
-
-    if (paymentStatus === 'paid') {
-        updateData.paid_at = new Date().toISOString();
-        updateData.status = 'confirmed';
-    }
+    const supabase = createAdminSupabaseClient();
 
     const { data, error } = await supabase
         .from('orders')
-        .update(updateData)
+        .update({
+            payment_status: 'paid' as PaymentStatus,
+            status: 'confirmed' as OrderStatus,
+            paid_at: new Date().toISOString(),
+            ...razorpayData,
+        })
         .eq('id', orderId)
+        .neq('payment_status', 'paid')
         .select(`
             *,
             items:order_items(*)
         `)
-        .single();
+        .maybeSingle();
 
     if (error) {
-        console.error('Error updating payment status:', error);
+        console.error('Error marking order as paid:', error);
         return null;
+    }
+
+    if (!data) {
+        // Another path (usually the webhook) settled this order first.
+        const { data: existing } = await supabase
+            .from('orders')
+            .select(`*, items:order_items(*)`)
+            .eq('id', orderId)
+            .single();
+
+        return (existing as Order) ?? null;
     }
 
     const updatedOrder = data as Order;
 
-    // Send CRM notification when payment is confirmed (don't block on this)
-    if (paymentStatus === 'paid') {
-        sendOrderStatusNotificationToCRM(updatedOrder)
-            .then((result) => {
-                if (result.success) {
-                    console.log(`[order] CRM notified about payment for ${updatedOrder.order_number}`);
-                } else {
-                    console.warn(`[order] Failed to notify CRM about payment for ${updatedOrder.order_number}:`, result.error);
-                }
-            })
-            .catch((err) => {
-                console.error(`[order] Unexpected error notifying CRM about payment:`, err);
-            });
-    }
+    // Notify CRM that payment landed (don't block on this)
+    sendOrderStatusNotificationToCRM(updatedOrder)
+        .then((result) => {
+            if (result.success) {
+                console.log(`[order] CRM notified about payment for ${updatedOrder.order_number}`);
+            } else {
+                console.warn(`[order] Failed to notify CRM about payment for ${updatedOrder.order_number}:`, result.error);
+            }
+        })
+        .catch((err) => {
+            console.error(`[order] Unexpected error notifying CRM about payment:`, err);
+        });
 
     return updatedOrder;
+}
+
+/**
+ * Marks an order's payment as failed. Only ever moves an order out of the
+ * `pending` payment state, so it can never undo a successful payment.
+ */
+export async function markPaymentFailed(
+    orderId: string,
+    reason?: string
+): Promise<Order | null> {
+    const supabase = createAdminSupabaseClient();
+
+    const { data, error } = await supabase
+        .from('orders')
+        .update({
+            payment_status: 'failed' as PaymentStatus,
+            notes: reason ? `Payment failed: ${reason}` : 'Payment failed',
+        })
+        .eq('id', orderId)
+        .eq('payment_status', 'pending')
+        .select(`
+            *,
+            items:order_items(*)
+        `)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error marking payment as failed:', error);
+        return null;
+    }
+
+    return (data as Order) ?? null;
 }
 
 // Get all orders (admin)

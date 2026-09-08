@@ -47,7 +47,7 @@ export const CreateOrderSchema = z.object({
     discount: z.number().nonnegative('Discount must be non-negative').default(0),
     tax: z.number().nonnegative('Tax must be non-negative').default(0),
     total: z.number().positive('Total must be positive'),
-    payment_method: z.enum(['razorpay', 'upi']).default('razorpay'),
+    payment_method: z.enum(['razorpay']).default('razorpay'),
     coupon_code: z.string().optional(),
     notes: z.string().optional(),
 });
@@ -73,12 +73,11 @@ export const UpdateOrderStatusSchema = z.object({
 // Payment Schemas
 // ========================================
 
+// The amount is NEVER taken from the client. It is derived server-side from
+// the internal order identified by orderId.
 export const CreatePaymentOrderSchema = z.object({
-    amount: z.number().positive('Amount must be positive'),
+    orderId: z.string().uuid('A valid internal order ID is required'),
     currency: z.string().length(3).default('INR'),
-    orderId: z.string().min(1, 'Order ID is required'),
-    receipt: z.string().optional(),
-    notes: z.record(z.string(), z.string()).optional(),
 });
 
 export const VerifyPaymentSchema = z.object({

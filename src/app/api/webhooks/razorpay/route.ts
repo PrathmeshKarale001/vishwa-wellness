@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminSupabaseClient } from '@/lib/supabase-admin';
-import type { PaymentStatus, OrderStatus } from '@/types/orders';
+import { markOrderPaid, markPaymentFailed } from '@/lib/orders';
 
 /**
  * Razorpay Webhook Handler
@@ -68,10 +68,15 @@ function verifyWebhookSignature(
         .update(body)
         .digest('hex');
 
-    return crypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(expectedSignature)
-    );
+    const received = Buffer.from(signature, 'utf8');
+    const expected = Buffer.from(expectedSignature, 'utf8');
+
+    // timingSafeEqual throws if the lengths differ, so check that first.
+    if (received.length !== expected.length) {
+        return false;
+    }
+
+    return crypto.timingSafeEqual(received, expected);
 }
 
 export async function POST(request: NextRequest) {
@@ -158,17 +163,16 @@ async function handlePaymentCaptured(payload: RazorpayWebhookPayload) {
 
     const supabase = createAdminSupabaseClient();
 
-    // Find order by razorpay_order_id
+    // Find order by razorpay_order_id. This is written before checkout opens,
+    // so it is always present for a genuine payment.
     const { data: order, error: findError } = await supabase
         .from('orders')
-        .select('id, order_number, payment_status')
+        .select('id, order_number, total, payment_status')
         .eq('razorpay_order_id', razorpayOrderId)
         .single();
 
     if (findError || !order) {
-        // Order might not have razorpay_order_id yet - this is expected if
-        // the webhook arrives before the client updates the order
-        console.log(`[webhook] Order not found for razorpay_order_id: ${razorpayOrderId}`);
+        console.error(`[webhook] Order not found for razorpay_order_id: ${razorpayOrderId}`);
         return;
     }
 
@@ -178,19 +182,23 @@ async function handlePaymentCaptured(payload: RazorpayWebhookPayload) {
         return;
     }
 
-    // Update order with payment details
-    const { error: updateError } = await supabase
-        .from('orders')
-        .update({
-            payment_status: 'paid' as PaymentStatus,
-            status: 'confirmed' as OrderStatus,
-            razorpay_payment_id: razorpayPaymentId,
-            paid_at: new Date().toISOString(),
-        })
-        .eq('id', order.id);
+    // The captured amount must match the order's server-validated total.
+    const expectedAmount = Math.round(order.total * 100);
+    if (Number(payment.amount) !== expectedAmount) {
+        console.error(
+            `[webhook] Amount mismatch for ${order.order_number}: ` +
+            `expected=${expectedAmount}, paid=${payment.amount}. Not settling.`
+        );
+        return;
+    }
 
-    if (updateError) {
-        console.error(`[webhook] Failed to update order ${order.order_number}:`, updateError);
+    const updated = await markOrderPaid(order.id, {
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: razorpayPaymentId,
+    });
+
+    if (!updated) {
+        console.error(`[webhook] Failed to update order ${order.order_number}`);
         return;
     }
 
@@ -230,17 +238,10 @@ async function handlePaymentFailed(payload: RazorpayWebhookPayload) {
         return;
     }
 
-    // Update order status to failed
-    const { error: updateError } = await supabase
-        .from('orders')
-        .update({
-            payment_status: 'failed' as PaymentStatus,
-            notes: `Payment failed: ${errorDescription}`,
-        })
-        .eq('id', order.id);
+    const updated = await markPaymentFailed(order.id, errorDescription);
 
-    if (updateError) {
-        console.error(`[webhook] Failed to update order ${order.order_number}:`, updateError);
+    if (!updated) {
+        console.error(`[webhook] Failed to update order ${order.order_number}`);
         return;
     }
 
@@ -267,7 +268,7 @@ async function handleOrderPaid(payload: RazorpayWebhookPayload) {
 
     const { data: dbOrder, error: findError } = await supabase
         .from('orders')
-        .select('id, order_number, payment_status')
+        .select('id, order_number, total, payment_status, razorpay_payment_id')
         .eq('razorpay_order_id', razorpayOrderId)
         .single();
 
@@ -276,21 +277,29 @@ async function handleOrderPaid(payload: RazorpayWebhookPayload) {
         return;
     }
 
-    if (dbOrder.payment_status !== 'paid') {
-        const { error: updateError } = await supabase
-            .from('orders')
-            .update({
-                payment_status: 'paid' as PaymentStatus,
-                status: 'confirmed' as OrderStatus,
-                paid_at: new Date().toISOString(),
-            })
-            .eq('id', dbOrder.id);
-
-        if (updateError) {
-            console.error(`[webhook] Failed to update order ${dbOrder.order_number}:`, updateError);
-            return;
-        }
-
-        console.log(`[webhook] Order ${dbOrder.order_number} marked as paid via order.paid event`);
+    if (dbOrder.payment_status === 'paid') {
+        return;
     }
+
+    // The amount Razorpay reports as paid must match the order total.
+    const expectedAmount = Math.round(dbOrder.total * 100);
+    if (Number(order.amount_paid) !== expectedAmount) {
+        console.error(
+            `[webhook] Amount mismatch for ${dbOrder.order_number}: ` +
+            `expected=${expectedAmount}, paid=${order.amount_paid}. Not settling.`
+        );
+        return;
+    }
+
+    const updated = await markOrderPaid(dbOrder.id, {
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: dbOrder.razorpay_payment_id,
+    });
+
+    if (!updated) {
+        console.error(`[webhook] Failed to update order ${dbOrder.order_number}`);
+        return;
+    }
+
+    console.log(`[webhook] Order ${dbOrder.order_number} marked as paid via order.paid event`);
 }

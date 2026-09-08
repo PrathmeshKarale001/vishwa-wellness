@@ -153,7 +153,14 @@ export default function CheckoutPage() {
         setCouponError('');
     };
 
-    // Place order handler - FIXED: Create order FIRST, then process payment
+    // Place order handler.
+    //
+    // Flow:
+    //   1. Create our order server-side with payment_status 'pending'. The
+    //      server re-validates every price against Sanity.
+    //   2. Open Razorpay for an amount the SERVER derives from that order.
+    //   3. The server verifies the payment (signature + capture + amount) and
+    //      settles the order. We only show success if the server says so.
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
         setPaymentError('');
@@ -191,133 +198,71 @@ export default function CheckoutPage() {
             shipping_cost: shipping,
             discount: discount,
             total,
+            payment_method: 'razorpay' as const,
             coupon_code: appliedCoupon?.code,
             notes: appliedCoupon ? `Coupon: ${appliedCoupon.code}` : undefined,
         };
 
-        if (paymentMethod === 'online') {
-            // STEP 1: Create order FIRST with pending status
-            let order: { id: string; order_number: string } | null = null;
+        // STEP 1: Create the order with pending payment status
+        let order: { id: string; order_number: string } | null = null;
 
-            try {
-                const orderResponse = await fetch('/api/orders', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...orderPayload,
-                        payment_method: 'razorpay',
-                    }),
-                });
-
-                if (!orderResponse.ok) {
-                    const errorData = await orderResponse.json();
-                    throw new Error(errorData.message || errorData.error || 'Failed to create order');
-                }
-
-                const data = await orderResponse.json();
-                order = data.order;
-            } catch (error) {
-                console.error('Order creation error:', error);
-                const errorMsg = error instanceof Error ? error.message : 'Failed to create order';
-                setPaymentError(errorMsg);
-                setIsProcessing(false);
-                return;
-            }
-
-            if (!order) {
-                setPaymentError('Failed to create order. Please try again.');
-                setIsProcessing(false);
-                return;
-            }
-
-            // STEP 2: Process Razorpay payment with order ID in notes
-            const result = await initiatePayment({
-                amount: total,
-                name: 'Vishwa Wellness',
-                description: `Order #${order.order_number}`,
-                prefill: {
-                    name: `${shippingForm.firstName} ${shippingForm.lastName}`,
-                    email: shippingForm.email,
-                    contact: shippingForm.phone,
-                },
-                notes: {
-                    order_id: order.id,
-                    order_number: order.order_number,
-                },
-                theme: { color: '#C73C2E' },
+        try {
+            const orderResponse = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderPayload),
             });
 
-            if (!result.success) {
-                // Payment failed or cancelled - order remains in pending state
-                // The user can retry payment or the order will expire
-                setPaymentError(result.error || 'Payment failed. Please try again.');
-                setIsProcessing(false);
-                return;
+            if (!orderResponse.ok) {
+                const errorData = await orderResponse.json();
+                throw new Error(errorData.message || errorData.error || 'Failed to create order');
             }
 
-            // STEP 3: Update order with payment info
-            try {
-                const updateResponse = await fetch(`/api/orders/${order.id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        payment_status: 'paid',
-                        status: 'confirmed',
-                        razorpay_order_id: result.orderId,
-                        razorpay_payment_id: result.paymentId,
-                        razorpay_signature: result.signature,
-                    }),
-                });
-
-                if (!updateResponse.ok) {
-                    // Payment was captured but update failed
-                    // Webhook will handle this case
-                    console.error('Failed to update order after payment, webhook will handle');
-                }
-
-                setOrderNumber(order.order_number);
-                setOrderPlaced(true);
-                clearCart();
-            } catch (error) {
-                // Payment was captured but update failed - webhook will handle
-                console.error('Order update error:', error);
-                // Still show success since payment went through
-                setOrderNumber(order.order_number);
-                setOrderPlaced(true);
-                clearCart();
-            }
-        } else {
-            // UPI order - no payment processing needed
-            try {
-                const orderResponse = await fetch('/api/orders', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...orderPayload,
-                        payment_method: 'upi',
-                        notes: `UPI Order${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`,
-                    }),
-                });
-
-                if (!orderResponse.ok) {
-                    const errorData = await orderResponse.json();
-                    console.error('Order API error:', errorData);
-                    const errorMessage = errorData.message || errorData.error ||
-                        (errorData.details ? JSON.stringify(errorData.details) : 'Failed to create order');
-                    throw new Error(errorMessage);
-                }
-
-                const { order } = await orderResponse.json();
-                setOrderNumber(order.order_number);
-                setOrderPlaced(true);
-                clearCart();
-            } catch (error) {
-                console.error('Order creation error:', error);
-                const errorMsg = error instanceof Error ? error.message : 'Failed to place order. Please try again.';
-                setPaymentError(errorMsg);
-            }
+            const data = await orderResponse.json();
+            order = data.order;
+        } catch (error) {
+            console.error('Order creation error:', error);
+            const errorMsg = error instanceof Error ? error.message : 'Failed to create order';
+            setPaymentError(errorMsg);
+            setIsProcessing(false);
+            return;
         }
 
+        if (!order) {
+            setPaymentError('Failed to create order. Please try again.');
+            setIsProcessing(false);
+            return;
+        }
+
+        // STEP 2 + 3: Pay, then let the server verify and settle the order.
+        const result = await initiatePayment({
+            orderId: order.id,
+            name: 'Vishwa Wellness',
+            description: `Order #${order.order_number}`,
+            prefill: {
+                name: `${shippingForm.firstName} ${shippingForm.lastName}`,
+                email: shippingForm.email,
+                contact: shippingForm.phone,
+            },
+            notes: {
+                order_id: order.id,
+                order_number: order.order_number,
+            },
+            theme: { color: '#C73C2E' },
+        });
+
+        if (!result.success) {
+            // Payment failed, was cancelled, or could not be verified.
+            // The order stays pending - it is NOT treated as placed.
+            setPaymentError(result.error || 'Payment failed. Please try again.');
+            setIsProcessing(false);
+            return;
+        }
+
+        // The server verified and settled the order before returning success.
+        setOrderNumber(order.order_number);
+        setOrderPlaced(true);
+        clearCart();
         setIsProcessing(false);
     };
 
@@ -484,8 +429,7 @@ export default function CheckoutPage() {
                                         <div className="mb-6">
                                             <h3 className="font-medium text-[#222] mb-2">Payment Method</h3>
                                             <p className="text-[#777] text-sm">
-                                                {paymentMethod === 'online' && 'Razorpay (Cards, UPI, Net Banking)'}
-                                                {paymentMethod === 'upi' && 'UPI Payment'}
+                                                Razorpay (UPI, Cards, Net Banking, Wallets)
                                             </p>
                                             <button
                                                 onClick={() => setCurrentStep('payment')}

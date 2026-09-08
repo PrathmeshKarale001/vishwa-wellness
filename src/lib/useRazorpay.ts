@@ -26,7 +26,8 @@ declare global {
 }
 
 interface RazorpayOptions {
-    amount: number;
+    /** Internal (Supabase) order id. The charge amount is derived from it server-side. */
+    orderId: string;
     currency?: string;
     name?: string;
     description?: string;
@@ -86,14 +87,12 @@ export function useRazorpay() {
                 throw new Error('Failed to load Razorpay SDK');
             }
 
-            // Create order on server
+            // Create the Razorpay order on the server. The server derives the
+            // amount from our own order record - never from the client.
             const orderResponse = await fetch('/api/payment/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: options.amount,
-                    notes: options.notes,
-                }),
+                body: JSON.stringify({ orderId: options.orderId }),
             });
 
             if (!orderResponse.ok) {
@@ -118,14 +117,22 @@ export function useRazorpay() {
                     theme: options.theme || { color: '#C73C2E' },
                     handler: async (response: RazorpayHandlerResponse) => {
                         try {
-                            // Verify payment on server
+                            // Verify on the server. The server checks the
+                            // signature, the capture status and the amount,
+                            // and settles the order itself. Success here is
+                            // the ONLY signal that the order is paid.
                             const verifyResponse = await fetch('/api/payment/verify', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(response),
+                                body: JSON.stringify({
+                                    ...response,
+                                    orderId: options.orderId,
+                                }),
                             });
 
-                            if (verifyResponse.ok) {
+                            const verifyData = await verifyResponse.json().catch(() => null);
+
+                            if (verifyResponse.ok && verifyData?.success) {
                                 resolve({
                                     success: true,
                                     paymentId: response.razorpay_payment_id,
@@ -135,7 +142,7 @@ export function useRazorpay() {
                             } else {
                                 resolve({
                                     success: false,
-                                    error: 'Payment verification failed',
+                                    error: verifyData?.error || 'Payment verification failed',
                                 });
                             }
                         } catch {

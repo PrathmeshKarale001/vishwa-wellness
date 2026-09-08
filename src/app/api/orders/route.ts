@@ -11,11 +11,17 @@ const PRICE_TOLERANCE = 1;
 // Flat shipping cost
 const STANDARD_SHIPPING_COST = 50;
 
+// SKUs exempt from shipping. Used for internal payment-flow test products so a
+// live test can be run for the product price alone.
+// Must match FREE_SHIPPING_SKUS in src/lib/cartStore.ts.
+const FREE_SHIPPING_SKUS = ['TEST-001'];
+
 interface SanityProduct {
     _id: string;
     price: number;
     comparePrice?: number;
     stock?: number;
+    sku?: string;
 }
 
 // Fetch product prices from Sanity for validation
@@ -28,7 +34,8 @@ async function fetchProductPrices(productIds: string[]): Promise<Map<string, San
         _id,
         price,
         "comparePrice": compareAtPrice,
-        "stock": inventory
+        "stock": inventory,
+        sku
     }`;
 
     const products = await client.fetch<SanityProduct[]>(query, { ids: productIds });
@@ -189,8 +196,15 @@ export async function POST(request: Request) {
             });
         }
 
-        // Flat ₹50 shipping on all orders
-        const serverShipping = STANDARD_SHIPPING_COST;
+        // Flat ₹50 shipping, waived when every item is a shipping-exempt
+        // test SKU. Mirrors getShipping() in the cart store.
+        const allFreeShipping = validatedData.items.length > 0 &&
+            validatedData.items.every(item => {
+                const sku = productPrices.get(item.productId)?.sku;
+                return sku ? FREE_SHIPPING_SKUS.includes(sku) : false;
+            });
+
+        const serverShipping = allFreeShipping ? 0 : STANDARD_SHIPPING_COST;
 
         // Validate coupon and calculate server-side discount
         let serverDiscount = 0;

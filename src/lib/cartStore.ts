@@ -42,6 +42,10 @@ interface CartState {
 // Cart expiration time (24 hours for guests)
 const CART_EXPIRATION_MS = 24 * 60 * 60 * 1000;
 
+// SKUs exempt from shipping. Used for internal payment-flow test products.
+// Must match FREE_SHIPPING_SKUS in src/app/api/orders/route.ts.
+const FREE_SHIPPING_SKUS = ['TEST-001'];
+
 export const useCartStore = create<CartState>()(
     persist(
         (set, get) => ({
@@ -247,8 +251,17 @@ export const useCartStore = create<CartState>()(
             },
 
             getShipping: () => {
-                // Flat ₹50 shipping on all orders — must match server-side STANDARD_SHIPPING_COST=50
-                return 50;
+                // Flat ₹50 shipping — must match server-side STANDARD_SHIPPING_COST=50.
+                // Waived when every item is a shipping-exempt test SKU.
+                const items = get().items;
+                if (items.length === 0) return 0;
+
+                const allFreeShipping = items.every((item) => {
+                    const sku = item.product?.sku;
+                    return sku ? FREE_SHIPPING_SKUS.includes(sku) : false;
+                });
+
+                return allFreeShipping ? 0 : 50;
             },
 
             getTotal: () => {

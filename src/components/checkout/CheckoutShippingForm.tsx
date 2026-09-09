@@ -419,7 +419,7 @@ export default function CheckoutShippingForm({
                                 }}
                                 onBlur={handlePincodeBlur}
                                 maxLength={6}
-                                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors ${errors.pincode ? 'border-red-500 bg-red-50/50' : 'border-[#ddd]'
+                                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:border-[var(--color-primary)] transition-colors ${errors.pincode || pincodeError ? 'border-red-500 bg-red-50/50' : 'border-[#ddd]'
                                     }`}
                                 placeholder="6-digit PIN"
                             />
@@ -447,7 +447,7 @@ export default function CheckoutShippingForm({
                             <p className="mt-1 text-sm text-red-500">{errors.pincode}</p>
                         )}
                         {pincodeError && (
-                            <p className="mt-1 text-sm text-orange-600">{pincodeError}</p>
+                            <p className="mt-1 text-sm text-red-500">{pincodeError}</p>
                         )}
                     </div>
 
